@@ -1,0 +1,25 @@
+bench	system	idx	case	op	status	t_first_s	t_warm_s	result	note
+D_coverage	SymPy	0	_load	using	verified	3.58368	NaN		package load time
+D_coverage	SymPy	1	factor x^4-1	factor	verified	0.519605	0.000654801	(1, Tuple{Sym{PythonCall.Py}, Int64}[(x - 1, 1), (x + 1, 1), (x^2 + 1, 1)])	
+D_coverage	SymPy	2	solve cos(x)=1/2 exactly	solve	verified	0.138188	0.0247047	Sym{PythonCall.Py}[pi/3, 5*pi/3]	verified = pi/3 is returned symbolically (not as a float)
+D_coverage	SymPy	3	isolve 21u+28v=7	diophantine	verified	0.431117	0.0508072	(4*k - 1, 1 - 3*k, k)	
+D_coverage	SymPy	4	laplace exp(-2t) sin(3t)	laplace	verified	0.170432	0.0938392	3/((s + 2)^2 + 9)	
+D_coverage	SymPy	5	ilaplace 1/(s^2+1)	ilaplace	verified	0.00547151	0.00508737	sin(t)*Heaviside(t)	
+D_coverage	SymPy	6	ztrans n	ztrans	unavailable	NaN	NaN		
+D_coverage	SymPy	7	partfrac x/(x^2-1)	partfrac	verified	0.00357006	0.00368994	1/(2*(x + 1)) + 1/(2*(x - 1))	
+D_coverage	SymPy	8	desolve y'=-2y, y(0)=1	desolve_ivp	verified	0.172018	0.0245945	exp(-2*t)	
+D_coverage	SymPy	9	limit sin(x)/x at 0	limit	verified	0.0105594	0.000686653	1	
+D_coverage	SymPy	10	limit (1+1/x)^x at inf	limit	verified	0.0048175	0.00430309	E	
+D_coverage	SymPy	11	series exp(x) order 6	series	verified	0.0434852	0.0239564	x^6/720 + x^5/120 + x^4/24 + x^3/6 + x^2/2 + x + 1	
+D_coverage	SymPy	12	sum k^2, k=1..n closed form	sum	verified	0.0437683	0.00176171	n^3/3 + n^2/2 + n/6	
+D_coverage	SymPy	13	integrate exp(-x^2) (erf)	integrate	verified	0.0607589	0.037048	sqrt(pi)*erf(x)/2	
+D_coverage	SymPy	14	gcd (x^2-1)(x+2), (x+1)(x+2)^2	gcd	verified	0.00240175	0.00154353	x^2 + 3*x + 2	verified up to the unit: gcd compared numerically to (x+1)(x+2)
+D_coverage	SymPy	15	resultant x^2+ax+1, x^2+bx+1	resultant	verified	0.00149	0.00116568	a^2 - 2*a*b + b^2	
+D_coverage	SymPy	16	discriminant ax^2+bx+c	discriminant	verified	0.00136662	0.00116778	-4*a*c + b^2	
+D_coverage	SymPy	17	groebner [x^2+y^2-2, x-y]	groebner	verified	0.108115	0.00108807	Sym{PythonCall.Py}[x - y, y^2 - 1]	
+D_coverage	SymPy	18	cfactor x^2+1 over C	cfactor	unverified	0.0475289	0.00907184	(x - I)*(x + I)	unverified = a factorisation involving i was returned; not checked numerically
+D_coverage	SymPy	19	det [[a,b],[c,x]]	det	verified	0.70409	0.000702334	a*x - b*c	
+D_coverage	SymPy	20	eigenvals [[a,1],[1,a]]	eigenvals	verified	0.115845	0.00501441	Sym{PythonCall.Py}[a - 1, a + 1]	
+D_coverage	sympy	21	ifactor 60-digit semiprime		timeout	NaN	NaN		killed after 120.0s
+D_coverage	SymPy	22	simplify sqrt(x^2) with x>0	assume_simplify	verified	0.0991169	0.000136603	x	verified = the answer is exactly x; unsolved = numerically right but not reduced to x
+D_coverage	SymPy	23	trigsimp sin(2x)-2sin(x)cos(x)	trigsimp	verified	0.0110692	0.00818447	0	

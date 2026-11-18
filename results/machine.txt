@@ -1,0 +1,544 @@
+# 2026-11-18 08:28:32
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	A_ffi
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-18 09:10:19
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	A_ffi
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-18 09:11:34
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-18 09:11:36
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	C_ifactor
+system	Giac.jl ifactor
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-18 09:11:39
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	C_ifactor
+system	Primes.jl factor
+Primes	0.5.7
+
+# 2026-11-18 09:11:42
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	C_ifactor
+system	LibPARI.jl factors
+LibPARI	0.18.2
+PARI_jll	2.17.3+0
+
+# 2026-11-18 09:11:49
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	B_cas
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-18 09:12:05
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	B_cas
+system	Symbolics.jl
+Symbolics	7.49.0
+SymbolicUtils	4.56.1
+Nemo	0.56.2
+Groebner	0.10.11
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+Primes	0.5.7
+
+# 2026-11-18 09:13:09
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	B_cas
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-18 09:13:22
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	B_cas
+system	SymJ.jl
+SymJ	0.1.0
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+
+# 2026-11-18 09:13:39
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-18 09:14:03
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	Symbolics.jl
+Symbolics	7.49.0
+SymbolicUtils	4.56.1
+Nemo	0.56.2
+Groebner	0.10.11
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+Primes	0.5.7
+
+# 2026-11-18 09:18:05
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-18 09:20:23
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	SymJ.jl
+SymJ	0.1.0
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+
+# 2026-11-18 09:20:40
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	C_ifactor
+system	Giac.jl ifactor
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-18 09:20:53
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	C_ifactor
+system	Primes.jl factor
+Primes	0.5.7
+
+# 2026-11-18 09:21:31
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	C_ifactor
+system	Giac.jl ifactor
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-18 09:21:44
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	C_ifactor
+system	Primes.jl factor
+Primes	0.5.7
+
+# 2026-11-18 09:31:11
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	C_ifactor
+system	LibPARI.jl factors
+LibPARI	0.18.2
+PARI_jll	2.17.3+0
+
+# 2026-11-18 09:31:27
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	B_cas
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-18 09:31:42
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	B_cas
+system	Symbolics.jl
+Symbolics	7.49.0
+SymbolicUtils	4.56.1
+Nemo	0.56.2
+Groebner	0.10.11
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+Primes	0.5.7
+
+# 2026-11-18 09:32:39
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	B_cas
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-18 09:32:52
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	B_cas
+system	SymJ.jl
+SymJ	0.1.0
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+
+# 2026-11-18 09:33:07
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-18 09:33:29
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	Symbolics.jl
+Symbolics	7.49.0
+SymbolicUtils	4.56.1
+Nemo	0.56.2
+Groebner	0.10.11
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+Primes	0.5.7
+
+# 2026-11-18 09:37:13
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-18 09:39:30
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	SymJ.jl
+SymJ	0.1.0
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+
+# 2026-11-18 19:09:28
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	C_ifactor
+system	Giac.jl ifactor
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-18 19:09:41
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	C_ifactor
+system	Primes.jl factor
+Primes	0.5.7
+
+# 2026-11-18 19:37:51
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	C_ifactor
+system	LibPARI.jl factors
+LibPARI	0.18.2
+PARI_jll	2.17.3+0
+
+# 2026-11-18 19:38:07
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	B_cas
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-18 19:38:22
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	B_cas
+system	Symbolics.jl
+Symbolics	7.49.0
+SymbolicUtils	4.56.1
+Nemo	0.56.2
+Groebner	0.10.11
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+Primes	0.5.7
+
+# 2026-11-18 19:39:19
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	B_cas
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-18 19:39:32
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	B_cas
+system	SymJ.jl
+SymJ	0.1.0
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+
+# 2026-11-18 19:39:48
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-18 19:40:10
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	Symbolics.jl
+Symbolics	7.49.0
+SymbolicUtils	4.56.1
+Nemo	0.56.2
+Groebner	0.10.11
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+Primes	0.5.7
+
+# 2026-11-18 19:43:52
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-18 19:46:09
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	SymJ.jl
+SymJ	0.1.0
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+
+# 2026-11-18 19:47:02
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	B_cas
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-18 19:48:56
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-18 19:51:45
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+

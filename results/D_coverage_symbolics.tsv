@@ -1,0 +1,25 @@
+bench	system	idx	case	op	status	t_first_s	t_warm_s	result	note
+D_coverage	Symbolics.jl	0	_load	using	verified	4.443	NaN		package load time
+D_coverage	Symbolics.jl	1	factor x^4-1	factor	verified	5.03323	0.000143553	(1//1, Tuple{Num, Int64}[(-(1//1) + x, 1), ((1//1) + x, 1), ((1//1) + x^2, 1)])	
+D_coverage	Symbolics.jl	2	solve cos(x)=1/2 exactly	solve	unverified	12.9136	NaN	SymbolicUtils.BasicSymbolicImpl.var"typeof(BasicSymbolicImpl)"{SymReal}[1.0471975511965976 + 6.283185307179586var"##166"]	verified = pi/3 is returned symbolically (not as a float)
+D_coverage	Symbolics.jl	3	isolve 21u+28v=7	diophantine	unavailable	NaN	NaN		
+D_coverage	Symbolics.jl	4	laplace exp(-2t) sin(3t)	laplace	verified	7.68885	0.000935757	3 / (9 + (2 + s)^2)	
+D_coverage	Symbolics.jl	5	ilaplace 1/(s^2+1)	ilaplace	verified	8.12018	0.00278532	sin(t)	
+D_coverage	Symbolics.jl	6	ztrans n	ztrans	unavailable	NaN	NaN		
+D_coverage	Symbolics.jl	7	partfrac x/(x^2-1)	partfrac	verified	0.770694	0.00225259	(1//2) / (-1 + x) + (1//2) / (1 + x)	
+D_coverage	Symbolics.jl	8	desolve y'=-2y, y(0)=1	desolve_ivp	verified	2.06552	0.00437659	exp(-2t)	
+D_coverage	Symbolics.jl	9	limit sin(x)/x at 0	limit	error	NaN	NaN		Not implemented: sin
+D_coverage	Symbolics.jl	10	limit (1+1/x)^x at inf	limit	error	NaN	NaN		Not implemented: POW with noninteger exponent x. Transform to log/exp.
+D_coverage	Symbolics.jl	11	series exp(x) order 6	series	verified	1.45574	5.5075e-05	1 + x + (1//2)*(x^2) + (1//6)*(x^3) + (1//24)*(x^4) + (1//120)*(x^5) + (1//720)*(x^6)	
+D_coverage	Symbolics.jl	12	sum k^2, k=1..n closed form	sum	unavailable	NaN	NaN		
+D_coverage	Symbolics.jl	13	integrate exp(-x^2) (erf)	integrate	verified	14.9073	NaN	(1//2)*SpecialFunctions.erf(x)*sqrt(π)	
+D_coverage	Symbolics.jl	14	gcd (x^2-1)(x+2), (x+1)(x+2)^2	gcd	unavailable	NaN	NaN		verified up to the unit: gcd compared numerically to (x+1)(x+2)
+D_coverage	Symbolics.jl	15	resultant x^2+ax+1, x^2+bx+1	resultant	unavailable	NaN	NaN		
+D_coverage	Symbolics.jl	16	discriminant ax^2+bx+c	discriminant	unavailable	NaN	NaN		
+D_coverage	Symbolics.jl	17	groebner [x^2+y^2-2, x-y]	groebner	verified	5.17229	0.000308214	SymbolicUtils.BasicSymbolicImpl.var"typeof(BasicSymbolicImpl)"{SymReal}[x - y, -(1//1) + y^2]	
+D_coverage	Symbolics.jl	18	cfactor x^2+1 over C	cfactor	unavailable	NaN	NaN		unverified = a factorisation involving i was returned; not checked numerically
+D_coverage	Symbolics.jl	19	det [[a,b],[c,x]]	det	verified	9.0189e-05	6.1433e-06	a*x - b*c	
+D_coverage	Symbolics.jl	20	eigenvals [[a,1],[1,a]]	eigenvals	unavailable	NaN	NaN		
+D_coverage	symbolics	21	ifactor 60-digit semiprime		timeout	NaN	NaN		killed after 120.0s
+D_coverage	Symbolics.jl	22	simplify sqrt(x^2) with x>0	assume_simplify	unavailable	NaN	NaN		verified = the answer is exactly x; unsolved = numerically right but not reduced to x
+D_coverage	Symbolics.jl	23	trigsimp sin(2x)-2sin(x)cos(x)	trigsimp	verified	5.43526	0.000143863	0	

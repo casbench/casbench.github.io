@@ -1,0 +1,36 @@
+bench	system	idx	case	op	status	t_first_s	t_warm_s	result	note
+B_cas	Symbolics.jl	0	_load	using	verified	5.2123	NaN		package load time
+B_cas	Symbolics.jl	1	expand (x+y)^5	expand	verified	0.45322	9.8936e-05	x^5 + 5(x^4)*y + 10(x^3)*(y^2) + 10(x^2)*(y^3) + 5x*(y^4) + y^5	
+B_cas	Symbolics.jl	2	expand (x+y)^10	expand	verified	0.00030224	0.000184278	x^10 + 10(x^9)*y + 45(x^8)*(y^2) + 120(x^7)*(y^3) + 210(x^6)*(y^4) + 252(x^5)*(y^5) + 210(x^4)*(y^6) + 120(x^3)*(y^7) + 45(x^2)*(y^8) + 10x*(y^9) + y^10	
+B_cas	Symbolics.jl	3	expand (x+y+z)^6	expand	verified	0.000667752	0.000489982	x^6 + 6(x^5)*y + 6(x^5)*z + 15(x^4)*(y^2) + 30(x^4)*y*z + 15(x^4)*(z^2) + 20(x^3)*(y^3) + 60(x^3)*(y^2)*z + 60(x^3)*y*(z^2) + 20(x^3)*(z^3) + 15(x^2)*(y^4) + 60(x^2)*(y^3)*z + 90(x^2)*(y^2)*(z^2) + 60...	
+B_cas	Symbolics.jl	4	expand (x+1)^20	expand	verified	0.000439936	0.000302464	1 + 20x + 190(x^2) + 1140(x^3) + 4845(x^4) + 15504(x^5) + 38760(x^6) + 77520(x^7) + 125970(x^8) + 167960(x^9) + 184756(x^10) + 167960(x^11) + 125970(x^12) + 77520(x^13) + 38760(x^14) + 15504(x^15) + 4...	
+B_cas	Symbolics.jl	5	expand (x^2+3x+1)^8 (x-1)^3	expand	verified	0.00023847	0.000127543	-1 - 21x - 191(x^2) - 971(x^3) - 2926(x^4) - 4822(x^5) - 1862(x^6) + 8698(x^7) + 17213(x^8) + 9353(x^9) - 9353(x^10) - 17213(x^11) - 8698(x^12) + 1862(x^13) + 4822(x^14) + 2926(x^15) + 971(x^16) + 191...	
+B_cas	Symbolics.jl	6	expand (x+y)^3 (x-y)^3 (x+2y)^2	expand	verified	0.00019709	6.3124e-05	x^8 + 4(x^7)*y + (x^6)*(y^2) - 12(x^5)*(y^3) - 9(x^4)*(y^4) + 12(x^3)*(y^5) + 11(x^2)*(y^6) - 4x*(y^7) - 4(y^8)	
+B_cas	Symbolics.jl	7	factor x^4-1	factor	verified	2.56964	0.00013628	(1//1, Tuple{Num, Int64}[(-(1//1) + x, 1), ((1//1) + x, 1), ((1//1) + x^2, 1)])	
+B_cas	Symbolics.jl	8	factor x^8-1	factor	verified	0.000490517	0.000142051	(1//1, Tuple{Num, Int64}[((1//1) + x^4, 1), (-(1//1) + x, 1), ((1//1) + x, 1), ((1//1) + x^2, 1)])	
+B_cas	Symbolics.jl	9	factor x^12-1	factor	verified	0.0195752	0.00027877	(1//1, Tuple{Num, Int64}[((1//1) - x + x^2, 1), (-(1//1) + x, 1), ((1//1) + x + x^2, 1), ((1//1) + x, 1), ((1//1) + x^2, 1), ((1//1) - (x^2) + x^4, 1)])	
+B_cas	Symbolics.jl	10	factor x^16-1	factor	verified	0.000580965	0.000217412	(1//1, Tuple{Num, Int64}[((1//1) + x^4, 1), (-(1//1) + x, 1), ((1//1) + x^8, 1), ((1//1) + x, 1), ((1//1) + x^2, 1)])	
+B_cas	Symbolics.jl	11	factor x^2 y^2-1	factor	verified	0.0844708	0.000161052	(1//1, Tuple{Num, Int64}[(-(1//1) + x*y, 1), ((1//1) + x*y, 1)])	
+B_cas	Symbolics.jl	12	factor x^10+x^5+1	factor	verified	0.000612689	0.00021773	(1//1, Tuple{Num, Int64}[((1//1) - x + x^3 - (x^4) + x^5 - (x^7) + x^8, 1), ((1//1) + x + x^2, 1)])	
+B_cas	Symbolics.jl	13	factor expanded (x+1)^3 (x-2)^2 (x^2+1)	factor	verified	0.0170338	0.000218505	(1//1, Tuple{Num, Int64}[(-(2//1) + x, 2), ((1//1) + x, 3), ((1//1) + x^2, 1)])	input is given expanded: x^7-x^6-4x^5+3x^3+5x^2+8x+4
+B_cas	Symbolics.jl	14	factor x^6-y^6	factor	verified	0.000578499	0.000213096	(-1//1, Tuple{Num, Int64}[(x^2 + x*y + y^2, 1), (x + y, 1), (x^2 - x*y + y^2, 1), (-x + y, 1)])	
+B_cas	Symbolics.jl	15	integrate x exp(x)	integrate	verified	13.9905	NaN	exp(x)*(-1 + x)	
+B_cas	Symbolics.jl	16	integrate 1/(x^2+1)	integrate	verified	0.991514	0.000227553	atan(x)	
+B_cas	Symbolics.jl	17	integrate sin(x)^2	integrate	verified	0.491655	0.00013396	-(1//4)*sin(2x) + (1//2)*x	
+B_cas	Symbolics.jl	18	integrate x^2 log(x)	integrate	verified	0.170726	0.000219701	-(1//9)*(x^3) + (1//3)*log(x)*(x^3)	
+B_cas	Symbolics.jl	19	integrate 1/(x^3+1)	integrate	verified	0.622045	0.000690215	-(1//6)*log(1 - x + x^2) + (1//3)*log(1 + x) + (1//3)*atan(sqrt(3)*(-(1//3) + (2//3)*x))*sqrt(3)	
+B_cas	Symbolics.jl	20	integrate x/(x^2+1)^2	integrate	verified	0.160201	0.000200261	(-1//2) / (1 + x^2)	
+B_cas	Symbolics.jl	21	integrate exp(x)/(exp(x)+1)^2	integrate	verified	0.16686	0.000364292	-1 / (1 + exp(x))	
+B_cas	Symbolics.jl	22	integrate 1/(x log(x))	integrate	verified	0.000528406	0.000186884	log(log(x))	
+B_cas	Symbolics.jl	23	integrate sqrt(x^2+1)	integrate	verified	1.02805	0.00116897	(1//2)*log(sqrt(1 + x^2) + x) + (1//2)*sqrt(1 + x^2)*x	
+B_cas	Symbolics.jl	24	integrate exp(-x^2)	integrate	verified	1.06314	0.000351041	(1//2)*SpecialFunctions.erf(x)*sqrt(π)	non-elementary (erf)
+B_cas	Symbolics.jl	25	integrate x^3 sin(x)	integrate	verified	0.035535	0.000222525	sin(x)*(-6 + 3(x^2)) + cos(x)*(6x - (x^3))	
+B_cas	Symbolics.jl	26	integrate 1/sqrt(x^2+4)	integrate	verified	0.00139298	0.000641427	log(sqrt(4 + x^2) + x)	
+B_cas	Symbolics.jl	27	simplify (x^2-1)/(x-1)	simplify	verified	2.3136	0.000106515	1 + x	
+B_cas	Symbolics.jl	28	simplify sin^2+cos^2	simplify	verified	4.84814	9.1057e-05	1	
+B_cas	Symbolics.jl	29	simplify tan(x)-sin(x)/cos(x)	simplify	unsolved	0.618824	0.000319974	(-sin(x) + cos(x)*tan(x)) / cos(x)	
+B_cas	Symbolics.jl	30	simplify (x^3-1)/(x-1)	simplify	verified	0.000406902	0.000106327	1 + x + x^2	
+B_cas	Symbolics.jl	31	simplify exp(log(x))	simplify	verified	0.000126731	1.73356e-05	x	x>0 at the test points
+B_cas	Symbolics.jl	32	simplify (a+b)^2-(a-b)^2	simplify	unsolved	0.000244964	0.000118425	-((a - b)^2) + (a + b)^2	
+B_cas	Symbolics.jl	33	simplify cosh^2-sinh^2	simplify	verified	0.0465315	0.000264309	1	
+B_cas	Symbolics.jl	34	simplify (x^2+2x+1)/(x+1)	simplify	verified	0.000387939	0.000149562	1 + x	

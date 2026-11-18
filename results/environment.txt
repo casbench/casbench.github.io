@@ -1,0 +1,81 @@
+# environment capture 2026-11-18T18:09:23Z
+flake_rev dirty
+nixpkgs_rev 1a08097fc1ed85575db39763b2c4a5d8970a37ba
+Julia Version 1.13.3
+Commit 67ac47b9cd8 (2026-10-25 15:28 UTC)
+Build Info:
+  Official https://julialang.org release
+Platform Info:
+  OS: Linux (x86_64-linux-gnu)
+  uname: Linux 6.18.56 #1-NixOS SMP PREEMPT_DYNAMIC Sun Oct 11 13:26:12 UTC 2026 x86_64 unknown
+  CPU: 13th Gen Intel(R) Core(TM) i5-13500T: 
+              speed         user         nice          sys         idle          irq
+       #1     0 MHz        298 s        355 s         37 s      38658 s          9 s  
+       #2     0 MHz        412 s        165 s         36 s      38730 s          9 s  
+       #3     0 MHz        339 s        441 s         32 s      38529 s          9 s  
+       #4     0 MHz        413 s        188 s         29 s      38713 s         10 s  
+       #5     0 MHz        356 s        641 s        107 s      38247 s         10 s  
+       #6     0 MHz        330 s        269 s         22 s      38727 s         11 s  
+  Memory: 7.685737609863281 GB (7114.546875 MB free)
+  Uptime: 39394.97 sec
+  Load Avg:  0.12  0.09  0.03
+  WORD_SIZE: 64
+  LLVM: libLLVM-20.1.8 (ORCJIT, raptorlake)
+  GC: Built with stock GC
+Threads: 1 default, 0 interactive, 1 GC (on 6 virtual cores)
+Environment:
+  JULIA_CONDAPKG_BACKEND = Null
+  JULIA_PYTHONCALL_EXE = /nix/store/2xjrmpad4ni55l0rnlpjibrg5igfg5qh-python3-3.14.10-env/bin/python3
+  JULIA_PKG_PRECOMPILE_AUTO = 1
+  JULIA_NUM_THREADS = 1
+  NIX_PATH = nixpkgs=/nix/store/fnz4mqb8ljnga2fz52c6xa2i1khn6fg1-mcw86k11xl4bnd6mhb7b93l34kxr13lz-source
+  HOME = /home/scelles
+  INFOPATH = /home/scelles/.nix-profile/info:/home/scelles/.nix-profile/share/info:/nix/profile/info:/nix/profile/share/info:/home/scelles/.local/state/nix/profile/info:/home/scelles/.local/state/nix/profile/share/info:/etc/profiles/per-user/scelles/info:/etc/profiles/per-user/scelles/share/info:/nix/var/nix/profiles/default/info:/nix/var/nix/profiles/default/share/info:/run/current-system/sw/info:/run/current-system/sw/share/info
+  TERM = dumb
+  GTK_PATH = /home/scelles/.nix-profile/lib/gtk-2.0:/home/scelles/.nix-profile/lib/gtk-3.0:/home/scelles/.nix-profile/lib/gtk-4.0:/nix/profile/lib/gtk-2.0:/nix/profile/lib/gtk-3.0:/nix/profile/lib/gtk-4.0:/home/scelles/.local/state/nix/profile/lib/gtk-2.0:/home/scelles/.local/state/nix/profile/lib/gtk-3.0:/home/scelles/.local/state/nix/profile/lib/gtk-4.0:/etc/profiles/per-user/scelles/lib/gtk-2.0:/etc/profiles/per-user/scelles/lib/gtk-3.0:/etc/profiles/per-user/scelles/lib/gtk-4.0:/nix/var/nix/profiles/default/lib/gtk-2.0:/nix/var/nix/profiles/default/lib/gtk-3.0:/nix/var/nix/profiles/default/lib/gtk-4.0:/run/current-system/sw/lib/gtk-2.0:/run/current-system/sw/lib/gtk-3.0:/run/current-system/sw/lib/gtk-4.0
+  QTWEBKIT_PLUGIN_PATH = /home/scelles/.nix-profile/lib/mozilla/plugins/:/nix/profile/lib/mozilla/plugins/:/home/scelles/.local/state/nix/profile/lib/mozilla/plugins/:/etc/profiles/per-user/scelles/lib/mozilla/plugins/:/nix/var/nix/profiles/default/lib/mozilla/plugins/:/run/current-system/sw/lib/mozilla/plugins/
+  LIBEXEC_PATH = /home/scelles/.nix-profile/libexec:/nix/profile/libexec:/home/scelles/.local/state/nix/profile/libexec:/etc/profiles/per-user/scelles/libexec:/nix/var/nix/profiles/default/libexec:/run/current-system/sw/libexec
+  PATH = /nix/store/jspxwfjqhz060q18s0dcblx5h1h361fw-julia-bin-1.13.3/bin:/nix/store/2xjrmpad4ni55l0rnlpjibrg5igfg5qh-python3-3.14.10-env/bin:/nix/store/i2m3w4ly2w6grrmk1j59rb7zp09bssia-git-2.56.0/bin:/nix/store/8x4c8zah3fbnyckaic4sskjbw7d2y98n-util-linux-2.42.4-bin/bin:/nix/store/a50ml7za6h61m4mv4cdbvkl33c6sx5yn-coreutils-9.12/bin:/run/wrappers/bin:/home/scelles/.nix-profile/bin:/nix/profile/bin:/home/scelles/.local/state/nix/profile/bin:/etc/profiles/per-user/scelles/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin
+Architecture:                            x86_64
+CPU op-mode(s):                          32-bit, 64-bit
+Address sizes:                           46 bits physical, 48 bits virtual
+Byte Order:                              Little Endian
+CPU(s):                                  6
+On-line CPU(s) list:                     0-5
+Vendor ID:                               GenuineIntel
+Model name:                              13th Gen Intel(R) Core(TM) i5-13500T
+CPU family:                              6
+Model:                                   191
+Thread(s) per core:                      1
+Core(s) per socket:                      6
+Socket(s):                               1
+Stepping:                                2
+Microcode version:                       0x3e
+BogoMIPS:                                3225.60
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology nonstop_tsc cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch cpuid_fault ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves user_shstk avx_vnni arat vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities
+Virtualization:                          VT-x
+L1d cache:                               192 KiB (6 instances)
+L1i cache:                               192 KiB (6 instances)
+L2 cache:                                24 MiB (6 instances)
+L3 cache:                                16 MiB (1 instance)
+NUMA node(s):                            1
+NUMA node0 CPU(s):                       0-5
+Vulnerability Gather data sampling:      Not affected
+Vulnerability Ghostwrite:                Not affected
+Vulnerability Indirect target selection: Not affected
+Vulnerability Itlb multihit:             Not affected
+Vulnerability L1tf:                      Not affected
+Vulnerability Mds:                       Not affected
+Vulnerability Meltdown:                  Not affected
+Vulnerability Mmio stale data:           Not affected
+Vulnerability Old microcode:             Not affected
+Vulnerability Reg file data sampling:    Mitigation; Clear Register File
+Vulnerability Retbleed:                  Not affected
+Vulnerability Spec rstack overflow:      Not affected
+Vulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl
+Vulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S
+Vulnerability Srbds:                     Not affected
+Vulnerability Tsa:                       Not affected
+Vulnerability Tsx async abort:           Not affected
+Vulnerability Vmscape:                   Not affected

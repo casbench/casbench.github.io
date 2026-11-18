@@ -1,0 +1,24 @@
+bench	system	idx	case	op	status	t_first_s	t_warm_s	result	note
+A_ffi	Giac.jl	1	sin(x) [trivial, tier 1]	binding	verified	NaN	7.44091e-07		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	1	sin(x) [trivial, tier 1]	tier1	verified	NaN	8.27827e-07		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	1	sin(x) [trivial, tier 1]	invoke_fast	verified	NaN	3.97458e-06		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	1	sin(x) [trivial, tier 1]	invoke_str	verified	NaN	5.27385e-06		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	1	sin(x) [trivial, tier 1]	giac_eval	verified	NaN	4.42996e-06		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	2	normal(expr) [tier 1]	binding	verified	NaN	5.9079e-06		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	2	normal(expr) [tier 1]	tier1	verified	NaN	5.88553e-06		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	2	normal(expr) [tier 1]	invoke_fast	verified	NaN	1.21281e-05		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	2	normal(expr) [tier 1]	invoke_str	verified	NaN	1.17378e-05		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	2	normal(expr) [tier 1]	giac_eval	verified	NaN	1.05609e-05		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	3	diff(expr, x) [tier 1, binary]	binding	verified	NaN	2.14848e-06		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	3	diff(expr, x) [tier 1, binary]	tier1	verified	NaN	2.17717e-06		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	3	diff(expr, x) [tier 1, binary]	invoke_fast	verified	NaN	5.60308e-06		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	3	diff(expr, x) [tier 1, binary]	invoke_str	verified	NaN	8.4012e-06		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	3	diff(expr, x) [tier 1, binary]	giac_eval	verified	NaN	6.56482e-06		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	4	factor(poly)	binding	verified	NaN	4.9141e-05		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	4	factor(poly)	invoke_fast	verified	NaN	4.95356e-05		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	4	factor(poly)	invoke_str	verified	NaN	5.79143e-05		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	4	factor(poly)	giac_eval	verified	NaN	5.68469e-05		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	5	expand(poly)	binding	verified	NaN	0.000140614		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	5	expand(poly)	invoke_fast	verified	NaN	0.000149127		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	5	expand(poly)	invoke_str	verified	NaN	0.00015439		min over 7 rounds of 2000 calls; pool of 8 inputs
+A_ffi	Giac.jl	5	expand(poly)	giac_eval	verified	NaN	0.000153951		min over 7 rounds of 2000 calls; pool of 8 inputs
