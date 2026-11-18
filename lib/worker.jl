@@ -36,11 +36,23 @@ for i in START:length(PROBLEMS)
     rec = try
         args = p.args(VAR)
         out, tf, tw = time_call(() -> opf(args...); between = CLEARCACHE)
-        status = UNSOLVED(p.op, out) ? :unsolved : p.check(out)
-        Record(BENCH, SYSTEM, i, p.name, string(p.op), string(status), tf, tw, string(out), p.note)
+        note = p.note
+        status = if out === nothing || (out isa Tuple && !isempty(out) && out[1] === nothing) || UNSOLVED(p.op, out)
+            :unsolved
+        else
+            try
+                p.check(out)
+            catch e
+                note = "check raised: " * sprint(showerror, e)
+                :unverified
+            end
+        end
+        Record(BENCH, SYSTEM, i, p.name, string(p.op), string(status), tf, tw, string(out), note)
     catch e
         msg = sprint(showerror, e)
-        Record(BENCH, SYSTEM, i, p.name, string(p.op), "error", NaN, NaN, "", msg)
+        # a system that says it cannot do the problem has not solved it; a crash is an error
+        declined = occursin(r"NotImplemented|NotElementary|[Nn]ot implemented|cannot be solved|Cannot solve|Unable to solve|unsupported operation|no elementary antiderivative", msg)
+        Record(BENCH, SYSTEM, i, p.name, string(p.op), declined ? "unsolved" : "error", NaN, NaN, "", msg)
     end
     append_record(OUT, rec)
     GC.gc()

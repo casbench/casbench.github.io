@@ -79,17 +79,15 @@ const OPS = Dict{Symbol,Any}(
 
 function UNSOLVED(op, out)
     str = string(out)
-    op === :integrate && return occursin("Integral(", str)
-    op === :limit && return occursin(r"Limit\(|zoo|nan|AccumBounds", str)
-    op in (:laplace, :ilaplace) && return occursin("Transform(", str)
-    op === :sum && return occursin("Sum(", str)
-    op === :solve && return out isa AbstractVector && isempty(out)
+    occursin(r"Integral\(|Limit\(|zoo|AccumBounds|Transform\(|\bSum\(|\bProduct\(|\+ O\(|polylog\(", str) && return true
+    out isa AbstractVector && isempty(out) && return true
     false
 end
 
 function EVAL(ex, vals)
     ex isa Sym || return ex isa Number ? ex : nothing
-    pairs = [VAR[vv] => p for (vv, p) in vals if haskey(VAR, vv)]
+    # integer-valued points are substituted as integers (a Piecewise on re(n) needs it)
+    pairs = [VAR[vv] => (p isa AbstractFloat && isinteger(p) ? Int(p) : p) for (vv, p) in vals if haskey(VAR, vv)]
     uu = isempty(pairs) ? N(ex) : N(subs(ex, pairs...))   # subs(ex) with no pairs overflows the stack
     uu isa Number && !(uu isa Sym) ? uu : nothing
 end

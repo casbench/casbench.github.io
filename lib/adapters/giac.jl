@@ -27,8 +27,9 @@ function FACTOR(f)
     out = Any[]
     for i in 1:2:length(L)
         g, m = L[i], toint(L[i + 1])
-        if g isa Number
-            unit *= g^m
+        gn = g isa GiacExpr ? to_julia(g) : g
+        if gn isa Number
+            unit *= gn^m
         else
             push!(out, (g, m))
         end
@@ -100,8 +101,10 @@ const OPS = Dict{Symbol,Any}(
 
 function UNSOLVED(op, out)
     s = string(out)
-    op in (:integrate, :limit, :laplace, :ilaplace, :ztrans, :sum, :desolve_ivp) && return occursin(string(op == :desolve_ivp ? "desolve" : op), s)
-    op === :solve && return s == "[]"
+    s == "[]" && return true
+    occursin("Unable to solve", s) && return true
+    s == "undef" && return true
+    any(w -> occursin(w, s), ("integrate(", "integral(", "sum(", "product(", "limit(", "desolve(", "laplace(", "ilaplace(", "ztrans(")) && return true
     false
 end
 

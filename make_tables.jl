@@ -155,5 +155,7 @@ let systems = ["giac", "primes", "pari"]
     end
 end
 
+include(joinpath(@__DIR__, "make_tables_E.jl"))
+
 write(joinpath(RESULTS, "summary.md"), String(take!(md)))
 println("tables written to ", TABLES)

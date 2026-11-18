@@ -36,7 +36,7 @@
           cp -r . $out
         '';
       };
-      python = pkgs.python3.withPackages (p: [ p.sympy ]);
+      python = pkgs.python3.withPackages (p: [ p.sympy p.numpy ]);
       runtimeInputs = [ julia python pkgs.git pkgs.util-linux pkgs.coreutils ];
       envHook = ''
         export JULIA_PYTHONCALL_EXE=${python}/bin/python3
@@ -75,7 +75,7 @@
         };
         paper = pkgs.mkShell {
           packages = [
-            (pkgs.texliveMedium.withPackages (ps: with ps; [ preprint eurosym psnfss microtype caption listings xcolor hyperref url latexmk ]))
+            (pkgs.texliveMedium.withPackages (ps: with ps; [ preprint eurosym psnfss microtype caption listings xcolor hyperref url latexmk pgfplots pgf ]))
             pkgs.ruby pkgs.ghostscript
           ];
         };

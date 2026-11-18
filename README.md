@@ -16,7 +16,7 @@ path (`../../../Giac.jl`).
 ## One command
 
 ```sh
-nix run ./benchmark#bench            # all four benches, then the tables
+nix run ./benchmark#bench            # all five benches, then the tables
 nix run ./benchmark#bench -- A C     # a subset
 ```
 
@@ -85,6 +85,30 @@ assumption. The status vocabulary separates `unavailable` (no such operation
 in the system, as wired in `lib/adapters/<system>.jl`) from `unsolved`
 (returned unevaluated or incomplete), `wrong`, `unverified`, `error` and
 `timeout`.
+
+**E, a problem suite** (`E_suite/`; same four systems). The 103 problems of
+"Giac.jl against Mathematica", the notebook `notebooks/giac_vs_wolfram.jl` of
+the `ergonomics` branch of Kahli Burke's fork of Giac.jl
+(github.com/kahliburke/Giac.jl, commit da3d2f1a, 2026-11-12), with the problem
+statements taken from that notebook (twelve categories: indefinite and
+definite integrals, sums and products, limits, equations and inequalities,
+polynomial algebra, simplification and algebraic numbers, differential
+equations, linear algebra, number theory, transforms and special functions,
+control), plus a "model to Jacobian" category in the style of its companion
+`notebooks/cas_comparison.jl` (the Brusselator ring, N = 10 and 50: the
+Jacobian compiled to a function, then evaluated at 1000 points). Mathematica
+is not run; the Giac.jl measured is the released package without the fork's
+Julia-side layers (where Giac has no command the tasks call PARI through
+Giac's `pari` command, as the notebook does; where nothing exists the task is
+`missing`). Each system implements the tasks idiomatically in
+`E_suite/tasks_<system>.jl`. Every answer is verified in plain Julia with the
+notebook's criteria (value to a tolerance with exactness required,
+antiderivative by its derivative at points, solutions substituted and counted,
+ODE residuals with the constants set, regions tested at points, forms). The
+per-case limit is 60 s. `make_tables_E.jl` produces the category table (Giac.jl against
+SymPy: solved, both solved, faster, median time ratio), the four-system table
+(median ratio to the fastest system, answered, fastest) and the dot plot of
+every problem's time (`paper/figures/E_times.tex`, pgfplots).
 
 ## Adapters
 

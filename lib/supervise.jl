@@ -34,10 +34,17 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
                 last_change = time()
             end
             if !isempty(p) && time() - last_change > timeout
-                kill(proc)
+                kill(proc)                       # SIGTERM; a worker blocked in a C call ignores it
                 killed = true
                 break
             end
+        end
+        if killed
+            t0 = time()
+            while process_running(proc) && time() - t0 < 10
+                sleep(0.25)
+            end
+            process_running(proc) && kill(proc, Base.SIGKILL)
         end
         wait(proc)
         if killed

@@ -78,7 +78,7 @@ const OPS = Dict{Symbol,Any}(
     :cfactor => missing,
 )
 
-UNSOLVED(op, out) = out === nothing || occursin("roots_of", string(out)) ||
+UNSOLVED(op, out) = out === nothing || occursin("roots_of", string(out)) || occursin("Integral(", string(out)) ||
     (op === :solve && out isa AbstractVector && isempty(out))
 
 function EVAL(ex, vals)
