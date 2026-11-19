@@ -18,7 +18,11 @@ import pathlib
 import re
 import shutil
 import subprocess
+import sys
 import zipfile
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import latexify  # noqa: E402
 
 REPO = "https://github.com/s-celles/computer-algebra-system-benchmarks"
 BLOB = REPO + "/blob/main"
@@ -378,6 +382,72 @@ class Site:
             cats[i] = names[k - 1] if 0 < k <= len(names) else str(k)
         return cats
 
+    def statement_tex(self, key, idx, name):
+        """Display LaTeX of the problem, or None: bench E from E_suite/statements.tsv (the fork notebook's statements),
+        F and H from the integrand text of their input files, G from the polynomial system, B, D, I from the case name."""
+        if key == "E_suite":
+            if not hasattr(self, "_e_tex"):
+                self._e_tex = {}
+                p = self.root / "E_suite" / "statements.tsv"
+                if p.exists():
+                    for line in p.read_text(encoding="utf-8").splitlines():
+                        if line.startswith("#") or line.startswith("name\t") or "\t" not in line:
+                            continue
+                        n, l = line.split("\t", 1)
+                        self._e_tex[n] = l
+            return self._e_tex.get(name)
+        if key == "F_integration":
+            if not hasattr(self, "_f_rows"):
+                self._f_rows = {}
+                p = self.root / "F_integration" / "sample.tsv"
+                if p.exists():
+                    for line in p.read_text(encoding="utf-8").splitlines()[1:]:
+                        f = line.split("\t")
+                        if len(f) == 7:
+                            self._f_rows[int(f[0])] = (f[3], f[4], f[6])
+                row = self._f_rows.get(idx)
+            else:
+                row = self._f_rows.get(idx)
+            if row:
+                lhs = latexify.integral(row[0], row[1])
+                rhs = latexify.latexify(row[2]) if "Unintegrable" not in row[2] and "CannotIntegrate" not in row[2] else None
+                return (lhs + " = " + rhs) if lhs and rhs and len(rhs) < 400 else lhs
+            return None
+        if key == "H_osr":
+            if not hasattr(self, "_h_rows"):
+                self._h_rows = {}
+                p = self.root / "H_osr" / "rules.tsv"
+                if p.exists():
+                    for line in p.read_text(encoding="utf-8").splitlines():
+                        f = line.split("\t")
+                        if len(f) == 9 and not line.startswith(("#", "id\t")):
+                            self._h_rows[f[0]] = f[5]
+            rid = name.split(" ", 1)[0]
+            integrand = self._h_rows.get(rid)
+            return latexify.integral(integrand) if integrand else None
+        if key == "G_groebner":
+            if not hasattr(self, "_g_sys"):
+                self._g_sys = {}
+                p = self.root / "G_groebner" / "inputs.jl"
+                if p.exists():
+                    txt = p.read_text(encoding="utf-8")
+                    for m in re.finditer(r'name = "([^"]+)", vars = \[([^\]]*)\],\s*polys = \[(.*?)\]\)', txt, re.S):
+                        polys = re.findall(r'"([^"]+)"', m.group(3))
+                        self._g_sys[m.group(1)] = polys
+            sysname = name.split(" over ")[0]
+            polys = self._g_sys.get(sysname)
+            if polys:
+                return "\\begin{aligned}" + " \\\\ ".join(latexify.latexify(q.replace("//", "/")) + " &= 0" for q in polys[:12]) + \
+                       (" \\\\ \\ldots" if len(polys) > 12 else "") + "\\end{aligned}"
+            return None
+        # B, D, I: "op expression" in the case name
+        parts = name.split(" ", 1)
+        if len(parts) == 2 and parts[0].isalpha():
+            t = latexify.latexify(parts[1])
+            if not t.startswith("\\text{"):
+                return "\\operatorname{" + parts[0] + "}\\left(" + t + "\\right)"
+        return None
+
     def task_sources(self, key):
         """system label -> {case name: source text} from the task files (bench E) or the problem file (B, D, I):
         the code the adapter runs for the case, shown when the run recorded no input."""
@@ -561,6 +631,9 @@ class Site:
                 r = e[s]
                 out += f"| {esc(s)} | {badge(r['status'])} | {fmt_time(r['t_first_s'])} | {fmt_time(r['t_warm_s'])} |\n"
             out += "\n## Problem\n\n"
+            tex = self.statement_tex(key, i, name)
+            if tex:
+                out += "$$" + tex + "$$\n\n"
             out += (f"{esc(asked[0])}\n\n" if asked else "") + (
                 "The same problem is given to every system through its own adapter. For each system below, **Input** is what "
                 "the benchmark sent (the system's own syntax, as recorded during the run; else the task or problem source the "

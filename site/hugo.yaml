@@ -14,6 +14,12 @@ markup:
   goldmark:
     renderer:
       unsafe: true
+    extensions:
+      passthrough:
+        enable: true
+        delimiters:
+          block: [['\\[', '\\]'], ['$$', '$$']]
+          inline: [['\\(', '\\)']]
   highlight:
     noClasses: false
 menu:
@@ -46,6 +52,9 @@ menu:
       params:
         type: search
 params:
+  math:
+    enable: true
+    engine: katex
   description: Reproducible, verified and dated benchmarks of computer algebra systems (Julia packages, SymPy, Maxima, FriCAS, SageMath, Macaulay2). An individual, non-commercial project.
   navbar:
     displayTitle: true

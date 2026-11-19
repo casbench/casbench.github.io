@@ -1,0 +1,109 @@
+# LaTeX statements of the bench E problems, from the fork notebook they come from (the four Jacobian tasks written here)
+name	latex
+sqrt(tan x)	\int \sqrt{\tan x}\,dx
+Chebyshev's pseudo-elliptic integral	\int \frac{x}{\sqrt{x^4 + 10x^2 - 96x - 71}}\,dx
+An arctangent of a radical	\int \frac{x^2 - 1}{(x^2 + 1)\sqrt{x^4 + 1}}\,dx
+A quintic denominator	\int \frac{dx}{x^5 - x + 1}
+A fourth root	\int \frac{dx}{\sqrt[4]{1 + x^4}}
+Parts, twice	\int x^2 \arcsin^2 x\,dx
+Exponential and logarithm (Risch)	\int \frac{e^x (1 + x \ln x)}{x}\,dx
+A Bessel function, to Struve functions	\int x^2 J_0(x)\,dx
+The error function squared	\int \operatorname{erf}^2 x\,dx
+Bose-Einstein type	\int_0^\infty \frac{x}{e^x - 1}\,dx = \frac{\pi^2}{6}
+Serret's integral	\int_0^1 \frac{\ln(1 + x)}{1 + x^2}\,dx = \frac{\pi}{8}\ln 2
+A symmetry trick	\int_0^\pi \frac{x \sin x}{1 + \cos^2 x}\,dx = \frac{\pi^2}{4}
+Log-sine	\int_0^{\pi/2} \ln \sin x\,dx = -\frac{\pi}{2}\ln 2
+Ahmed's integral	\int_0^1 \frac{\arctan\sqrt{x^2 + 2}}{(x^2 + 1)\sqrt{x^2 + 2}}\,dx = \frac{5\pi^2}{96}
+Laplace's integral	\int_0^\infty \frac{\cos x}{1 + x^2}\,dx = \frac{\pi}{2e}
+A dilogarithm value	\int_0^1 \ln x \ln(1 - x)\,dx = 2 - \frac{\pi^2}{6}
+Euler's constant	\int_0^\infty e^{-x}\ln^2 x\,dx = \gamma^2 + \frac{\pi^2}{6}
+A Gaussian with a cosine	\int_{-\infty}^{\infty} e^{-x^2}\cos 2x\,dx = \frac{\sqrt\pi}{e}
+Frullani's integral	\int_0^\infty \frac{e^{-x} - e^{-2x}}{x}\,dx = \ln 2
+The error function	\int_0^\infty \operatorname{erfc}^2 x\,dx = \frac{2 - \sqrt2}{\sqrt\pi}
+A Bessel function on the half-line	\int_0^\infty J_0(x)\,dx = 1
+A damped Bessel function	\int_0^\infty e^{-x} J_0(x)\,dx = \frac{1}{\sqrt2}
+A pendulum's period	\int_0^a \frac{d\theta}{\sqrt{\cos\theta - \cos a}} = \sqrt2\,K\left(\sin^2\tfrac a2\right)
+zeta(4)	\sum_{n \ge 1} \frac{1}{n^4} = \frac{\pi^4}{90}
+Harmonic numbers	\sum_{n \ge 1} \frac{H_n}{n^2} = 2\zeta(3)
+Dirichlet beta(3)	\sum_{n \ge 0} \frac{(-1)^n}{(2n + 1)^3} = \frac{\pi^3}{32}
+Arithmetic-geometric	\sum_{n \ge 1} \frac{n^2}{2^n} = 6
+A central binomial series	\sum_{n \ge 1} \frac{1}{n^2 \binom{2n}{n}} = \frac{\pi^2}{18}
+Vandermonde's identity	\sum_{k=0}^{n} \binom{n}{k}^2 = \binom{2n}{n}
+A closed form in n	\sum_{k=1}^{n} k\,2^k = (n - 1)\,2^{n+1} + 2
+A polylogarithm value	\operatorname{Li}_3\left(\tfrac12\right) = \tfrac78\zeta(3) - \tfrac{\pi^2}{12}\ln 2 + \tfrac16\ln^3 2
+A telescoping product	\prod_{n \ge 2} \left(1 - \frac{1}{n^2}\right) = \frac{1}{2}
+Wallis's product	\prod_{n \ge 1} \frac{4n^2}{4n^2 - 1} = \frac{\pi}{2}
+tan sin - sin tan	\lim_{x \to 0} \frac{\tan \sin x - \sin \tan x}{x^7} = \frac{1}{30}
+Stirling	\lim_{n \to \infty} \frac{\sqrt[n]{n!}}{n} = \frac{1}{e}
+A second-order term of e	\lim_{x \to \infty} x\left(\left(1 + \frac{1}{x}\right)^x - e\right) = -\frac{e}{2}
+Nested exponentials (Gruntz)	\lim_{x \to \infty} e^x\left(e^{1/x - e^{-x}} - e^{1/x}\right) = -1
+Cancelling poles	\lim_{x \to 0} \left(\frac{1}{x^2} - \frac{1}{\sin^2 x}\right) = -\frac{1}{3}
+A ratio of Gamma functions	\lim_{x \to \infty} \frac{\Gamma(x + \frac12)}{\Gamma(x)\sqrt{x}} = 1
+A power of sinc	\lim_{x \to 0} \left(\frac{\sin x}{x}\right)^{1/x^2} = e^{-1/6}
+A bounded oscillation	\lim_{x \to \infty} \frac{x + \sin x}{x} = 1
+A sextic system	x^2 + y^2 = 1,\ x^3 = y \quad \text{(all six solutions)}
+A quintic solvable by radicals	x^5 - 5x + 12 = 0
+Every solution of cos x = 1/2	\cos x = \tfrac12 \quad \text{(all of them, } 2\pi k \pm \tfrac{\pi}{3})
+Lambert's W	x e^x = 2
+A symmetric system	x + y + z = 6,\ xy + yz + zx = 11,\ xyz = 6
+A quartic inequality	x^4 - 5x^2 + 4 < 0
+Absolute values	|x - 1| + |x + 2| < 5
+Quantifier elimination	\text{for which } b \text{ is } x^2 + bx + 1 > 0 \text{ for every real } x?
+Cyclotomic factors	\text{factor } x^{105} - 1
+A symmetric septic	\text{factor } (x + y + z)^7 - x^7 - y^7 - z^7
+Factoring over Q(sqrt 2)	\text{factor } x^4 + 1 \text{ over } \mathbb{Q}(\sqrt{2})
+The cyclic-6 system	\text{the number of complex solutions of cyclic-6 } (156)
+Implicitization	\text{eliminate } t:\ x = t^2 - 1,\ y = t^3 - t
+Polynomial decomposition	x^6 + 6x^4 + x^3 + 9x^2 + 3x - 5 = g(h(x))
+Denesting	\sqrt{5 + 2\sqrt{6}} = \sqrt2 + \sqrt3
+Ramanujan's denesting	\sqrt[3]{\sqrt[3]{2} - 1} = \sqrt[3]{\tfrac19} - \sqrt[3]{\tfrac29} + \sqrt[3]{\tfrac49}
+A heptagon sum	\cos\tfrac{2\pi}{7} + \cos\tfrac{4\pi}{7} + \cos\tfrac{6\pi}{7} = -\tfrac12
+A minimal polynomial	\text{the minimal polynomial of } \sqrt2 + \sqrt3 + \sqrt5
+A trigonometric identity	\frac{\sin 3x}{\sin x} - \frac{\cos 3x}{\cos x} = 2
+Gauss's 17-gon	\cos\tfrac{2\pi}{17} \text{ in square roots}
+An inverse cosine, with assumptions	\arccos(\cos x) = 2\pi - x \quad (\pi < x < 2\pi)
+Airy	y'' = x\,y
+Bessel, order 1/2	x^2 y'' + x y' + \left(x^2 - \tfrac14\right) y = 0
+Riccati	y' = x^2 + y^2
+A nonlinear autonomous equation	y\,y'' = y'^2
+A forced Euler-Cauchy equation	x^2 y'' - 3x y' + 4y = x^2 \ln x
+Bernoulli	y' + y = x\,y^3
+An exponential solution (Kovacic)	y'' = (x^2 + 1)\,y
+A forced initial-value problem	y'' - (x^2 + 1)\,y = x e^{-x^2/2},\ y(0) = 0,\ y'(0) = 1
+A Riccati equation with Airy solutions	y' = x + y^2
+A pendulum released from rest	y'' + \sin y = 0,\ y(0) = a,\ y'(0) = 0
+Duffing's oscillator from rest	y'' + y + y^3 = 0,\ y(0) = a,\ y'(0) = 0
+A Jordan block	X' = \begin{bmatrix}1&1&0\\0&1&1\\0&0&1\end{bmatrix} X,\ X(0) = (1, 1, 1)
+The transport equation	u_x + 2u_y = 0 \quad \text{(general solution)}
+The heat equation	u_t = u_{xx},\ u(0, t) = u(\pi, t) = 0,\ u(x, 0) = \sin x
+Symbolic eigenvalues	\text{eigenvalues of } \begin{bmatrix}a&1&0\\1&a&1\\0&1&a\end{bmatrix}
+A Jordan form	J \text{ for } \begin{bmatrix}5&4&2&1\\0&1&-1&-1\\-1&-1&3&0\\1&1&-1&2\end{bmatrix}
+A matrix exponential	\exp\left(t \begin{bmatrix}0&1\\-1&0\end{bmatrix}\right)
+A Vandermonde determinant	\text{factor } \det\left[v_i^{\,j-1}\right]_{5\times5},\ v = (a, b, x, y, z)
+A Smith normal form	\text{Smith form of } \begin{bmatrix}2&4&4\\-6&6&12\\10&-4&-16\end{bmatrix}
+The Fermat number F7	\text{factor } 2^{128} + 1
+A Mersenne prime	2^{521} - 1 \text{ is prime}
+A discrete logarithm	5^x \equiv 123456789 \pmod{10^9 + 7}
+Pell's equation	x^2 - 61y^2 = 1 \text{ in positive integers}
+A periodic continued fraction	\sqrt{61} = [7; \overline{1, 4, 3, 1, 2, 2, 1, 3, 4, 1, 14}]
+Partitions	p(200) = 3972999029388
+A Laplace transform	\mathcal{L}\{t^2 e^{-t} \sin t\}(s)
+An inverse Laplace transform	\mathcal{L}^{-1}\left\{\frac{1}{(s^2 + 1)^2}\right\}(t) = \frac{\sin t - t\cos t}{2}
+A delayed step	\mathcal{L}^{-1}\left\{\frac{e^{-s}}{s}\right\}(t) = \theta(t - 1)
+The series of Lambert's W	W(x) = x - x^2 + \tfrac32 x^3 - \tfrac83 x^4 + \tfrac{125}{24} x^5 + O(x^6)
+A hypergeometric function	{}_2F_1(1, 1; 2; x) = -\frac{\ln(1 - x)}{x}
+Gamma's reflection formula	\Gamma\left(\tfrac14\right)\Gamma\left(\tfrac34\right) = \pi\sqrt2
+The sine integral's Laplace transform	\mathcal{L}\{\operatorname{Si} t\}(s) = \frac{1}{s}\left(\frac{\pi}{2} - \arctan s\right)
+An inverse Laplace transform to a Bessel function	\mathcal{L}^{-1}\left\{\frac{1}{\sqrt{s^2 + 1}}\right\}(t) = J_0(t)
+A polylogarithm value	\operatorname{Li}_3\left(\tfrac12\right) = \tfrac78\zeta(3) - \tfrac{\pi^2}{12}\ln 2 + \tfrac16\ln^3 2
+A stability region	\text{for which } k \text{ is } s^3 + 3s^2 + 3s + 1 + k \text{ Hurwitz?}
+A Lyapunov equation	A^{\mathsf T} P + P A = -I,\ A = \begin{bmatrix}0&1\\-2&-3\end{bmatrix}
+A Riccati equation (LQR)	A^{\mathsf T} P + P A - P B B^{\mathsf T} P + I = 0,\ A = \begin{bmatrix}0&1\\0&0\end{bmatrix},\ B = \begin{bmatrix}0\\1\end{bmatrix}
+The unicycle's Lie algebra rank	\operatorname{rank}\,\{f_1, f_2, [f_1, f_2]\},\ f_1 = (\cos\theta, \sin\theta, 0),\ f_2 = (0, 0, 1)
+A center manifold	\dot x = xy,\ \dot y = -y - x^2: \quad y = h(x) = -x^2 - 2x^4 + O(x^6)
+A sum-of-squares certificate	x^4 - 2x^2 y + y^2 + x^2 - 2x + 1 \ge 0
+Motzkin's polynomial	x^4 y^2 + x^2 y^4 - 3x^2 y^2 + 1 \ge 0 \quad \text{(not a sum of squares)}
+Jacobian: Brusselator N=10 (build)	J = \frac{\partial f}{\partial u},\quad \dot u_i = 1 + u_i^2 v_i - 4 u_i + D(u_{i-1} - 2u_i + u_{i+1}),\ \dot v_i = 3u_i - u_i^2 v_i + D(v_{i-1} - 2v_i + v_{i+1}),\ i = 1..10 \text{ (ring), compiled to a function}
+Jacobian: Brusselator N=50 (build)	J = \frac{\partial f}{\partial u} \text{ of the Brusselator ring, } N = 50 \text{ (200 equations), compiled to a function}
+Jacobian: Brusselator N=10 (evaluate 1000 points)	J(u, v) \text{ of the Brusselator ring, } N = 10, \text{ evaluated at } 10^3 \text{ points}
+Jacobian: Brusselator N=50 (evaluate 1000 points)	J(u, v) \text{ of the Brusselator ring, } N = 50, \text{ evaluated at } 10^3 \text{ points}
