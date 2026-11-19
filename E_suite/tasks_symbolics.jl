@@ -25,7 +25,14 @@ risch(f) = RI.integrate(unwrap(f), unwrap(x))
 # goes through Symbolics.limit
 function def(f, lo, hi)
     F = Num(RI.integrate(unwrap(f), unwrap(x)))
-    at(b) = isfinite(b) ? Symbolics.substitute(F, Dict(x => b)) : Num(Symbolics.limit(unwrap(F), unwrap(x), b))
+    function at(b)
+        if isfinite(b)
+            v = Symbolics.substitute(F, Dict(x => b))
+            vv = tonum(EVAL(v, Dict{Symbol,Float64}()))
+            (vv !== nothing && isfinite(vv)) && return v        # a finite value by substitution
+        end
+        Num(Symbolics.limit(unwrap(F), unwrap(x), b))           # otherwise a limit at the bound
+    end
     at(hi) - at(lo)
 end
 cyclic6() = begin
@@ -112,11 +119,11 @@ const TASKS = Dict{String,Any}(
     "A ratio of Gamma functions" => missing,
     "A power of sinc" => () -> Symbolics.limit(unwrap((sin(x) / x)^(1 / x^2)), unwrap(x), 0),
     "A bounded oscillation" => () -> Symbolics.limit(unwrap((x + sin(x)) / x), unwrap(x), Inf),
-    "A sextic system" => () -> [(cnum(d[x]), cnum(d[y])) for d in symbolic_solve([x^2 + y^2 - 1, x^3 - y], [x, y])],
+    "A sextic system" => () -> (sols = symbolic_solve([x^2 + y^2 - 1, x^3 - y], [x, y]); try [(cnum(d[x]), cnum(d[y])) for d in sols] catch; sols end),
     "A quintic solvable by radicals" => () -> symbolic_solve(x^5 - 5x + 12, x),
     "Every solution of cos x = 1/2" => () -> symbolic_solve(cos(x) ~ 1 // 2, x),
     "Lambert's W" => missing,
-    "A symmetric system" => () -> [(cnum(d[x]), cnum(d[y]), cnum(d[z])) for d in symbolic_solve([x + y + z - 6, x * y + y * z + z * x - 11, x * y * z - 6], [x, y, z])],
+    "A symmetric system" => () -> (sols = symbolic_solve([x + y + z - 6, x * y + y * z + z * x - 11, x * y * z - 6], [x, y, z]); try [(cnum(d[x]), cnum(d[y]), cnum(d[z])) for d in sols] catch; sols end),
     "A quartic inequality" => missing, "Absolute values" => missing, "Quantifier elimination" => missing,
     "Cyclotomic factors" => () -> FACTOR(x^105 - 1),
     "A symmetric septic" => () -> FACTOR((x + y + z)^7 - x^7 - y^7 - z^7),

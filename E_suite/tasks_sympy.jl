@@ -15,10 +15,17 @@ tup(tt) = Tuple(cx(e) for e in collect(tt))
 smat(M::AbstractMatrix) = S.Matrix(size(M, 1), size(M, 2), vec(permutedims(M)))
 scol(v::AbstractVector) = S.Matrix(length(v), 1, v)
 function jmat(M)
+    M isa AbstractMatrix && return [fl(e) for e in M]
     rows, cols = Int(N(M.rows)), Int(N(M.cols))
     [fl(M[i, j]) for i in 1:rows, j in 1:cols]
 end
 bigint(e) = parse(BigInt, replace(string(e), " " => ""))
+const PyC = SymPyPythonCall.PythonCall
+const PySympy = PyC.pyimport("sympy")
+raw(e) = e isa Sym ? getfield(e, :o) : e               # the Python object behind a Sym
+# SymPyPythonCall converts SymPy matrices to Julia matrices of Sym; a Python-side Matrix is
+# rebuilt when a Python function (lambdify, smith_normal_form) must receive one
+pymat(M::AbstractMatrix) = PySympy.Matrix(PyC.pylist([PyC.pylist([raw(e) for e in M[i, :]]) for i in 1:size(M, 1)]))
 const yf = S.Function("y")
 D(f, v, n = 1) = S.diff(f, v, n)
 # an ODE: dsolve, then the residuals with the constants set to 1
@@ -54,8 +61,8 @@ end
 function jacobian_fn(N)
     eqs, vars = bruss(N)
     J = scol(eqs).jacobian(vars)
-    f = S.lambdify(vars, J, "numpy")               # a Python function returning a numpy array
-    w -> SymPyPythonCall.PythonCall.pyconvert(Matrix{Float64}, f(w...))
+    f = PySympy.lambdify(PyC.pylist(raw.(vars)), pymat(J), "numpy")   # a Python function returning a numpy array
+    w -> PyC.pyconvert(Matrix{Float64}, f(w...))
 end
 function jacobian_eval(N)
     f = jacobian_fn(N)
@@ -164,7 +171,7 @@ const TASKS = Dict{String,Any}(
     "A Jordan form" => () -> jmat(collect(smat(Sym[5 4 2 1; 0 1 -1 -1; -1 -1 3 0; 1 1 -1 2]).jordan_form())[2]),
     "A matrix exponential" => () -> jmat((t * smat(Sym[0 1; -1 0])).exp().subs(t, Sym(7) / 10)),
     "A Vandermonde determinant" => () -> FACTOR(smat(Sym[v^j for v in (a, b, x, y, z), j in 0:4]).det()),
-    "A Smith normal form" => () -> jmat(SymPyPythonCall.PythonCall.pyimport("sympy.matrices.normalforms").smith_normal_form(smat([2 4 4; -6 6 12; 10 -4 -16]); domain = S.ZZ)),
+    "A Smith normal form" => () -> jmat(Sym(PyC.pyimport("sympy.matrices.normalforms").smith_normal_form(pymat([2 4 4; -6 6 12; 10 -4 -16]); domain = PySympy.ZZ))),
     "The Fermat number F7" => () -> sort([bigint(kk) for kk in collect(keys(S.factorint(Sym(2)^128 + 1)))]),
     "A Mersenne prime" => () -> S.isprime(Sym(2)^521 - 1),
     "A discrete logarithm" => () -> bigint(S.discrete_log(1000000007, 123456789, 5)),

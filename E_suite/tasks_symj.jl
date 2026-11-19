@@ -116,8 +116,8 @@ const TASKS = Dict{String,Any}(
     "Every solution of cos x = 1/2" => () -> solve(cos(x) ~ Sym(1) / 2, x),
     "Lambert's W" => () -> solve(x * exp(x) ~ 2, x),
     "A symmetric system" => () -> [(cx(d[x]), cx(d[y]), cx(d[z])) for d in generic(solve([x + y + z ~ 6, x * y + y * z + z * x ~ 11, x * y * z ~ 6], [x, y, z]))],
-    "A quartic inequality" => () -> solve(x^4 - 5x^2 + 4 < 0, x),
-    "Absolute values" => () -> solve(abs(x - 1) + abs(x + 2) < 5, x),
+    "A quartic inequality" => () -> solve(x^4 - 5x^2 + 4 ≪ 0, x),
+    "Absolute values" => () -> solve(abs(x - 1) + abs(x + 2) ≪ 5, x),
     "Quantifier elimination" => missing,
     "Cyclotomic factors" => () -> FACTOR(x^105 - 1),
     "A symmetric septic" => () -> FACTOR((x + y + z)^7 - x^7 - y^7 - z^7),
@@ -160,7 +160,7 @@ const TASKS = Dict{String,Any}(
     "Gamma's reflection formula" => () -> simplify(SpecialFunctions.gamma(Sym(1) / 4) * SpecialFunctions.gamma(Sym(3) / 4)),
     "The sine integral's Laplace transform" => missing, "An inverse Laplace transform to a Bessel function" => missing,
     "A polylogarithm value" => missing,
-    "A stability region" => () -> solve([3 * 3 - (1 + k) > 0, 1 + k > 0], k),
+    "A stability region" => () -> solve([3 * 3 - (1 + k) ≫ 0, 1 + k ≫ 0], [k]),
     "A Lyapunov equation" => () -> (d = only(generic(solve([-4q + 1 ~ 0, p - 3q - 2r ~ 0, 2q - 6r + 1 ~ 0], [p, q, r]))); [fl(d[p]) fl(d[q]); fl(d[q]) fl(d[r])]),
     "A Riccati equation (LQR)" => () -> begin
         for d in generic(solve([-q^2 + 1 ~ 0, p - q * r ~ 0, 2q - r^2 + 1 ~ 0], [p, q, r]))
@@ -181,8 +181,8 @@ const TASKS = Dict{String,Any}(
         c2, c3, c4 = Sym(:c2), Sym(:c3), Sym(:c4)
         h = c2 * x^2 + c3 * x^3 + c4 * x^4
         rr = expand(diff(h, x) * x * h + h + x^2)
-        P = Poly(rr, x)
-        d = only(generic(solve([coeff(P, 2) ~ 0, coeff(P, 3) ~ 0, coeff(P, 4) ~ 0], [c2, c3, c4])))
+        cf(kk) = subs(diff(rr, (x for _ in 1:kk)...), x => 0) / factorial(kk)      # the coefficient of x^kk
+        d = only(generic(solve([cf(2) ~ 0, cf(3) ~ 0, cf(4) ~ 0], [c2, c3, c4])))
         subs(h, c2 => d[c2], c3 => d[c3], c4 => d[c4])
     end,
     "A sum-of-squares certificate" => missing, "Motzkin's polynomial" => missing,

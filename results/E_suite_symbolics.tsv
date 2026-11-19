@@ -1,0 +1,109 @@
+bench	system	idx	case	op	status	t_first_s	t_warm_s	result	note
+E_suite	Symbolics.jl	0	_load	using	verified	5.38018	NaN		package load time
+E_suite	Symbolics.jl	1	sqrt(tan x)	sqrt(tan x)	verified	19.4592	NaN	(1//2)*atan(-1 + sqrt(tan(x))*sqrt(2))*sqrt(2) + (1//2)*atan(1 + sqrt(tan(x))*sqrt(2))*sqrt(2) + (1//4)*log(1 + tan(x) - sqrt(tan(x))*sqrt(2))*sqrt(2) - (1//4)*log(1 + tan(x) + sqrt(tan(x))*sqrt(2))*s...	int sqrt(tan x) dx
+E_suite	Symbolics.jl	2	Chebyshev's pseudo-elliptic integral	Chebyshev's pseudo-elliptic integral	verified	1.43139	0.00397136	(1//8)*log(10001 + 3124(x^2) - 1408(x^3) + 54(x^4) - 128(x^5) + 20(x^6) + sqrt(-71 - 96x + 10(x^2) + x^4)*(781 - 528x + 27(x^2) - 80(x^3) + 15(x^4) + x^6) + x^8)	int x/sqrt(x^4+10x^2-96x-71) dx
+E_suite	Symbolics.jl	3	An arctangent of a radical	An arctangent of a radical	verified	1.17032	0.00241006	(-1//2)*atan((sqrt(2)*x) / sqrt(1 + x^4))*sqrt(2)	int (x^2-1)/((x^2+1) sqrt(x^4+1)) dx
+E_suite	Symbolics.jl	4	A quintic denominator	A quintic denominator	verified	0.367954	0.00232133	RootSum(α -> α*log(x + (183616/625*α^4 + 45904/625*α^3 + 21716/625*α^2 + 309/625*α + 256/625)), α^5 + 160/2869*α^3 - 80/2869*α^2 + 15/2869*α - 1/2869 = 0)	int dx/(x^5-x+1)
+E_suite	Symbolics.jl	5	A fourth root	A fourth root	verified	2.80443	0.0012399	(1//4)*(-2atan(((1 + x^4)^(1//4)) / x) + 0.5log((x + (1 + x^4)^(1//4))^2) - 0.5log((x - ((1 + x^4)^(1//4)))^2))	int dx/(1+x^4)^(1/4)
+E_suite	Symbolics.jl	6	Parts, twice	Parts, twice	verified	1.64417	0.00320955	-(4//9)*x + (1//4)*(asin(x)^2)*x - (2//27)*(x^3) + asin(x)*sqrt(1 - (x^2))*((4//9) + (2//9)*(x^2)) + (asin(x)^2)*(-(1//4)*x + (1//3)*(x^3))	int x^2 asin(x)^2 dx
+E_suite	Symbolics.jl	7	Exponential and logarithm (Risch)	Exponential and logarithm (Risch)	verified	3.35613	0.000495151	exp(x)*log(x)	int e^x (1 + x ln x)/x dx
+E_suite	Symbolics.jl	8	A Bessel function, to Struve functions	A Bessel function, to Struve functions	unsolved	NaN	NaN		RischNotImplemented: unsupported operation `besselj0`
+E_suite	Symbolics.jl	9	The error function squared	The error function squared	unsolved	NaN	NaN		RischNotImplemented: unsupported operation `erf`
+E_suite	Symbolics.jl	10	Bose-Einstein type	Bose-Einstein type	unsolved	NaN	NaN		Not implemented: *
+E_suite	Symbolics.jl	11	Serret's integral	Serret's integral	error	NaN	NaN		AssertionError: symtype(ex) <: Number
+E_suite	Symbolics.jl	12	A symmetry trick	A symmetry trick	unsolved	NaN	NaN		NotElementary: no elementary antiderivative: the residues of the integrand are not constants (residue criterion)
+E_suite	Symbolics.jl	13	Log-sine	Log-sine	unsolved	3.51966	0.00680451	(1//2)*RischIntegrate.clausen2(0) + (-1//2)*RischIntegrate.clausen2(3.141592653589793) - 0.7853981633974483log(2 - 2cos(3.141592653589793)) + 1.5707963267948966log(sin(1.5707963267948966))	int_0^(pi/2) ln sin x dx = -pi ln2/2
+E_suite	Symbolics.jl	14	Ahmed's integral	Ahmed's integral	unsolved	NaN	NaN		NotElementary: no elementary antiderivative: the integral of the coefficient of log^1 involves logarithms other than log(u)
+E_suite	Symbolics.jl	15	Laplace's integral	Laplace's integral	unsolved	NaN	NaN		NotElementary: no elementary antiderivative: the Risch differential equation y' + -1·u'·y = a has no solution in the coefficient field, so the coefficient of exp(u)^-1 has no elementary integral
+E_suite	Symbolics.jl	16	A dilogarithm value	A dilogarithm value	unsolved	NaN	NaN		Not implemented: li2
+E_suite	Symbolics.jl	17	Euler's constant	Euler's constant	unsolved	NaN	NaN		NotElementary: no elementary antiderivative: the Risch differential equation y' + 1·u'·y = a has no solution in the coefficient field, so the coefficient of exp(u)^1 has no elementary integral
+E_suite	Symbolics.jl	18	A Gaussian with a cosine	A Gaussian with a cosine	error	NaN	NaN		AssertionError: symtype(x) <: Field || Field <: symtype(x)
+E_suite	Symbolics.jl	19	Frullani's integral	Frullani's integral	unsolved	NaN	NaN		Not implemented: expinti
+E_suite	Symbolics.jl	20	The error function	The error function	unsolved	NaN	NaN		RischNotImplemented: unsupported operation `erfc`
+E_suite	Symbolics.jl	21	A Bessel function on the half-line	A Bessel function on the half-line	unsolved	NaN	NaN		RischNotImplemented: unsupported operation `besselj0`
+E_suite	Symbolics.jl	22	A damped Bessel function	A damped Bessel function	unsolved	NaN	NaN		RischNotImplemented: unsupported operation `besselj0`
+E_suite	Symbolics.jl	23	A pendulum's period	A pendulum's period	unavailable	NaN	NaN		int_0^a dtheta/sqrt(cos theta - cos a) = sqrt2 K(sin^2(a/2)), checked at a = 1
+E_suite	Symbolics.jl	24	zeta(4)	zeta(4)	unavailable	NaN	NaN		sum 1/n^4 = pi^4/90
+E_suite	Symbolics.jl	25	Harmonic numbers	Harmonic numbers	unavailable	NaN	NaN		sum H_n/n^2 = 2 zeta(3)
+E_suite	Symbolics.jl	26	Dirichlet beta(3)	Dirichlet beta(3)	unavailable	NaN	NaN		sum (-1)^n/(2n+1)^3 = pi^3/32
+E_suite	Symbolics.jl	27	Arithmetic-geometric	Arithmetic-geometric	unavailable	NaN	NaN		sum n^2/2^n = 6
+E_suite	Symbolics.jl	28	A central binomial series	A central binomial series	unavailable	NaN	NaN		sum 1/(n^2 binomial(2n,n)) = pi^2/18
+E_suite	Symbolics.jl	29	Vandermonde's identity	Vandermonde's identity	unavailable	NaN	NaN		sum_k binomial(n,k)^2 = binomial(2n,n), checked at n = 7
+E_suite	Symbolics.jl	30	A closed form in n	A closed form in n	unavailable	NaN	NaN		sum_{k=1}^n k 2^k = (n-1) 2^(n+1) + 2, checked at n = 10
+E_suite	Symbolics.jl	31	A polylogarithm value	A polylogarithm value	unavailable	NaN	NaN		sum x^n/n^2 at x = 1/2
+E_suite	Symbolics.jl	32	A telescoping product	A telescoping product	unavailable	NaN	NaN		prod_{n>=2} (1 - 1/n^2) = 1/2
+E_suite	Symbolics.jl	33	Wallis's product	Wallis's product	unavailable	NaN	NaN		prod 4n^2/(4n^2-1) = pi/2
+E_suite	Symbolics.jl	34	tan sin - sin tan	tan sin - sin tan	unsolved	NaN	NaN		Not implemented: tan
+E_suite	Symbolics.jl	35	Stirling	Stirling	unavailable	NaN	NaN		lim (n!)^(1/n)/n = 1/e
+E_suite	Symbolics.jl	36	A second-order term of e	A second-order term of e	unsolved	NaN	NaN		Not implemented: POW with noninteger exponent x. Transform to log/exp.
+E_suite	Symbolics.jl	37	Nested exponentials (Gruntz)	Nested exponentials (Gruntz)	verified	1.20572	0.0710151	-1	lim e^x (e^(1/x - e^-x) - e^(1/x)) = -1
+E_suite	Symbolics.jl	38	Cancelling poles	Cancelling poles	unsolved	NaN	NaN		Not implemented: sin
+E_suite	Symbolics.jl	39	A ratio of Gamma functions	A ratio of Gamma functions	unavailable	NaN	NaN		lim Gamma(x+1/2)/(Gamma(x) sqrt x) = 1
+E_suite	Symbolics.jl	40	A power of sinc	A power of sinc	unsolved	NaN	NaN		Not implemented: POW with noninteger exponent 1 / ((-1 / x)^2). Transform to log/exp.
+E_suite	Symbolics.jl	41	A bounded oscillation	A bounded oscillation	unsolved	NaN	NaN		Not implemented: sin
+E_suite	Symbolics.jl	42	A sextic system	A sextic system	unsolved	26.3265	NaN	Any[Dict{Num, Any}(y => -roots_of(-(1//1) + (4//1)*(_T^2) - (3//1)*(_T^4) + _T^6, _T), x => -(2//1)*roots_of(-(1//1) + (4//1)*(_T^2) - (3//1)*(_T^4) + _T^6, _T) + (2//1)*(roots_of(-(1//1) + (4//1)*(_T...	x^2+y^2 = 1, x^3 = y: all six complex solutions
+E_suite	Symbolics.jl	43	A quintic solvable by radicals	A quintic solvable by radicals	unsolved	0.0158149	0.00195329	SymbolicUtils.BasicSymbolicImpl.var"typeof(BasicSymbolicImpl)"{SymReal}[roots_of(12 - 5x + x^5, x)]	x^5-5x+12 = 0, five roots in radicals
+E_suite	Symbolics.jl	44	Every solution of cos x = 1/2	Every solution of cos x = 1/2	unsolved	1.43498	0.00149371	SymbolicUtils.BasicSymbolicImpl.var"typeof(BasicSymbolicImpl)"{SymReal}[1.0471975511965976 + 6.283185307179586var"##3406"]	cos x = 1/2, all solutions: six of them in (-10, 10)
+E_suite	Symbolics.jl	45	Lambert's W	Lambert's W	unavailable	NaN	NaN		x e^x = 2
+E_suite	Symbolics.jl	46	A symmetric system	A symmetric system	verified	1.68927	0.065726	Tuple{ComplexF64, ComplexF64, ComplexF64}[(2.0 + 0.0im, 3.0 + 0.0im, 1.0 + 0.0im), (3.0 + 0.0im, 2.0 + 0.0im, 1.0 + 0.0im), (1.0 + 0.0im, 3.0 + 0.0im, 2.0 + 0.0im), (3.0 + 0.0im, 1.0 + 0.0im, 2.0 + 0....	x+y+z = 6, xy+yz+zx = 11, xyz = 6: six solutions
+E_suite	Symbolics.jl	47	A quartic inequality	A quartic inequality	unavailable	NaN	NaN		x^4-5x^2+4 < 0
+E_suite	Symbolics.jl	48	Absolute values	Absolute values	unavailable	NaN	NaN		|x-1| + |x+2| < 5
+E_suite	Symbolics.jl	49	Quantifier elimination	Quantifier elimination	unavailable	NaN	NaN		for which b is x^2+bx+1 > 0 for every real x: -2 < b < 2
+E_suite	Symbolics.jl	50	Cyclotomic factors	Cyclotomic factors	verified	0.146354	0.00324868	(1//1, Tuple{Num, Int64}[((1//1) + x + x^2 + x^3 + x^4 + x^5 + x^6, 1), ((1//1) - x + x^3 - (x^4) + x^5 - (x^7) + x^8, 1), (-(1//1) + x, 1), ((1//1) - x + x^3 - (x^4) + x^6 - (x^8) + x^9 - (x^11) + x^...	factor x^105 - 1 over Q: 8 factors
+E_suite	Symbolics.jl	51	A symmetric septic	A symmetric septic	verified	0.0237191	0.00255157	(7//1, Tuple{Num, Int64}[(x + y, 1), (x^4 + (2//1)*(x^3)*y + (2//1)*(x^3)*z + (3//1)*(x^2)*(y^2) + (5//1)*(x^2)*y*z + (3//1)*(x^2)*(z^2) + (2//1)*x*(y^3) + (5//1)*x*(y^2)*z + (5//1)*x*y*(z^2) + (2//1)...	factor (x+y+z)^7 - x^7 - y^7 - z^7: 4 factors
+E_suite	Symbolics.jl	52	Factoring over Q(sqrt 2)	Factoring over Q(sqrt 2)	unavailable	NaN	NaN		factor x^4 + 1 over Q(sqrt 2): 2 factors
+E_suite	Symbolics.jl	53	The cyclic-6 system	The cyclic-6 system	unavailable	NaN	NaN		the number of complex solutions of cyclic-6 (156)
+E_suite	Symbolics.jl	54	Implicitization	Implicitization	unavailable	NaN	NaN		eliminate t from x = t^2-1, y = t^3-t
+E_suite	Symbolics.jl	55	Polynomial decomposition	Polynomial decomposition	unavailable	NaN	NaN		x^6+6x^4+x^3+9x^2+3x-5 = g(h(x))
+E_suite	Symbolics.jl	56	Denesting	Denesting	unsolved	0.497564	6.7565e-05	sqrt(5 + 2sqrt(6))	sqrt(5+2 sqrt 6) = sqrt2 + sqrt3
+E_suite	Symbolics.jl	57	Ramanujan's denesting	Ramanujan's denesting	unavailable	NaN	NaN		cbrt(cbrt 2 - 1) = cbrt(1/9) - cbrt(2/9) + cbrt(4/9)
+E_suite	Symbolics.jl	58	A heptagon sum	A heptagon sum	unsolved	0.304613	0.000991185	cos(0.8975979010256552) + cos(1.7951958020513104) + cos(2.6927937030769655)	cos(2pi/7)+cos(4pi/7)+cos(6pi/7) = -1/2, no cosine left
+E_suite	Symbolics.jl	59	A minimal polynomial	A minimal polynomial	unavailable	NaN	NaN		minimal polynomial of sqrt2+sqrt3+sqrt5, checked at x = 0.7
+E_suite	Symbolics.jl	60	A trigonometric identity	A trigonometric identity	unsolved	0.00943074	0.000577505	(cos(x)*sin(3x) - cos(3x)*sin(x)) / (cos(x)*sin(x))	sin 3x/sin x - cos 3x/cos x = 2
+E_suite	Symbolics.jl	61	Gauss's 17-gon	Gauss's 17-gon	unavailable	NaN	NaN		cos(2pi/17) in square roots
+E_suite	Symbolics.jl	62	An inverse cosine, with assumptions	An inverse cosine, with assumptions	unavailable	NaN	NaN		acos(cos x) = 2pi - x for pi < x < 2pi
+E_suite	Symbolics.jl	63	Airy	Airy	unsolved	2.75068	0.00258198	nothing	y'' = x y
+E_suite	Symbolics.jl	64	Bessel, order 1/2	Bessel, order 1/2	error	NaN	NaN		MethodError: no method matching flatten_fractions(::Int64) The function `flatten_fractions` exists, but no method is defined for this combination of argument types.  Closest candidates are:   flatten_fractions(!Matched::SymbolicUtils.BasicSymbolicImpl.var"typeof(BasicSymbolicImpl)"{T}) where T    @ ...
+E_suite	Symbolics.jl	65	Riccati	Riccati	unavailable	NaN	NaN		y' = x^2 + y^2
+E_suite	Symbolics.jl	66	A nonlinear autonomous equation	A nonlinear autonomous equation	unavailable	NaN	NaN		y y'' = y'^2
+E_suite	Symbolics.jl	67	A forced Euler-Cauchy equation	A forced Euler-Cauchy equation	unsolved	1.15701	0.00279306	nothing	x^2 y'' - 3x y' + 4y = x^2 ln x
+E_suite	Symbolics.jl	68	Bernoulli	Bernoulli	unavailable	NaN	NaN		y' + y = x y^3
+E_suite	Symbolics.jl	69	An exponential solution (Kovacic)	An exponential solution (Kovacic)	unsolved	0.194754	0.0110892	nothing	y'' = (x^2+1) y
+E_suite	Symbolics.jl	70	A forced initial-value problem	A forced initial-value problem	unsolved	18.6681	NaN	nothing	y'' - (x^2+1) y = x e^(-x^2/2), y(0) = 0, y'(0) = 1 (residual and both conditions)
+E_suite	Symbolics.jl	71	A Riccati equation with Airy solutions	A Riccati equation with Airy solutions	unavailable	NaN	NaN		y' = x + y^2
+E_suite	Symbolics.jl	72	A pendulum released from rest	A pendulum released from rest	unavailable	NaN	NaN		y'' + sin y = 0, y(0) = a, y'(0) = 0
+E_suite	Symbolics.jl	73	Duffing's oscillator from rest	Duffing's oscillator from rest	unavailable	NaN	NaN		y'' + y + y^3 = 0, y(0) = a, y'(0) = 0
+E_suite	Symbolics.jl	74	A Jordan block	A Jordan block	error	NaN	NaN		DimensionMismatch: matrix is not square: dimensions are (3, 1)
+E_suite	Symbolics.jl	75	The transport equation	The transport equation	unavailable	NaN	NaN		u_x + 2 u_y = 0, general solution: residual with the arbitrary function chosen
+E_suite	Symbolics.jl	76	The heat equation	The heat equation	unavailable	NaN	NaN		u_t = u_xx, u(0,t) = u(pi,t) = 0, u(x,0) = sin x: residual and the three conditions
+E_suite	Symbolics.jl	77	Symbolic eigenvalues	Symbolic eigenvalues	unavailable	NaN	NaN		eigenvalues of [[a,1,0],[1,a,1],[0,1,a]], at a = 13/10
+E_suite	Symbolics.jl	78	A Jordan form	A Jordan form	unavailable	NaN	NaN		the Jordan form J of a 4x4 with a block for the eigenvalue 4
+E_suite	Symbolics.jl	79	A matrix exponential	A matrix exponential	unavailable	NaN	NaN		exp(t [[0,1],[-1,0]]) at t = 7/10
+E_suite	Symbolics.jl	80	A Vandermonde determinant	A Vandermonde determinant	verified	0.20713	0.0067481	(-1//1, Tuple{Num, Int64}[(b - x, 1), (-y + z, 1), (-x + z, 1), (b - z, 1), (-x + y, 1), (-a + b, 1), (b - y, 1), (-a + x, 1), (-a + z, 1), (-a + y, 1)])	factor det[v_i^(j-1)] for v = (a,b,x,y,z): 10 factors
+E_suite	Symbolics.jl	81	A Smith normal form	A Smith normal form	unavailable	NaN	NaN		Smith form of [[2,4,4],[-6,6,12],[10,-4,-16]]: diag(2,6,12)
+E_suite	symbolics	82	The Fermat number F7		timeout	NaN	NaN		killed after 60.0s
+E_suite	Symbolics.jl	83	A Mersenne prime	A Mersenne prime	verified	0.00029135	0.000232644	true	2^521 - 1 is prime
+E_suite	Symbolics.jl	84	A discrete logarithm	A discrete logarithm	unavailable	NaN	NaN		5^x = 123456789 mod 10^9+7
+E_suite	Symbolics.jl	85	Pell's equation	Pell's equation	unavailable	NaN	NaN		x^2 - 61 y^2 = 1 in positive integers
+E_suite	Symbolics.jl	86	A periodic continued fraction	A periodic continued fraction	unavailable	NaN	NaN		sqrt 61 = [7; 1,4,3,1,2,2,1,3,4,1,14 periodic]
+E_suite	Symbolics.jl	87	Partitions	Partitions	unavailable	NaN	NaN		p(200) = 3972999029388
+E_suite	Symbolics.jl	88	A Laplace transform	A Laplace transform	unsolved	13.1176	NaN	Integral(t, 0.0 .. Inf)(exp(-s*t)*exp(-t)*sin(t)*(t^2))	L{t^2 e^-t sin t}(s), checked at s = 2: 13/250
+E_suite	Symbolics.jl	89	An inverse Laplace transform	An inverse Laplace transform	verified	41.1526	NaN	(sin(t) - cos(t)*t) / 2	L^-1{1/(s^2+1)^2} = (sin t - t cos t)/2
+E_suite	Symbolics.jl	90	A delayed step	A delayed step	unsolved	0.306501	0.000972417	nothing	L^-1{e^-s/s}(t) = theta(t-1), checked at t = 1/2 and 3/2
+E_suite	Symbolics.jl	91	The series of Lambert's W	The series of Lambert's W	unavailable	NaN	NaN		W(x) to order 5 at 0, polynomial part at x = 1/10
+E_suite	Symbolics.jl	92	A hypergeometric function	A hypergeometric function	unavailable	NaN	NaN		2F1(1,1;2;x) = -ln(1-x)/x
+E_suite	Symbolics.jl	93	Gamma's reflection formula	Gamma's reflection formula	unsolved	0.000231578	3.66963e-05	SpecialFunctions.gamma((3//4))*SpecialFunctions.gamma((1//4))	Gamma(1/4) Gamma(3/4) = pi sqrt 2
+E_suite	Symbolics.jl	94	The sine integral's Laplace transform	The sine integral's Laplace transform	unavailable	NaN	NaN		L{Si t}(s) = (pi/2 - atan s)/s, at s = 2
+E_suite	Symbolics.jl	95	An inverse Laplace transform to a Bessel function	An inverse Laplace transform to a Bessel function	unavailable	NaN	NaN		L^-1{1/sqrt(s^2+1)} = J0(t), at t = 7/10
+E_suite	Symbolics.jl	96	A polylogarithm value	A polylogarithm value	unavailable	NaN	NaN		Li3(1/2) = 7/8 zeta(3) - pi^2/12 ln2 + ln^3 2/6
+E_suite	Symbolics.jl	97	A stability region	A stability region	unavailable	NaN	NaN		for which k is s^3+3s^2+3s+1+k Hurwitz: -1 < k < 8
+E_suite	Symbolics.jl	98	A Lyapunov equation	A Lyapunov equation	verified	0.643392	8.2737e-05	[1.25 0.25; 0.25 0.25]	A'P + PA = -I, A = [[0,1],[-2,-3]]
+E_suite	Symbolics.jl	99	A Riccati equation (LQR)	A Riccati equation (LQR)	unsolved	4.64728	0.022994	nothing	A'P + PA - PBB'P + I = 0, the positive definite solution
+E_suite	Symbolics.jl	100	The unicycle's Lie algebra rank	The unicycle's Lie algebra rank	verified	0.85812	7.2417e-05	3	rank{f1, f2, [f1,f2]}, f1 = (cos th, sin th, 0), f2 = (0,0,1)
+E_suite	Symbolics.jl	101	A center manifold	A center manifold	verified	0.443375	0.00570602	-(x^2) - (2//1)*(x^4)	x' = xy, y' = -y - x^2: y = h(x) = -x^2 - 2x^4 + O(x^6), at x = 1/10
+E_suite	Symbolics.jl	102	A sum-of-squares certificate	A sum-of-squares certificate	unavailable	NaN	NaN		x^4 - 2x^2 y + y^2 + x^2 - 2x + 1 >= 0 (a proof)
+E_suite	Symbolics.jl	103	Motzkin's polynomial	Motzkin's polynomial	unavailable	NaN	NaN		x^4 y^2 + x^2 y^4 - 3x^2 y^2 + 1 >= 0 (a proof; not a sum of squares)
+E_suite	Symbolics.jl	104	Jacobian: Brusselator N=10 (build)	Jacobian: Brusselator N=10 (build)	verified	0.533231	0.00180618	#jacobian_fn##0	the Jacobian of the 20-state model, compiled to a function
+E_suite	Symbolics.jl	105	Jacobian: Brusselator N=50 (build)	Jacobian: Brusselator N=50 (build)	verified	0.0213337	0.0192247	#jacobian_fn##0	the Jacobian of the 100-state model, compiled to a function
+E_suite	Symbolics.jl	106	Jacobian: Brusselator N=10 (evaluate 1000 points)	Jacobian: Brusselator N=10 (evaluate 1000 points)	verified	0.13665	0.132913	-41918.49500000046	sum of traces of the compiled Jacobian over 1000 points
+E_suite	Symbolics.jl	107	Jacobian: Brusselator N=50 (evaluate 1000 points)	Jacobian: Brusselator N=50 (evaluate 1000 points)	verified	3.40544	3.35064	1.3207075250000125e6	sum of traces of the compiled Jacobian over 1000 points

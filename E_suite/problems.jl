@@ -109,6 +109,9 @@ function check_solutions(out, F::Function, count::Int)
     length(out) == count || return length(out) < count ? :unsolved : :wrong
     for v in out
         vv = v isa Tuple ? collect(v) : [v]
+        # an exact answer written with Lambert's W is evaluated here
+        vv = [(m = match(r"^(?:lambertw|LambertW)\((\d+)\)$", replace(string(e), " " => "")); m === nothing ? e : lambertw_ref(parse(Float64, m[1]))) for e in vv]
+        vv = [e isa Number ? e : tonum(EVAL(e, Dict{Symbol,Float64}())) for e in vv]
         all(x -> x isa Number, vv) || return :unverified
         all(abs.(F(vv...)) .< 1e-6) || return :wrong
     end
@@ -127,6 +130,9 @@ function check_intervals(out, inside::Vector{Float64}, outside::Vector{Float64})
         push!(ivs, (evalnum(m[1]), evalnum(m[2])))
     end
     for m in eachmatch(r"\(?([-\d./]+)<[a-z]\)?&\(?[a-z]<([-\d./]+)\)?", s)
+        push!(ivs, (evalnum(m[1]), evalnum(m[2])))
+    end
+    isempty(ivs) && for m in eachmatch(r"\(([-\d./]+),([-\d./]+)\)", s)     # (a, b) ∪ (c, d)
         push!(ivs, (evalnum(m[1]), evalnum(m[2])))
     end
     isempty(ivs) && return :unverified
@@ -375,8 +381,8 @@ end
 # every solution of cos x = 1/2: the answer, with its integer parameter set to -1, 0 and 1
 # through the adapter's EVALFAMILY, must give six distinct solutions in (-10, 10)
 function check_periodic(out)
-    s = string(out)
-    occursin(r"pi|π", s) || return :unverified
+    s = replace(string(out), r"\b(Sym|Num|Any|Vector|GiacExpr|SymbolicUtils|BasicSymbolicImpl|SymReal|typeof|var)\b" => "", r"\{[^}]*\}" => "")
+    occursin(r"pi|π", s) || return :unsolved          # a numeric family is not the exact answer asked
     params = unique(m.match for m in eachmatch(r"\b(?!pi\b)(?!x\b)[A-Za-z_][A-Za-z_0-9]*\b", s))
     isempty(params) && return :unsolved
     vals = Float64[]

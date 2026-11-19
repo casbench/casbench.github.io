@@ -62,7 +62,7 @@ const OPS = Dict{Symbol,Any}(
     :cfactor => missing,
 )
 
-UNSOLVED(op, out) = out === nothing || (op === :solve && out isa AbstractVector && isempty(out))
+UNSOLVED(op, out) = out === nothing || (out isa AbstractVector && isempty(out)) || occursin(r"\bSum\(|\bProduct\(|\bIntegral\(", string(out))
 
 function EVAL(ex, vals)
     ex isa Number && !(ex isa Sym) && return ex

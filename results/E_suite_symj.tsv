@@ -1,0 +1,109 @@
+bench	system	idx	case	op	status	t_first_s	t_warm_s	result	note
+E_suite	SymJ.jl	0	_load	using	verified	4.08076	NaN		package load time
+E_suite	SymJ.jl	1	sqrt(tan x)	sqrt(tan x)	verified	0.353406	0.00658099	sqrt(2)*atan(sqrt(2)*sqrt(tan(x)) + 1)/2 + sqrt(2)*atan(sqrt(2)*sqrt(tan(x)) - 1)/2 + sqrt(2)*log(-sqrt(2)*sqrt(tan(x)) + tan(x) + 1)/4 - sqrt(2)*log(sqrt(2)*sqrt(tan(x)) + tan(x) + 1)/4	int sqrt(tan x) dx
+E_suite	SymJ.jl	2	Chebyshev's pseudo-elliptic integral	Chebyshev's pseudo-elliptic integral	verified	0.586521	0.0041734	log(sqrt(x^4 + 10*x^2 - 96*x - 71)*(x^6 + 15*x^4 - 80*x^3 + 27*x^2 - 528*x + 781) + x^8 + 20*x^6 - 128*x^5 + 54*x^4 - 1408*x^3 + 3124*x^2 + 10001)/8	int x/sqrt(x^4+10x^2-96x-71) dx
+E_suite	SymJ.jl	3	An arctangent of a radical	An arctangent of a radical	verified	1.3106	0.00257749	-sqrt(2)*atan(sqrt(2)*x/sqrt(x^4 + 1))/2	int (x^2-1)/((x^2+1) sqrt(x^4+1)) dx
+E_suite	SymJ.jl	4	A quintic denominator	A quintic denominator	verified	0.285028	0.00262075	RootSum(α -> α*log(x + (183616/625*α^4 + 45904/625*α^3 + 21716/625*α^2 + 309/625*α + 256/625)), α^5 + 160/2869*α^3 - 80/2869*α^2 + 15/2869*α - 1/2869 = 0)	int dx/(x^5-x+1)
+E_suite	SymJ.jl	5	A fourth root	A fourth root	verified	1.14651	0.00119119	-atan((x^4 + 1)^(1/4)/x)/2 + log(((x^4 + 1)^(1/4) + x)^2)/8 - log((-(x^4 + 1)^(1/4) + x)^2)/8	int dx/(1+x^4)^(1/4)
+E_suite	SymJ.jl	6	Parts, twice	Parts, twice	verified	0.1104	0.00275234	asin(x)^2*(x^3/3 - x/4) + sqrt(-x^2 + 1)*(2*x^2/9 + 4/9)*asin(x) - 2*x^3/27 + asin(x)^2*x/4 - 4*x/9	int x^2 asin(x)^2 dx
+E_suite	SymJ.jl	7	Exponential and logarithm (Risch)	Exponential and logarithm (Risch)	verified	0.0616715	0.000526198	log(x)*exp(x)	int e^x (1 + x ln x)/x dx
+E_suite	SymJ.jl	8	A Bessel function, to Struve functions	A Bessel function, to Struve functions	unsolved	NaN	NaN		RischNotImplemented: unsupported operation `besselj0`
+E_suite	SymJ.jl	9	The error function squared	The error function squared	unsolved	NaN	NaN		RischNotImplemented: unsupported operation `erf`
+E_suite	SymJ.jl	10	Bose-Einstein type	Bose-Einstein type	verified	8.3946	0.0244078	π^2/6	int_0^inf x/(e^x-1) dx = pi^2/6
+E_suite	SymJ.jl	11	Serret's integral	Serret's integral	verified	0.76295	0.0128139	impolylog(2, sqrt(2), -π/4) - impolylog(2, sqrt(2)/2, -π/4) + log(2)*π/2	int_0^1 ln(1+x)/(1+x^2) dx = pi ln2/8
+E_suite	SymJ.jl	12	A symmetry trick	A symmetry trick	verified	1.23656	0.0374151	π^2/4	int_0^pi x sin x/(1+cos^2 x) dx = pi^2/4
+E_suite	SymJ.jl	13	Log-sine	Log-sine	verified	0.902806	0.0238243	-log(4)*π/4	int_0^(pi/2) ln sin x dx = -pi ln2/2
+E_suite	SymJ.jl	14	Ahmed's integral	Ahmed's integral	unsolved	NaN	NaN		NotElementary: no elementary antiderivative: the integral of the coefficient of log^1 involves logarithms other than log(u)
+E_suite	SymJ.jl	15	Laplace's integral	Laplace's integral	unsolved	NaN	NaN		NotElementary: no elementary antiderivative: the Risch differential equation y' + -1·u'·y = a has no solution in the coefficient field, so the coefficient of exp(u)^-1 has no elementary integral
+E_suite	SymJ.jl	16	A dilogarithm value	A dilogarithm value	verified	0.301647	0.0138098	-π^2/6 + 2	int_0^1 ln x ln(1-x) dx = 2 - pi^2/6
+E_suite	SymJ.jl	17	Euler's constant	Euler's constant	verified	0.791584	0.0172742	digamma(1)^2 + π^2/6	int_0^inf e^-x ln^2 x dx = gamma^2 + pi^2/6
+E_suite	SymJ.jl	18	A Gaussian with a cosine	A Gaussian with a cosine	verified	1.69978	0.0151028	sqrt(π)/ℯ	int_-inf^inf e^(-x^2) cos 2x dx = sqrt(pi)/e
+E_suite	SymJ.jl	19	Frullani's integral	Frullani's integral	verified	0.0199929	0.00250739	log(2)	int_0^inf (e^-x - e^-2x)/x dx = ln 2
+E_suite	SymJ.jl	20	The error function	The error function	unsolved	NaN	NaN		RischNotImplemented: unsupported operation `erfc`
+E_suite	SymJ.jl	21	A Bessel function on the half-line	A Bessel function on the half-line	unsolved	NaN	NaN		RischNotImplemented: unsupported operation `besselj0`
+E_suite	SymJ.jl	22	A damped Bessel function	A damped Bessel function	unsolved	NaN	NaN		RischNotImplemented: unsupported operation `besselj0`
+E_suite	SymJ.jl	23	A pendulum's period	A pendulum's period	unsolved	NaN	NaN		RischNotImplemented: radical of a non-rational expression (-cos(a) + cos(x)): only radicals of rational functions of x are supported
+E_suite	SymJ.jl	24	zeta(4)	zeta(4)	verified	0.00489002	0.000738734	π^4/90	sum 1/n^4 = pi^4/90
+E_suite	SymJ.jl	25	Harmonic numbers	Harmonic numbers	unsolved	0.130074	0.00288018	Sum(harmonic(n)/n^2, n, 1, Inf)	sum H_n/n^2 = 2 zeta(3)
+E_suite	SymJ.jl	26	Dirichlet beta(3)	Dirichlet beta(3)	verified	0.18187	0.00771051	zeta(3, 1/4)/64 - zeta(3, 3/4)/64	sum (-1)^n/(2n+1)^3 = pi^3/32
+E_suite	SymJ.jl	27	Arithmetic-geometric	Arithmetic-geometric	verified	0.000850252	0.000115361	6	sum n^2/2^n = 6
+E_suite	SymJ.jl	28	A central binomial series	A central binomial series	unsolved	0.118787	0.0121251	Sum(1/(binomial(2*n, n)*n^2), n, 1, Inf)	sum 1/(n^2 binomial(2n,n)) = pi^2/18
+E_suite	SymJ.jl	29	Vandermonde's identity	Vandermonde's identity	verified	0.026273	0.00753059	binomial(2*n, n)	sum_k binomial(n,k)^2 = binomial(2n,n), checked at n = 7
+E_suite	SymJ.jl	30	A closed form in n	A closed form in n	verified	0.0481688	0.00106673	2^(n + 1)*n - 2^(n + 1) + 2	sum_{k=1}^n k 2^k = (n-1) 2^(n+1) + 2, checked at n = 10
+E_suite	SymJ.jl	31	A polylogarithm value	A polylogarithm value	unavailable	NaN	NaN		sum x^n/n^2 at x = 1/2
+E_suite	SymJ.jl	32	A telescoping product	A telescoping product	unavailable	NaN	NaN		prod_{n>=2} (1 - 1/n^2) = 1/2
+E_suite	SymJ.jl	33	Wallis's product	Wallis's product	unavailable	NaN	NaN		prod 4n^2/(4n^2-1) = pi/2
+E_suite	SymJ.jl	34	tan sin - sin tan	tan sin - sin tan	verified	0.00365453	0.00279796	1/30	lim (tan sin x - sin tan x)/x^7 = 1/30
+E_suite	SymJ.jl	35	Stirling	Stirling	verified	0.00523834	0.00414967	1/ℯ	lim (n!)^(1/n)/n = 1/e
+E_suite	SymJ.jl	36	A second-order term of e	A second-order term of e	verified	0.000961084	0.000600579	-ℯ/2	lim x((1+1/x)^x - e) = -e/2
+E_suite	SymJ.jl	37	Nested exponentials (Gruntz)	Nested exponentials (Gruntz)	verified	0.00134976	0.00091436	-1	lim e^x (e^(1/x - e^-x) - e^(1/x)) = -1
+E_suite	SymJ.jl	38	Cancelling poles	Cancelling poles	verified	0.000624526	0.000257873	-1/3	lim (1/x^2 - 1/sin^2 x) = -1/3
+E_suite	SymJ.jl	39	A ratio of Gamma functions	A ratio of Gamma functions	verified	0.00672939	0.00564125	1	lim Gamma(x+1/2)/(Gamma(x) sqrt x) = 1
+E_suite	SymJ.jl	40	A power of sinc	A power of sinc	verified	0.00133851	0.000779662	1/exp(1/6)	lim (sin x/x)^(1/x^2) = e^(-1/6)
+E_suite	SymJ.jl	41	A bounded oscillation	A bounded oscillation	verified	0.0157975	0.000266593	1	lim (x + sin x)/x, x -> inf
+E_suite	SymJ.jl	42	A sextic system	A sextic system	verified	3.22716	0.0436456	Tuple{ComplexF64, ComplexF64}[(-0.826031357654187 + 0.0im, -0.5636241621612585 + 0.0im), (0.826031357654187 + 0.0im, 0.5636241621612585 + 0.0im), (0.6593344722112124 - 0.8808438273383358im, -1.2480776...	x^2+y^2 = 1, x^3 = y: all six complex solutions
+E_suite	SymJ.jl	43	A quintic solvable by radicals	A quintic solvable by radicals	unsolved	NaN	NaN		ArgumentError: solve: no roots in radicals found for the irreducible factor x^5 - 5*x + 12 of degree 5 (most such factors have none; some solvable quintics are not covered either); for numeric roots use SymJ.fsolve (fsolve(eq, x) for the real ones, fsolve(eq, x; domain = ℂ) for all; fsolve(eqs, vars...
+E_suite	SymJ.jl	44	Every solution of cos x = 1/2	Every solution of cos x = 1/2	unsolved	0.00836099	0.000111709	Sym[π/3, 5*π/3]	cos x = 1/2, all solutions: six of them in (-10, 10)
+E_suite	SymJ.jl	45	Lambert's W	Lambert's W	verified	0.00209254	0.00134068	Sym[lambertw(2)]	x e^x = 2
+E_suite	SymJ.jl	46	A symmetric system	A symmetric system	verified	0.0562901	0.00162593	Tuple{ComplexF64, ComplexF64, ComplexF64}[(3.0 + 0.0im, 2.0 + 0.0im, 1.0 + 0.0im), (2.0 + 0.0im, 3.0 + 0.0im, 1.0 + 0.0im), (3.0 + 0.0im, 1.0 + 0.0im, 2.0 + 0.0im), (1.0 + 0.0im, 3.0 + 0.0im, 2.0 + 0....	x+y+z = 6, xy+yz+zx = 11, xyz = 6: six solutions
+E_suite	SymJ.jl	47	A quartic inequality	A quartic inequality	verified	0.000671627	0.000153248	(-2, -1) ∪ (1, 2)	x^4-5x^2+4 < 0
+E_suite	SymJ.jl	48	Absolute values	Absolute values	verified	0.503322	0.00143141	(-3, 2)	|x-1| + |x+2| < 5
+E_suite	SymJ.jl	49	Quantifier elimination	Quantifier elimination	unavailable	NaN	NaN		for which b is x^2+bx+1 > 0 for every real x: -2 < b < 2
+E_suite	SymJ.jl	50	Cyclotomic factors	Cyclotomic factors	verified	0.385543	0.0539447	(1, Tuple{Sym, Int64}[(x - 1, 1), (x^2 + x + 1, 1), (x^4 + x^3 + x^2 + x + 1, 1), (x^6 + x^5 + x^4 + x^3 + x^2 + x + 1, 1), (x^8 - x^7 + x^5 - x^4 + x^3 - x + 1, 1), (x^12 - x^11 + x^9 - x^8 + x^6 - x...	factor x^105 - 1 over Q: 8 factors
+E_suite	SymJ.jl	51	A symmetric septic	A symmetric septic	verified	0.00129277	0.000614143	(7, Tuple{Sym, Int64}[(x + y, 1), (x + z, 1), (y + z, 1), (5*x*y*z^2 + 5*x*y^2*z + 2*x*y^3 + 2*x*z^3 + 5*x^2*y*z + 3*x^2*y^2 + 3*x^2*z^2 + 2*x^3*y + 2*x^3*z + x^4 + 2*y*z^3 + 3*y^2*z^2 + 2*y^3*z + y^4...	factor (x+y+z)^7 - x^7 - y^7 - z^7: 4 factors
+E_suite	SymJ.jl	52	Factoring over Q(sqrt 2)	Factoring over Q(sqrt 2)	unavailable	NaN	NaN		factor x^4 + 1 over Q(sqrt 2): 2 factors
+E_suite	SymJ.jl	53	The cyclic-6 system	The cyclic-6 system	unavailable	NaN	NaN		the number of complex solutions of cyclic-6 (156)
+E_suite	SymJ.jl	54	Implicitization	Implicitization	verified	0.000210174	2.33994e-05	x^3 + x^2 - y^2	eliminate t from x = t^2-1, y = t^3-t
+E_suite	SymJ.jl	55	Polynomial decomposition	Polynomial decomposition	unavailable	NaN	NaN		x^6+6x^4+x^3+9x^2+3x-5 = g(h(x))
+E_suite	SymJ.jl	56	Denesting	Denesting	verified	0.00256652	0.00153524	sqrt(2) + sqrt(3)	sqrt(5+2 sqrt 6) = sqrt2 + sqrt3
+E_suite	SymJ.jl	57	Ramanujan's denesting	Ramanujan's denesting	unsolved	0.00141353	0.000710742	(2^(1/3) - 1)^(1/3)	cbrt(cbrt 2 - 1) = cbrt(1/9) - cbrt(2/9) + cbrt(4/9)
+E_suite	SymJ.jl	58	A heptagon sum	A heptagon sum	unsolved	0.230607	0.00146158	cos(2*π/7) + cos(4*π/7) + cos(6*π/7)	cos(2pi/7)+cos(4pi/7)+cos(6pi/7) = -1/2, no cosine left
+E_suite	SymJ.jl	59	A minimal polynomial	A minimal polynomial	unavailable	NaN	NaN		minimal polynomial of sqrt2+sqrt3+sqrt5, checked at x = 0.7
+E_suite	SymJ.jl	60	A trigonometric identity	A trigonometric identity	verified	0.00269216	0.0017698	2	sin 3x/sin x - cos 3x/cos x = 2
+E_suite	SymJ.jl	61	Gauss's 17-gon	Gauss's 17-gon	unavailable	NaN	NaN		cos(2pi/17) in square roots
+E_suite	SymJ.jl	62	An inverse cosine, with assumptions	An inverse cosine, with assumptions	unavailable	NaN	NaN		acos(cos x) = 2pi - x for pi < x < 2pi
+E_suite	SymJ.jl	63	Airy	Airy	unsolved	NaN	NaN		ArgumentError: dsolve: no method for Derivative(Derivative(yy(x), x), x) ~ x*yy(x)
+E_suite	SymJ.jl	64	Bessel, order 1/2	Bessel, order 1/2	verified	0.165655	0.0036436	(C1*besselj(1/2, x) + C2*bessely(1/2, x), var"#438#439"{Vector{var"#679#680"}, Sym}([var"#679#680"()], C1*besselj(1/2, x) + C2*bessely(1/2, x)))	x^2 y'' + x y' + (x^2 - 1/4) y = 0
+E_suite	SymJ.jl	65	Riccati	Riccati	unsolved	NaN	NaN		ArgumentError: dsolve: no method for Derivative(yy(x), x) ~ x^2 + yy(x)^2
+E_suite	SymJ.jl	66	A nonlinear autonomous equation	A nonlinear autonomous equation	verified	0.329899	0.00994296	(exp(C1*(C2 + x)), var"#438#439"{Vector{var"#687#688"}, Sym}([var"#687#688"()], exp(C1*(C2 + x))))	y y'' = y'^2
+E_suite	SymJ.jl	67	A forced Euler-Cauchy equation	A forced Euler-Cauchy equation	verified	0.0750939	0.012208	((C1 + C2*log(x) + log(x)^3/6)*x^2, var"#438#439"{Vector{var"#691#692"}, Sym}([var"#691#692"()], (C1 + C2*log(x) + log(x)^3/6)*x^2))	x^2 y'' - 3x y' + 4y = x^2 ln x
+E_suite	SymJ.jl	68	Bernoulli	Bernoulli	verified	0.460008	0.0200878	(sqrt(2)/sqrt(C1*exp(2*x) + 2*x + 1), var"#438#439"{Vector{var"#695#696"}, Sym}([var"#695#696"()], sqrt(2)/sqrt(C1*exp(2*x) + 2*x + 1)))	y' + y = x y^3
+E_suite	SymJ.jl	69	An exponential solution (Kovacic)	An exponential solution (Kovacic)	unsolved	NaN	NaN		ArgumentError: dsolve: no method for Derivative(Derivative(yy(x), x), x) ~ (x^2 + 1)*yy(x)
+E_suite	SymJ.jl	70	A forced initial-value problem	A forced initial-value problem	error	NaN	NaN		ArgumentError: Derivative has no numeric method; register one with `register_function!`
+E_suite	SymJ.jl	71	A Riccati equation with Airy solutions	A Riccati equation with Airy solutions	unsolved	NaN	NaN		ArgumentError: dsolve: no method for Derivative(yy(x), x) ~ x + yy(x)^2
+E_suite	SymJ.jl	72	A pendulum released from rest	A pendulum released from rest	error	NaN	NaN		ArgumentError: Derivative has no numeric method; register one with `register_function!`
+E_suite	SymJ.jl	73	Duffing's oscillator from rest	Duffing's oscillator from rest	error	NaN	NaN		ArgumentError: Derivative has no numeric method; register one with `register_function!`
+E_suite	SymJ.jl	74	A Jordan block	A Jordan block	unavailable	NaN	NaN		X' = J X, X(0) = (1,1,1), J the 3x3 Jordan block of 1; X(0.7)
+E_suite	SymJ.jl	75	The transport equation	The transport equation	unavailable	NaN	NaN		u_x + 2 u_y = 0, general solution: residual with the arbitrary function chosen
+E_suite	SymJ.jl	76	The heat equation	The heat equation	unavailable	NaN	NaN		u_t = u_xx, u(0,t) = u(pi,t) = 0, u(x,0) = sin x: residual and the three conditions
+E_suite	SymJ.jl	77	Symbolic eigenvalues	Symbolic eigenvalues	unavailable	NaN	NaN		eigenvalues of [[a,1,0],[1,a,1],[0,1,a]], at a = 13/10
+E_suite	SymJ.jl	78	A Jordan form	A Jordan form	unavailable	NaN	NaN		the Jordan form J of a 4x4 with a block for the eigenvalue 4
+E_suite	SymJ.jl	79	A matrix exponential	A matrix exponential	unavailable	NaN	NaN		exp(t [[0,1],[-1,0]]) at t = 7/10
+E_suite	SymJ.jl	80	A Vandermonde determinant	A Vandermonde determinant	verified	0.0521681	0.00314448	(1, Tuple{Sym, Int64}[(a - b, 1), (a - x, 1), (a - y, 1), (a - z, 1), (b - x, 1), (b - y, 1), (b - z, 1), (x - y, 1), (x - z, 1), (y - z, 1)])	factor det[v_i^(j-1)] for v = (a,b,x,y,z): 10 factors
+E_suite	SymJ.jl	81	A Smith normal form	A Smith normal form	unavailable	NaN	NaN		Smith form of [[2,4,4],[-6,6,12],[10,-4,-16]]: diag(2,6,12)
+E_suite	SymJ.jl	82	The Fermat number F7	The Fermat number F7	unavailable	NaN	NaN		factor 2^128 + 1
+E_suite	SymJ.jl	83	A Mersenne prime	A Mersenne prime	unavailable	NaN	NaN		2^521 - 1 is prime
+E_suite	SymJ.jl	84	A discrete logarithm	A discrete logarithm	unavailable	NaN	NaN		5^x = 123456789 mod 10^9+7
+E_suite	SymJ.jl	85	Pell's equation	Pell's equation	unavailable	NaN	NaN		x^2 - 61 y^2 = 1 in positive integers
+E_suite	SymJ.jl	86	A periodic continued fraction	A periodic continued fraction	unavailable	NaN	NaN		sqrt 61 = [7; 1,4,3,1,2,2,1,3,4,1,14 periodic]
+E_suite	SymJ.jl	87	Partitions	Partitions	unavailable	NaN	NaN		p(200) = 3972999029388
+E_suite	SymJ.jl	88	A Laplace transform	A Laplace transform	unavailable	NaN	NaN		L{t^2 e^-t sin t}(s), checked at s = 2: 13/250
+E_suite	SymJ.jl	89	An inverse Laplace transform	An inverse Laplace transform	unavailable	NaN	NaN		L^-1{1/(s^2+1)^2} = (sin t - t cos t)/2
+E_suite	SymJ.jl	90	A delayed step	A delayed step	unavailable	NaN	NaN		L^-1{e^-s/s}(t) = theta(t-1), checked at t = 1/2 and 3/2
+E_suite	SymJ.jl	91	The series of Lambert's W	The series of Lambert's W	verified	0.0443857	9.814e-06	x - x^2 + 3*x^3/2 - 8*x^4/3 + 125*x^5/24 + O(x^6)	W(x) to order 5 at 0, polynomial part at x = 1/10
+E_suite	SymJ.jl	92	A hypergeometric function	A hypergeometric function	unavailable	NaN	NaN		2F1(1,1;2;x) = -ln(1-x)/x
+E_suite	SymJ.jl	93	Gamma's reflection formula	Gamma's reflection formula	unsolved	0.0130199	0.000907675	gamma(1/4)*gamma(3/4)	Gamma(1/4) Gamma(3/4) = pi sqrt 2
+E_suite	SymJ.jl	94	The sine integral's Laplace transform	The sine integral's Laplace transform	unavailable	NaN	NaN		L{Si t}(s) = (pi/2 - atan s)/s, at s = 2
+E_suite	SymJ.jl	95	An inverse Laplace transform to a Bessel function	An inverse Laplace transform to a Bessel function	unavailable	NaN	NaN		L^-1{1/sqrt(s^2+1)} = J0(t), at t = 7/10
+E_suite	SymJ.jl	96	A polylogarithm value	A polylogarithm value	unavailable	NaN	NaN		Li3(1/2) = 7/8 zeta(3) - pi^2/12 ln2 + ln^3 2/6
+E_suite	SymJ.jl	97	A stability region	A stability region	verified	0.0660036	0.000149459	(-1, 8)	for which k is s^3+3s^2+3s+1+k Hurwitz: -1 < k < 8
+E_suite	SymJ.jl	98	A Lyapunov equation	A Lyapunov equation	verified	0.031819	0.000119027	[1.25 0.25; 0.25 0.25]	A'P + PA = -I, A = [[0,1],[-2,-3]]
+E_suite	SymJ.jl	99	A Riccati equation (LQR)	A Riccati equation (LQR)	verified	0.065234	0.0028075	[1.7320508075688772 1.0; 1.0 1.7320508075688772]	A'P + PA - PBB'P + I = 0, the positive definite solution
+E_suite	SymJ.jl	100	The unicycle's Lie algebra rank	The unicycle's Lie algebra rank	unavailable	NaN	NaN		rank{f1, f2, [f1,f2]}, f1 = (cos th, sin th, 0), f2 = (0,0,1)
+E_suite	SymJ.jl	101	A center manifold	A center manifold	verified	0.0346592	0.000534476	-2*x^4 - x^2	x' = xy, y' = -y - x^2: y = h(x) = -x^2 - 2x^4 + O(x^6), at x = 1/10
+E_suite	SymJ.jl	102	A sum-of-squares certificate	A sum-of-squares certificate	unavailable	NaN	NaN		x^4 - 2x^2 y + y^2 + x^2 - 2x + 1 >= 0 (a proof)
+E_suite	SymJ.jl	103	Motzkin's polynomial	Motzkin's polynomial	unavailable	NaN	NaN		x^4 y^2 + x^2 y^4 - 3x^2 y^2 + 1 >= 0 (a proof; not a sum of squares)
+E_suite	SymJ.jl	104	Jacobian: Brusselator N=10 (build)	Jacobian: Brusselator N=10 (build)	unavailable	NaN	NaN		the Jacobian of the 20-state model, compiled to a function
+E_suite	SymJ.jl	105	Jacobian: Brusselator N=50 (build)	Jacobian: Brusselator N=50 (build)	unavailable	NaN	NaN		the Jacobian of the 100-state model, compiled to a function
+E_suite	SymJ.jl	106	Jacobian: Brusselator N=10 (evaluate 1000 points)	Jacobian: Brusselator N=10 (evaluate 1000 points)	unavailable	NaN	NaN		sum of traces of the compiled Jacobian over 1000 points
+E_suite	SymJ.jl	107	Jacobian: Brusselator N=50 (evaluate 1000 points)	Jacobian: Brusselator N=50 (evaluate 1000 points)	unavailable	NaN	NaN		sum of traces of the compiled Jacobian over 1000 points

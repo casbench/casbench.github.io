@@ -51,7 +51,7 @@ for i in START:length(PROBLEMS)
     catch e
         msg = sprint(showerror, e)
         # a system that says it cannot do the problem has not solved it; a crash is an error
-        declined = occursin(r"NotImplemented|NotElementary|[Nn]ot implemented|cannot be solved|Cannot solve|Unable to solve|unsupported operation|no elementary antiderivative", msg)
+        declined = occursin(r"NotImplemented|NotElementary|[Nn]ot implemented|cannot be solved|Cannot solve|Unable to solve|unsupported operation|no elementary antiderivative|no roots in radicals|no method for", msg)
         Record(BENCH, SYSTEM, i, p.name, string(p.op), declined ? "unsolved" : "error", NaN, NaN, "", msg)
     end
     append_record(OUT, rec)
