@@ -6,12 +6,12 @@ using LinearAlgebra: det
 const SYSTEM = "Giac.jl"
 @giac_var x y z u v a b c s t k n
 # the parameters of bench F; `e` and `i` are constants in Giac, so those two symbols are ee and ii
-@giac_var d f g h m p q r j A B C D F ee ii
+@giac_var d f g h m p q r j A B C D F ee ii w
 const VAR = Dict{Symbol,Any}(:x => x, :y => y, :z => z, :u => u, :v => v, :a => a, :b => b, :c => c,
                              :s => s, :t => t, :k => k, :n => n)
 VAR[:pi] = giac_eval("pi")
 for (vv, obj) in (:d => d, :f => f, :g => g, :h => h, :m => m, :p => p, :q => q, :r => r, :j => j,
-                  :A => A, :B => B, :C => C, :D => D, :F => F, :e => ee, :i => ii)
+                  :A => A, :B => B, :C => C, :D => D, :F => F, :e => ee, :i => ii, :w => w)
     VAR[vv] = obj
 end
 isdefined(Main, :Mapleish) || include(joinpath(@__DIR__, "..", "mapleish.jl"))
@@ -93,8 +93,33 @@ function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
     [replace(string(e), r" % -?\d+" => "") for e in elements(r)]
 end
 
+
+struct CodegenAnswer
+    values::Vector{Any}
+    elapsed::Float64
+    text::String
+end
+Base.string(c::CodegenAnswer) = c.text
+
+gtext(s::String) = replace(Mapleish.translate(s, :giac), r"\be\b" => "ee", r"\bi\b" => "ii")
+EXPAND_TEXT(s) = giac_eval("expand(" * gtext(s) * ")")
+EXPAND_DIFF_TEXT(s, v) = giac_eval("diff(expand(" * gtext(s) * ")," * v * ")")
+SERIES_TEXT(s, v, x0, nn) = giac_eval("convert(series(" * gtext(s) * "," * v * "=" * string(x0) * "," * string(nn) * "),polynom)")
+SUBS_TEXT(s, rules) = giac_eval("subst(" * gtext(s) * ",[" * join(["$l=" * gtext(r) for (l, r) in rules], ",") * "])")
+EVAL_TEXT(s, pt) = to_julia(giac_eval("evalf(subst(" * gtext(s) * ",[" * join(["$k=$v" for (k, v) in pt], ",") * "]))"))
+# a compiled function in Giac is an unapply'd expression, evaluated by the interpreter
+function CODEGEN_TEXT(s, vars, points)
+    fn = giac_eval("unapply(" * gtext(s) * ",[" * join(vars, ",") * "])")
+    call(p) = to_julia(cmd(:evalf, invoke_cmd(:apply, fn, giac_eval("[" * join(string.(p), ",") * "]"))))
+    vals = Any[]; t0 = time_ns()
+    for p in points; push!(vals, call(p)); end
+    CodegenAnswer(vals, (time_ns() - t0) / 1e9, "unapply(...): $(length(vals)) calls")
+end
+
 const OPS = Dict{Symbol,Any}(
     :groebner => GROEBNER,
+    :expand_text => EXPAND_TEXT, :expand_diff_text => EXPAND_DIFF_TEXT, :series_text => SERIES_TEXT,
+    :subs_text => SUBS_TEXT, :eval_text => EVAL_TEXT, :codegen_text => CODEGEN_TEXT,
     :integrate_text => INTEGRATE_TEXT,
     :expand => f -> cmd(:expand, f),
     :factor => FACTOR,

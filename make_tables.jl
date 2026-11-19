@@ -113,8 +113,8 @@ function per_system_table(bench, systems, texname, mdtitle; with_times = true)
     println(md)
 end
 
-per_system_table("B_cas", ["giac", "symbolics", "sympy", "symj"], "B_cas", "B: CAS operations")
-per_system_table("D_coverage", ["giac", "symbolics", "sympy", "symj"], "D_coverage", "D: functional coverage"; with_times = false)
+per_system_table("B_cas", ["giac", "symbolics", "sympy", "symj", "symengine"], "B_cas", "B: CAS operations")
+per_system_table("D_coverage", ["giac", "symbolics", "sympy", "symj", "symengine"], "D_coverage", "D: functional coverage"; with_times = false)
 
 # ---------------------------------------------------------------- C: integer factorisation
 let systems = ["giac", "primes", "pari"]
@@ -159,6 +159,7 @@ include(joinpath(@__DIR__, "make_tables_E.jl"))
 include(joinpath(@__DIR__, "make_tables_G.jl"))
 include(joinpath(@__DIR__, "make_tables_F.jl"))
 include(joinpath(@__DIR__, "make_tables_H.jl"))
+include(joinpath(@__DIR__, "make_tables_I.jl"))
 include(joinpath(@__DIR__, "make_tables_history.jl"))
 
 write(joinpath(RESULTS, "summary.md"), String(take!(md)))

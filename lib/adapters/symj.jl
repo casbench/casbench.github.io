@@ -8,7 +8,7 @@ import GruntzLimit, RischIntegrate, TermInterface
 import SpecialFunctions, PolyLog, HypergeometricFunctions
 
 const SYSTEM = "SymJ.jl"
-const NAMES = (:x, :y, :z, :u, :v, :a, :b, :c, :s, :t, :k, :n, :d, :e, :f, :g, :h, :m, :p, :q, :r, :j, :i, :A, :B, :C, :D, :F)   # the last ones: parameters of bench F
+const NAMES = (:x, :y, :z, :u, :v, :a, :b, :c, :s, :t, :k, :n, :d, :e, :f, :g, :h, :m, :p, :q, :r, :j, :i, :A, :B, :C, :D, :F, :w)   # the last ones: parameters of bench F
 const VAR = Dict{Symbol,Any}(vv => Sym(vv) for vv in NAMES)
 VAR[:pi] = Sym(π)
 sym(e) = e isa Sym ? e : Sym(e)
@@ -44,8 +44,36 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = nothing)
     RischIntegrate.integrate(sym(f), VAR[Symbol(var)])
 end
 
+
+struct CodegenAnswer
+    values::Vector{Any}
+    elapsed::Float64
+    text::String
+end
+Base.string(c::CodegenAnswer) = c.text
+
+function sym_from_text(s::String)
+    ex = Mapleish.julia_expr(s)
+    bindings = Expr(:block, (Expr(:(=), vv, obj) for (vv, obj) in VAR if vv != :pi)...)
+    sym(Core.eval(Main, Expr(:let, bindings, ex)))
+end
+EXPAND_TEXT(s) = expand(sym_from_text(s))
+EXPAND_DIFF_TEXT(s, v) = diff(expand(sym_from_text(s)), VAR[Symbol(v)])
+SERIES_TEXT(s, v, x0, nn) = isdefined(SymJ, :series) ? SymJ.series(sym_from_text(s), VAR[Symbol(v)], x0, nn) : error("no series in SymJ")
+SUBS_TEXT(s, rules) = subs(sym_from_text(s), (VAR[Symbol(l)] => sym_from_text(r) for (l, r) in rules)...)
+EVAL_TEXT(s, pt) = N(subs(sym_from_text(s), (VAR[Symbol(k)] => v for (k, v) in pt)...))
+function CODEGEN_TEXT(s, vars, points)
+    isdefined(SymJ, :lambdify) || error("no lambdify in SymJ")
+    f = SymJ.lambdify(sym_from_text(s), [VAR[Symbol(v)] for v in vars])
+    vals = Any[]; t0 = time_ns()
+    for p in points; push!(vals, Base.invokelatest(f, p...)); end
+    CodegenAnswer(vals, (time_ns() - t0) / 1e9, "lambdify: $(length(vals)) calls")
+end
+
 const OPS = Dict{Symbol,Any}(
     :integrate_text => INTEGRATE_TEXT,
+    :expand_text => EXPAND_TEXT, :expand_diff_text => EXPAND_DIFF_TEXT, :series_text => SERIES_TEXT,
+    :subs_text => SUBS_TEXT, :eval_text => EVAL_TEXT, :codegen_text => CODEGEN_TEXT,
     :expand => f -> expand(f),
     :factor => FACTOR,
     :integrate => (f, x) -> RischIntegrate.integrate(f, x),

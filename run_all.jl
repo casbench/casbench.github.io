@@ -30,9 +30,10 @@ envs = Dict("giac" => joinpath(ROOT, "envs", "giac"),
             "fricas" => joinpath(ROOT, "envs", "subprocess"),
             "sage_giac" => joinpath(ROOT, "envs", "subprocess"), "sage_maxima" => joinpath(ROOT, "envs", "subprocess"),
             "sage_fricas" => joinpath(ROOT, "envs", "subprocess"), "sage_sympy" => joinpath(ROOT, "envs", "subprocess"),
-            "sage_singular" => joinpath(ROOT, "envs", "subprocess"), "macaulay2" => joinpath(ROOT, "envs", "subprocess"))
+            "sage_singular" => joinpath(ROOT, "envs", "subprocess"), "macaulay2" => joinpath(ROOT, "envs", "subprocess"),
+            "symengine" => joinpath(ROOT, "envs", "symengine"))
 
-benches = isempty(ARGS) ? ["A", "B", "C", "D", "E", "F", "G", "H"] : ARGS
+benches = isempty(ARGS) ? ["A", "B", "C", "D", "E", "F", "G", "H", "I"] : ARGS
 tB = get(ENV, "BENCH_TIMEOUT_B", "120")
 tD = get(ENV, "BENCH_TIMEOUT_D", "120")
 tC = get(ENV, "BENCH_TIMEOUT_C", "600")
@@ -40,6 +41,7 @@ tE = get(ENV, "BENCH_TIMEOUT_E", "60")
 tG = get(ENV, "BENCH_TIMEOUT_G", "300")
 tF = get(ENV, "BENCH_TIMEOUT_F", "30")
 tH = get(ENV, "BENCH_TIMEOUT_H", "30")
+tI = get(ENV, "BENCH_TIMEOUT_I", "300")
 
 if get(ENV, "BENCH_SKIP_INSTANTIATE", "0") != "1"
     for (k, dir) in envs
@@ -57,7 +59,7 @@ for b in benches
         run(`$JULIA --startup-file=no -t 1 --project=$(envs["giac"]) $(joinpath(ROOT, "A_ffi", "run.jl")) $out`)
     elseif b in ("B", "D", "E")
         bench = b == "B" ? "B_cas" : b == "D" ? "D_coverage" : "E_suite"
-        for sys in ("giac", "symbolics", "sympy", "symj")
+        for sys in ("giac", "symbolics", "sympy", "symj", "symengine")
             out = joinpath(RESULTS, "$(bench)_$(sys).tsv")
             isfile(out) && rm(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), bench, sys, out, b == "B" ? tB : b == "D" ? tD : tE)
@@ -67,6 +69,12 @@ for b in benches
             out = joinpath(RESULTS, "F_integration_$(sys).tsv")
             isfile(out) && rm(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "F_integration", sys, out, tF)
+        end
+    elseif b == "I"
+        for sys in ("giac", "symbolics", "symengine", "symj", "sympy")
+            out = joinpath(RESULTS, "I_scale_$(sys).tsv")
+            isfile(out) && rm(out)
+            supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "I_scale", sys, out, tI)
         end
     elseif b == "H"
         for sys in ("giac", "symbolics", "sympy", "symj", "maxima", "fricas", "sage_giac", "sage_maxima", "sage_fricas", "sage_sympy")

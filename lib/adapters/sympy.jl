@@ -4,12 +4,12 @@ const S = SymPyPythonCall.sympy
 
 const SYSTEM = "SymPy"
 @syms x y z u v a b c s t k n
-@syms d e f g h m p q r j i A B C D F   # the parameters of bench F
+@syms d e f g h m p q r j i A B C D F w   # the parameters of bench F, w for bench I
 const VAR = Dict{Symbol,Any}(:x => x, :y => y, :z => z, :u => u, :v => v, :a => a, :b => b, :c => c,
                              :s => s, :t => t, :k => k, :n => n)
 VAR[:pi] = SymPyPythonCall.PI
 for (vv, obj) in (:d => d, :e => e, :f => f, :g => g, :h => h, :m => m, :p => p, :q => q, :r => r, :j => j, :i => i,
-                  :A => A, :B => B, :C => C, :D => D, :F => F)
+                  :A => A, :B => B, :C => C, :D => D, :F => F, :w => w)
     VAR[vv] = obj
 end
 isdefined(Main, :Mapleish) || include(joinpath(@__DIR__, "..", "mapleish.jl"))
@@ -80,8 +80,31 @@ function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
     [PyC.pyconvert(String, PyC.pystr(go.exprs[i])) for i in 0:n-1]
 end
 
+
+struct CodegenAnswer
+    values::Vector{Any}
+    elapsed::Float64
+    text::String
+end
+Base.string(c::CodegenAnswer) = c.text
+
+stext(s::String) = S.sympify(Mapleish.translate(s, :sympy))
+EXPAND_TEXT(s) = S.expand(stext(s))
+EXPAND_DIFF_TEXT(s, v) = S.diff(S.expand(stext(s)), S.Symbol(v))
+SERIES_TEXT(s, v, x0, nn) = S.series(stext(s), S.Symbol(v), x0, nn + 1).removeO()
+SUBS_TEXT(s, rules) = stext(s).subs(Dict(S.Symbol(l) => stext(r) for (l, r) in rules))
+EVAL_TEXT(s, pt) = N(stext(s).subs(Dict(S.Symbol(k) => v for (k, v) in pt)))
+function CODEGEN_TEXT(s, vars, points)
+    fn = S.lambdify([S.Symbol(v) for v in vars], stext(s); modules = "math")
+    vals = Any[]; t0 = time_ns()
+    for p in points; push!(vals, PyC.pyconvert(Float64, fn(p...))); end
+    CodegenAnswer(vals, (time_ns() - t0) / 1e9, "lambdify: $(length(vals)) calls")
+end
+
 const OPS = Dict{Symbol,Any}(
     :groebner => GROEBNER,
+    :expand_text => EXPAND_TEXT, :expand_diff_text => EXPAND_DIFF_TEXT, :series_text => SERIES_TEXT,
+    :subs_text => SUBS_TEXT, :eval_text => EVAL_TEXT, :codegen_text => CODEGEN_TEXT,
     :integrate_text => INTEGRATE_TEXT,
     :expand => f -> expand(f),
     :factor => FACTOR,

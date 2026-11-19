@@ -31,6 +31,7 @@ BENCHES = {
     "E_suite": ("E. Problem suite", "107 problems in thirteen categories, from the 103 of the fork notebook plus four model-to-Jacobian tasks."),
     "F_integration": ("F. Integration sample", "A stratified sample of the 12000.org independent integration tests, checked by differentiation."),
     "G_groebner": ("G. Gröbner bases", "Reduced Gröbner bases of classical systems (katsura, cyclic, eco, noon) over Q and a prime field."),
+    "I_scale": ("I. Throughput at scale", "How the time grows with the size of the expression: dense expansion, a large derivative, a series, substitution, evaluation and code generation on random trees of up to a hundred thousand leaves."),
     "H_osr": ("H. OSR rules", "The integration rules of OpenSymbolicRules v1 as problems: every integrand, checked by differentiation and against the Lean-certified replacement."),
 }
 OSR = "https://opensymbolicrules.github.io/"
@@ -50,7 +51,7 @@ SYSTEM_LABELS = {"giac": "Giac.jl", "symbolics": "Symbolics.jl", "sympy": "SymPy
                  "primes": "Primes.jl factor", "pari": "LibPARI.jl factors", "groebner": "Groebner.jl",
                  "msolve": "msolve (AlgebraicSolving.jl)", "maxima": "Maxima", "fricas": "FriCAS",
                  "sage_giac": "Sage/Giac", "sage_maxima": "Sage/Maxima", "sage_fricas": "Sage/FriCAS", "sage_sympy": "Sage/SymPy",
-                 "sage_singular": "Sage/Singular", "macaulay2": "Macaulay2"}
+                 "sage_singular": "Sage/Singular", "macaulay2": "Macaulay2", "symengine": "SymEngine.jl"}
 DISCLAIMER = ("An individual, non-commercial project. The numbers are dated: they were measured on a shared virtual "
               "machine with the package versions recorded in the results files, and the systems compared are moving "
               "quickly. A status is a claim to check against the results files, not a verdict on a system.")

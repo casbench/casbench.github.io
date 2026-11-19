@@ -120,6 +120,25 @@ division algorithm over a prime field. The per-case limit is 300 s.
 Singular.jl does not precompile on Julia 1.13 at the pinned versions and is
 not included.
 
+**I, throughput at scale** (`I_scale/`; Giac.jl, Symbolics.jl, SymEngine.jl,
+SymJ.jl, SymPy). Where B and E time small expressions, this bench asks how
+the time grows with the size of the expression, on fixed workloads: dense
+expansion of (x+y+z+w)^n for n = 8, 16, 24, 32; the derivative of the
+1 326-term expansion of (x^y+y^z+z^x)^50; the Taylor polynomial of order 15
+of sin(cos(1+x)); substitution of one symbol (a rule that touches every
+occurrence) and numeric evaluation on random expression trees of a
+thousand, ten thousand and a hundred thousand leaves; and code generation
+(the tree compiled to a function, then a thousand calls, whose time is the
+warm time while the first-call time includes the compilation). The trees
+come from a deterministic generator in `I_scale/inputs.jl` (a fixed
+congruential generator, a given seed), printed in the Maple-like syntax for
+the systems and evaluated in plain Julia for the check: the number of terms
+of an expansion must be the expected one and the value of every answer at a
+point, by the system's own numeric evaluation, must equal the value computed
+from the input. SymEngine.jl (the C++ symengine core) joins here and in
+benches B and D, where most of its cells are *unavailable*: it has no
+integration, factorisation or solving.
+
 **H, OSR rules** (`H_osr/`; the systems of bench F). The integration rules
 of [OpenSymbolicRules](https://opensymbolicrules.github.io/) v1
 (`osr/Integration/v1/integration.osr.json`, OpenMath 2.0 JSON, pinned as a

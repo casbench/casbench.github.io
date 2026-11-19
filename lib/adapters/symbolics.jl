@@ -65,8 +65,40 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = nothing)
     RischIntegrate.integrate(unwrap(Num(f)), unwrap(VAR[Symbol(var)]))
 end
 
+
+struct CodegenAnswer
+    values::Vector{Any}
+    elapsed::Float64
+    text::String
+end
+Base.string(c::CodegenAnswer) = c.text
+
+@variables w
+VAR[:w] = w
+function num_from_text(s::String)
+    ex = Mapleish.julia_expr(s)
+    bindings = Expr(:block, (Expr(:(=), vv, obj) for (vv, obj) in VAR if vv != :pi)...)
+    Num(Core.eval(Main, Expr(:let, bindings, ex)))
+end
+EXPAND_TEXT(s) = Symbolics.expand(num_from_text(s))
+EXPAND_DIFF_TEXT(s, v) = Symbolics.expand_derivatives(Symbolics.Differential(VAR[Symbol(v)])(Symbolics.expand(num_from_text(s))))
+SERIES_TEXT(s, v, x0, nn) = Symbolics.taylor(num_from_text(s), VAR[Symbol(v)], x0, 0:nn)
+SUBS_TEXT(s, rules) = Symbolics.substitute(num_from_text(s), Dict(VAR[Symbol(l)] => num_from_text(r) for (l, r) in rules))
+function EVAL_TEXT(s, pt)
+    r = Symbolics.substitute(num_from_text(s), Dict(VAR[Symbol(k)] => v for (k, v) in pt))
+    Symbolics.value(r)
+end
+function CODEGEN_TEXT(s, vars, points)
+    f = eval(Symbolics.build_function(num_from_text(s), [VAR[Symbol(v)] for v in vars]...; expression = Val(false)))
+    vals = Any[]; t0 = time_ns()
+    for p in points; push!(vals, Base.invokelatest(f, p...)); end
+    CodegenAnswer(vals, (time_ns() - t0) / 1e9, "build_function: $(length(vals)) calls")
+end
+
 const OPS = Dict{Symbol,Any}(
     :integrate_text => INTEGRATE_TEXT,
+    :expand_text => EXPAND_TEXT, :expand_diff_text => EXPAND_DIFF_TEXT, :series_text => SERIES_TEXT,
+    :subs_text => SUBS_TEXT, :eval_text => EVAL_TEXT, :codegen_text => CODEGEN_TEXT,
     :expand => f -> Symbolics.expand(f),
     :factor => FACTOR,
     :integrate => (f, x) -> RischIntegrate.integrate(unwrap(f), unwrap(x)),
