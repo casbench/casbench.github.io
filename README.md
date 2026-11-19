@@ -272,8 +272,16 @@ inside the repository. `.github/workflows/site.yml` deploys it to GitHub Pages.
 
 ## Licence
 
-MIT. The problem statements of bench E are those of the fork notebook cited
-above; the 639 entries of `F_integration/sample.tsv` are quoted from the
-12000.org test files (themselves from the Rubi test suite and the collections
-they cite), for reproducibility, with the file and line of each; the
-structure of the adapters follows SymJ.jl's comparison (MIT).
+- **Code** (the harness, the adapters, the table and site generators, the
+  benches' scripts): MIT, see `LICENSE`.
+- **Data and site content** (the fixed inputs we assembled, `results/`,
+  `tables/`, `figures/`, the generated pages): Creative Commons Attribution
+  4.0 International (CC BY 4.0), see `LICENSE-DATA`. Cite the repository (or
+  `CITATION.cff`) and the run date of the numbers you reuse.
+- **Third-party statements**: the problem statements of bench E are those of
+  the fork notebook cited above; the entries of `F_integration/sample.tsv`
+  are quoted from the 12000.org test files (themselves from the Rubi test
+  suite, MIT, and the collections they cite), with the file and line of each;
+  `H_osr/rules.tsv` derives from OpenSymbolicRules (MIT); the Gröbner systems
+  come from Groebner.jl's examples (MIT). Their own terms apply to them.
+- The structure of the adapters follows SymJ.jl's comparison (MIT).

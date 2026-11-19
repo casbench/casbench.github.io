@@ -377,7 +377,7 @@ class Site:
         for s in STATUSES:
             out += f"| {badge(s)} | {STATUS_HELP[s]} |\n"
         out += (f"\n[History](history/) · [Workflow](workflow/) · [Methodology](methodology/) · [Systems and versions](systems/) · "
-                f"[Machine](environment/) · [Repository]({REPO})\n")
+                f"[Machine](environment/) · [Repository]({REPO}) · Code MIT, data and pages CC BY 4.0\n")
         return out
 
     def results_index(self):
