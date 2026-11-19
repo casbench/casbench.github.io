@@ -101,17 +101,17 @@ for w in WORKLOADS
         push!(PROBLEMS, (name = w.name, op = :series_text, args = V -> ("sin(cos(1+x))", "x", 0, w.n), check = check_series,
                          note = "Taylor polynomial of order 15 at 0, checked at x = 0.05"))
     elseif w.kind == :subs
-        t = tree_for(w.n, w.seed)
-        push!(PROBLEMS, (name = w.name, op = :subs_text, args = V -> (tree_text(t), ["a" => "2*sin(b)"]), check = o -> check_subs(o, t),
-                         note = "random tree, $(tree_nodes(t)) nodes, seed $(w.seed); the rule touches every a"))
+        tr_ = tree_for(w.n, w.seed)
+        push!(PROBLEMS, (name = w.name, op = :subs_text, args = V -> (tree_text(tr_), ["a" => "2*sin(b)"]), check = o -> check_subs(o, tr_),
+                         note = "random tree, $(tree_nodes(tr_)) nodes, seed $(w.seed); the rule touches every a"))
     elseif w.kind == :eval
-        t = tree_for(w.n, w.seed)
-        push!(PROBLEMS, (name = w.name, op = :eval_text, args = V -> (tree_text(t), Dict(string(k) => v for (k, v) in IPOINT)), check = o -> check_eval(o, t),
-                         note = "random tree, $(tree_nodes(t)) nodes, seed $(w.seed), numeric value at a point"))
+        tr_ = tree_for(w.n, w.seed)
+        push!(PROBLEMS, (name = w.name, op = :eval_text, args = V -> (tree_text(tr_), Dict(string(k) => v for (k, v) in IPOINT)), check = o -> check_eval(o, tr_),
+                         note = "random tree, $(tree_nodes(tr_)) nodes, seed $(w.seed), numeric value at a point"))
     elseif w.kind == :codegen
-        t = tree_for(w.n, w.seed)
-        push!(PROBLEMS, (name = w.name, op = :codegen_text, args = V -> (tree_text(t), ["x", "y", "z", "a", "b", "c"], call_points()),
-                         check = o -> check_codegen(o, t),
-                         note = "random tree, $(tree_nodes(t)) nodes, seed $(w.seed): compiled to a function, then $NCALLS calls (the warm time)"))
+        tr_ = tree_for(w.n, w.seed)
+        push!(PROBLEMS, (name = w.name, op = :codegen_text, args = V -> (tree_text(tr_), ["x", "y", "z", "a", "b", "c"], call_points()),
+                         check = o -> check_codegen(o, tr_),
+                         note = "random tree, $(tree_nodes(tr_)) nodes, seed $(w.seed): compiled to a function, then $NCALLS calls (the warm time)"))
     end
 end
