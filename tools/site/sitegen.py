@@ -44,7 +44,9 @@ FIXED_KEYS = {"host", "kernel", "cpu", "memory_GiB", "julia", "julia_threads", "
 # the supervisor records a timeout or a crash under the system key, not the label
 SYSTEM_LABELS = {"giac": "Giac.jl", "symbolics": "Symbolics.jl", "sympy": "SymPy", "symj": "SymJ.jl",
                  "primes": "Primes.jl factor", "pari": "LibPARI.jl factors", "groebner": "Groebner.jl",
-                 "msolve": "msolve (AlgebraicSolving.jl)", "maxima": "Maxima", "fricas": "FriCAS", "reduce": "Reduce"}
+                 "msolve": "msolve (AlgebraicSolving.jl)", "maxima": "Maxima", "fricas": "FriCAS",
+                 "sage_giac": "Sage/Giac", "sage_maxima": "Sage/Maxima", "sage_fricas": "Sage/FriCAS", "sage_sympy": "Sage/SymPy",
+                 "sage_singular": "Sage/Singular", "macaulay2": "Macaulay2"}
 DISCLAIMER = ("An individual, non-commercial project. The numbers are dated: they were measured on a shared virtual "
               "machine with the package versions recorded in the results files, and the systems compared are moving "
               "quickly. A status is a claim to check against the results files, not a verdict on a system.")

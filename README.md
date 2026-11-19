@@ -146,7 +146,9 @@ solved, both solved, faster, median time ratio), the four-system table
 every problem's time (`figures/E_times.tex`, pgfplots).
 
 **F, integration sample** (`F_integration/`; Giac.jl, Symbolics.jl and
-SymJ.jl through RischIntegrate.jl, SymPy). A fixed sample of Nasser M.
+SymJ.jl through RischIntegrate.jl, SymPy; Maxima and FriCAS as subprocesses;
+SageMath driving Giac, Maxima, FriCAS and SymPy, the configuration of the
+12000.org tests for the first three). A fixed sample of Nasser M.
 Abbasi's independent integration tests (12000.org, Summer 2024 edition,
 106 812 integrals from the Rubi test suite and other collections): three
 entries from each of the 215 test files of the 2023 SymPy-format archive,
@@ -173,7 +175,8 @@ here is small and the check is different, so the numbers are not comparable
 to those, only to each other.
 
 **G, Gröbner bases** (`G_groebner/`; Giac.jl `gbasis`, Groebner.jl, msolve
-through AlgebraicSolving.jl, SymPy `groebner`). Reduced degrevlex Gröbner
+through AlgebraicSolving.jl, SymPy `groebner`; Singular and Giac through
+SageMath, and Macaulay2, as subprocesses). Reduced degrevlex Gröbner
 bases of sixteen classical systems (katsura 5 to 9, cyclic 4 to 7, eco 7 and
 10, noon 4 to 6, henrion 5, chandran 5), generated once from Groebner.jl's
 `Examples` and stored as strings in `G_groebner/inputs.jl`, each over Q and
@@ -189,7 +192,13 @@ not included.
 ## Adapters
 
 `lib/adapters/{giac,symbolics,sympy,symj,groebner,msolve}.jl` define the same
-small interface (`OPS`, `EVAL`, `NTERMS`, `NFACTORS`, `UNSOLVED`, `VERSIONS`). Their
+small interface (`OPS`, `EVAL`, `NTERMS`, `NFACTORS`, `UNSOLVED`, `VERSIONS`).
+The subprocess adapters (`maxima`, `fricas`, `sage_<engine>`, `macaulay2`)
+start one process per case, with a script that prints the answer, the
+system's own wall time of the call (reported as the warm time; the first-call
+time includes the start-up) and, for bench F, the numeric values of the
+answer at the check points, so that the generic check applies unchanged.
+These systems come from nixpkgs (`flake.nix`). Their
 structure follows the worker files of SymJ.jl's `bench/cas` comparison (MIT),
 which pair Symbolics.jl and SymJ.jl with GruntzLimit.jl for limits and
 RischIntegrate.jl for integrals, since neither has symbolic integration or
@@ -223,10 +232,9 @@ inside the repository. `.github/workflows/site.yml` deploys it to GitHub Pages.
 
 ## Planned
 
-- The open-source systems of the 12000.org tests that are not reachable from
-  Julia as packages (Maxima, FriCAS; Reduce is not in nixpkgs), driven as
-  subprocesses from the same harness on bench F.
 - The per-integral grades of the 12000.org reports as a column of bench F.
+- Reduce, which is not in nixpkgs, and Rubi, which needs Mathematica, are the
+  two systems of the 12000.org tests not run here.
 
 ## Licence
 

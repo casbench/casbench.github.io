@@ -36,7 +36,9 @@ for i in START:STOP
     end
     rec = try
         args = prob.args(VAR)
-        out, tf, tw = time_call(() -> opf(args...); between = CLEARCACHE)
+        out, tf, tw = time_call(() -> opf(args...); between = CLEARCACHE, repeats = isdefined(Main, :REPEATS) ? REPEATS : 5)
+        # a subprocess system reports its own compute time as the warm time (the first-call time includes its start-up)
+        hasfield(typeof(out), :elapsed) && isfinite(out.elapsed) && (tw = out.elapsed)
         note = prob.note
         status = if out === nothing || (out isa Tuple && !isempty(out) && out[1] === nothing) || (UNSOLVED(prob.op, out) && !get(prob, :accept_unsolved, false))
             :unsolved

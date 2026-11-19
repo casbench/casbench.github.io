@@ -15,7 +15,9 @@ const MAXIMA = get(ENV, "MAXIMA", "maxima")
 struct MaximaAnswer
     text::String                       # the antiderivative as Maxima prints it (1D)
     values::Dict{Float64,ComplexF64}   # x => numeric value of the answer at the check points
+    elapsed::Float64                   # seconds of the integrate call inside Maxima
 end
+const REPEATS = 1                      # one process per case; the warm time is the in-process time
 Base.string(a::MaximaAnswer) = a.text
 
 # points of the check (FPOINTS, FPARAMS and h of F_integration/problems.jl, read at call time)
@@ -34,7 +36,8 @@ function INTEGRATE_TEXT(integrand::String, var::String)
     f = Mapleish.translate(integrand, :maxima)
     xs = check_points()
     # the batch echoes its input: the markers are assembled by concat so that they only occur in the output
-    lines = ["display2d:false\$", "ratprint:false\$", "linel:1000000\$", "res_: integrate($f, $var)\$",
+    lines = ["display2d:false\$", "ratprint:false\$", "linel:1000000\$", "t0_: elapsed_real_time()\$", "res_: integrate($f, $var)\$",
+             "print(concat(\"<<T\", \"IME>>\"), string(float(elapsed_real_time() - t0_)))\$",
              "print(concat(\"<<AN\", \"S>>\"), string(res_))\$"]
     for (i, xv) in enumerate(xs)
         args = join(["$var=$xv"; param_list(integrand); "numer"], ",")
@@ -51,7 +54,8 @@ function INTEGRATE_TEXT(integrand::String, var::String)
         v = parse_maxima_number(strip(mv[1]))
         v === nothing || (vals[xv] = v)
     end
-    MaximaAnswer(ans, vals)
+    mt = match(r"<<TIME>>\s*([0-9.eE+-]+)", txt)
+    MaximaAnswer(ans, vals, mt === nothing ? NaN : parse(Float64, mt[1]))
 end
 
 # "1.234", "-5.6e-3", "1.2*%i+3.4", "3.4-1.2*%i", "%i*1.2"

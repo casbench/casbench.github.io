@@ -15,6 +15,7 @@ struct FricasAnswer
     text::String
     values::Dict{Float64,ComplexF64}
 end
+const REPEATS = 1                      # one process per case
 Base.string(a::FricasAnswer) = a.text
 
 check_points() = (pts = Main.FPOINTS; h = 1e-5; [x0 + s * h for x0 in pts for s in (-1, 1)])

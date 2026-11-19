@@ -60,9 +60,20 @@ PARTFRAC(f, x) = apart(f, x)
 
 const PyC = SymPyPythonCall.PythonCall
 # reduced Gröbner basis (grevlex) of polynomials given as strings; p == 0 for Q, else GF(p)
+isdefined(Main, :Poly) || include(joinpath(@__DIR__, "..", "poly.jl"))
+# a polynomial string with its rational coefficients reduced modulo p (SymPy's modulus= wants integers)
+function modp_string(s::String, vars::Vector{String}, p::Int)
+    f = Poly.parse_poly(s, vars)
+    terms = String[]
+    for (m, c) in f
+        mono = join(("$(vars[i])^$(m[i])" for i in eachindex(m) if m[i] > 0), "*")
+        push!(terms, string(Poly.modp(c, p), isempty(mono) ? "" : "*" * mono))
+    end
+    isempty(terms) ? "0" : join(terms, "+")
+end
 function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
     syms = [S.Symbol(v) for v in vars]
-    F = [S.sympify(replace(s, "//" => "/")) for s in polys]
+    F = [S.sympify(p == 0 ? replace(s, "//" => "/") : modp_string(s, vars, p)) for s in polys]
     G = p == 0 ? S.groebner(F, syms...; order = "grevlex") : S.groebner(F, syms...; order = "grevlex", modulus = p)
     go = getfield(G, :o)
     n = PyC.pyconvert(Int, PyC.pylen(go))

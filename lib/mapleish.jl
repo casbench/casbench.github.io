@@ -36,11 +36,15 @@ const FRICAS = Dict("arctan" => "atan", "arcsin" => "asin", "arccos" => "acos", 
                     "arccsc" => "acsc", "arctanh" => "atanh", "arcsinh" => "asinh", "arccosh" => "acosh", "arccoth" => "acoth",
                     "arcsech" => "asech", "arccsch" => "acsch", "ln" => "log", "GAMMA" => "Gamma", "Ei" => "Ei", "Si" => "Si",
                     "Ci" => "Ci", "Shi" => "Shi", "Chi" => "Chi", "polylog" => "polylog", "erf" => "erf", "erfi" => "erfi")
-const TABLES = Dict(:julia => JULIA, :giac => GIAC, :sympy => SYMPY, :maxima => MAXIMA, :fricas => FRICAS)
+const SAGE = Dict("ln" => "log", "GAMMA" => "gamma", "Zeta" => "zeta", "Ei" => "Ei", "Si" => "sin_integral", "Ci" => "cos_integral",
+                  "Shi" => "sinh_integral", "Chi" => "cosh_integral", "LambertW" => "lambert_w", "FresnelC" => "fresnel_cos",
+                  "FresnelS" => "fresnel_sin", "EllipticF" => "elliptic_f", "EllipticE" => "elliptic_e", "EllipticPi" => "elliptic_pi",
+                  "hypergeom" => "hypergeometric", "polylog" => "polylog")
+const TABLES = Dict(:julia => JULIA, :giac => GIAC, :sympy => SYMPY, :maxima => MAXIMA, :fricas => FRICAS, :sage => SAGE)
 # constants per dialect
 const CONSTS = Dict(:julia => Dict("Pi" => "pi", "I" => "im"), :giac => Dict("Pi" => "pi", "I" => "i"),
                     :sympy => Dict("Pi" => "pi", "I" => "I"), :maxima => Dict("Pi" => "%pi", "I" => "%i"),
-                    :fricas => Dict("Pi" => "%pi", "I" => "%i"))
+                    :fricas => Dict("Pi" => "%pi", "I" => "%i"), :sage => Dict("Pi" => "pi", "I" => "I"))
 # functions the test files use whose meaning is not a plain function call (abstract functions, held forms)
 const UNSUPPORTED = ("Derivative", "Unintegrable", "CannotIntegrate", "RootSum", "AppellF1", "HypergeometricPFQ", "f", "g")
 
