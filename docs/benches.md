@@ -137,7 +137,11 @@ of an expansion must be the expected one and the value of every answer at a
 point, by the system's own numeric evaluation, must equal the value computed
 from the input. SymEngine.jl (the C++ symengine core) joins here and in
 benches B and D, where most of its cells are *unavailable*: it has no
-integration, factorisation or solving.
+integration, factorisation or solving. A finding of this bench: Symbolics.jl
+(7.49, SymbolicUtils 3) expands (x+y+z)^50 with wrong coefficients (the
+value at (1,1,1) is 6.33e20 instead of 3^50 = 7.18e23, while degree 20 is
+exact), consistent with 64-bit integer coefficients overflowing above
+about 9.2e18; the derivative row of bench I is therefore *wrong* for it.
 
 **H, OSR rules** (`H_osr/`; the systems of bench F). The integration rules
 of [OpenSymbolicRules](https://opensymbolicrules.github.io/) v1
