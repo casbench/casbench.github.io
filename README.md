@@ -233,7 +233,14 @@ start one process per case, with a script that prints the answer, the
 system's own wall time of the call (reported as the warm time; the first-call
 time includes the start-up) and, for bench F, the numeric values of the
 answer at the check points, so that the generic check applies unchanged.
-These systems come from nixpkgs (`flake.nix`). Their
+These systems come from nixpkgs (`flake.nix`). The Sage columns measure an
+engine *through Sage's interfaces*, which is what the 12000.org tests did for
+Giac, Maxima and FriCAS, and the interface shows: Sage's pexpect interface to
+giac cannot read an answer that giac prints with a warning (reported as an
+error), and a question Maxima asks (the sign of a parameter combination) is
+an exception in Sage, where the standalone Maxima column answers it from the
+fixed values (`lib/adapters/maxima.jl`, the `retrieve` oracle). Sage runs as
+one process per worker (`lib/adapters/sage_server.py`). Their
 structure follows the worker files of SymJ.jl's `bench/cas` comparison (MIT),
 which pair Symbolics.jl and SymJ.jl with GruntzLimit.jl for limits and
 RischIntegrate.jl for integrals, since neither has symbolic integration or
