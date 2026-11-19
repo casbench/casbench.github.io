@@ -21,7 +21,7 @@ Base.string(a::FricasAnswer) = a.text
 check_points() = (pts = Main.FPOINTS; h = 1e-5; [x0 + s * h for x0 in pts for s in (-1, 1)])
 # only the parameters the integrand uses (D is FriCAS's differentiation operator, F and others are fine as symbols)
 # values substituted as Complex Float, so that a logarithm or a root of a negative value evaluates instead of raising
-param_list(xv, integrand) = join([["$k = ($(v)::Complex Float)" for (k, v) in Main.FPARAMS if occursin(Regex("\\b$k\\b"), integrand)]; "x = ($xv::Complex Float)"], ", ")
+param_list(xv, integrand, params) = join([["$k = ($(v)::Complex Float)" for (k, v) in params if occursin(Regex("\\b$k\\b"), integrand)]; "x = ($xv::Complex Float)"], ", ")
 
 function run_fricas(script::String)
     out = IOBuffer()
@@ -29,14 +29,14 @@ function run_fricas(script::String)
     String(take!(out))
 end
 
-function INTEGRATE_TEXT(integrand::String, var::String)
+function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     f = Mapleish.translate(integrand, :fricas)
     xs = check_points()
     lines = [")set message autoload off", ")set message type off", ")set output algebra off", ")set output length 245",
              "f := $f", "resf := integrate(f, $var)",
              "output(concat(\"<<ANS>>\", unparse(resf::InputForm)))"]
     for (i, xv) in enumerate(xs)
-        push!(lines, "v$i := complexNumeric(eval(resf, [$(param_list(xv, integrand))]))")
+        push!(lines, "v$i := complexNumeric(eval(resf, [$(param_list(xv, integrand, params))]))")
         push!(lines, "output(concat(\"<<V$i>>\", unparse(v$i::InputForm)))")
     end
     path = tempname() * ".input"

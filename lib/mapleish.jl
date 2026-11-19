@@ -120,6 +120,22 @@ module Fns
     Li(z) = error("Li: not evaluated")
     Psi(z) = error("Psi: not evaluated")
     lnGAMMA(z) = error("lnGAMMA: not evaluated")
+    # residual integral of an OSR replacement, int(lambda t. H)(x): numeric quadrature from a fixed base point
+    # (the comparison with a certified antiderivative is up to a constant, so the base point does not matter)
+    const OSR_BASE = 0.31
+    function osr_int(f, x)
+        simpson(a, b, fa, fm, fb, whole, depth) = begin
+            m = (a + b) / 2; lm = (a + m) / 2; rm = (m + b) / 2
+            flm, frm = f(lm), f(rm)
+            left = (m - a) / 6 * (fa + 4flm + fm); right = (b - m) / 6 * (fm + 4frm + fb)
+            (depth <= 0 || abs(left + right - whole) <= 1e-10 * max(1.0, abs(left + right))) && return left + right + (left + right - whole) / 15
+            simpson(a, m, fa, flm, fm, left, depth - 1) + simpson(m, b, fm, frm, fb, right, depth - 1)
+        end
+        a, b = ComplexF64(OSR_BASE), ComplexF64(x)
+        a == b && return zero(ComplexF64)
+        fa, fb, fm = f(a), f(b), f((a + b) / 2)
+        simpson(a, b, fa, fm, fb, (b - a) / 6 * (fa + 4fm + fb), 40)
+    end
 end
 
 """

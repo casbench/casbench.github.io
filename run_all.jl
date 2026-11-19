@@ -32,13 +32,14 @@ envs = Dict("giac" => joinpath(ROOT, "envs", "giac"),
             "sage_fricas" => joinpath(ROOT, "envs", "subprocess"), "sage_sympy" => joinpath(ROOT, "envs", "subprocess"),
             "sage_singular" => joinpath(ROOT, "envs", "subprocess"), "macaulay2" => joinpath(ROOT, "envs", "subprocess"))
 
-benches = isempty(ARGS) ? ["A", "B", "C", "D", "E", "F", "G"] : ARGS
+benches = isempty(ARGS) ? ["A", "B", "C", "D", "E", "F", "G", "H"] : ARGS
 tB = get(ENV, "BENCH_TIMEOUT_B", "120")
 tD = get(ENV, "BENCH_TIMEOUT_D", "120")
 tC = get(ENV, "BENCH_TIMEOUT_C", "600")
 tE = get(ENV, "BENCH_TIMEOUT_E", "60")
 tG = get(ENV, "BENCH_TIMEOUT_G", "300")
 tF = get(ENV, "BENCH_TIMEOUT_F", "30")
+tH = get(ENV, "BENCH_TIMEOUT_H", "30")
 
 if get(ENV, "BENCH_SKIP_INSTANTIATE", "0") != "1"
     for (k, dir) in envs
@@ -66,6 +67,12 @@ for b in benches
             out = joinpath(RESULTS, "F_integration_$(sys).tsv")
             isfile(out) && rm(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "F_integration", sys, out, tF)
+        end
+    elseif b == "H"
+        for sys in ("giac", "symbolics", "sympy", "symj", "maxima", "fricas", "sage_giac", "sage_maxima", "sage_fricas", "sage_sympy")
+            out = joinpath(RESULTS, "H_osr_$(sys).tsv")
+            isfile(out) && rm(out)
+            supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "H_osr", sys, out, tH)
         end
     elseif b == "G"
         for sys in ("giac", "groebner", "msolve", "sympy", "sage_singular", "sage_giac", "macaulay2")

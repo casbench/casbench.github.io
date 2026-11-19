@@ -31,7 +31,9 @@ BENCHES = {
     "E_suite": ("E. Problem suite", "107 problems in thirteen categories, from the 103 of the fork notebook plus four model-to-Jacobian tasks."),
     "F_integration": ("F. Integration sample", "A stratified sample of the 12000.org independent integration tests, checked by differentiation."),
     "G_groebner": ("G. Gröbner bases", "Reduced Gröbner bases of classical systems (katsura, cyclic, eco, noon) over Q and a prime field."),
+    "H_osr": ("H. OSR rules", "The integration rules of OpenSymbolicRules v1 as problems: every integrand, checked by differentiation and against the Lean-certified replacement."),
 }
+OSR = "https://opensymbolicrules.github.io/"
 STATUSES = ("verified", "wrong", "unverified", "unsolved", "unavailable", "error", "timeout")
 STATUS_HELP = {
     "verified": "returned and checked by a system-neutral test",
@@ -364,6 +366,13 @@ class Site:
         for key, (title, desc) in BENCHES.items():
             if key in self.results:
                 out += f"| [{title}](results/{key.lower()}/) | {desc} |\n"
+        out += ("\n## Sources\n\n"
+                "- Bench E follows the notebook of a fork of Giac.jl; bench F samples the 12000.org independent integration tests "
+                "(Nasser M. Abbasi; the problems come from the Rubi test suite and other collections); bench G uses the classical "
+                "systems of Groebner.jl's examples.\n"
+                f"- Bench H consumes [OpenSymbolicRules]({OSR}) (OSR): the v1 integration rules, with their Lean verdicts and "
+                "conditions, pinned as the git submodule `osr/Integration`. These benchmarks are a consumer of OSR; the "
+                "conformance suites of OSR are the next source.\n")
         out += "\n## Status vocabulary\n\n| status | meaning |\n|---|---|\n"
         for s in STATUSES:
             out += f"| {badge(s)} | {STATUS_HELP[s]} |\n"
@@ -510,7 +519,7 @@ class Site:
         return front("Methodology", 6) + f"From [`README.md`]({BLOB}/README.md).\n\n" + body
 
     def llms(self):
-        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of CAS reachable from Julia. {DISCLAIMER}\n\n"
+        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of CAS reachable from Julia. {DISCLAIMER}\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
                 + "\n".join(f"- {t}: {d}" for k, (t, d) in BENCHES.items() if k in self.results) + f"\n- Repository: {REPO}\n")
 
 

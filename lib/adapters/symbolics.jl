@@ -58,7 +58,7 @@ for (vv, obj) in (:d => d, :e => e, :f => f, :g => g, :h => h, :m => m, :p => p,
 end
 isdefined(Main, :Mapleish) || include(joinpath(@__DIR__, "..", "mapleish.jl"))
 # bench F: the translated text evaluated as Julia with the symbols bound to the Num variables, then RischIntegrate
-function INTEGRATE_TEXT(integrand::String, var::String)
+function INTEGRATE_TEXT(integrand::String, var::String, params = nothing)
     ex = Mapleish.julia_expr(integrand)
     bindings = Expr(:block, (Expr(:(=), vv, obj) for (vv, obj) in VAR if vv != :pi)...)
     f = Core.eval(Main, Expr(:let, bindings, ex))

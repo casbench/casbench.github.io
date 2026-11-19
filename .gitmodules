@@ -1,3 +1,6 @@
 [submodule "Giac.jl"]
 	path = Giac.jl
 	url = https://github.com/JuliaGiac/Giac.jl.git
+[submodule "osr/Integration"]
+	path = osr/Integration
+	url = https://github.com/OpenSymbolicRules/Integration.git

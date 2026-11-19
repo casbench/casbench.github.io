@@ -26,7 +26,7 @@ repository includes this one as a git submodule and copies `tables/` and
 `figures/` into its LaTeX sources.
 
 ```
-A_ffi/ B_cas/ C_ifactor/ D_coverage/ E_suite/ F_integration/ G_groebner/   the benches (inputs, problems, task files)
+A_ffi/ ... H_osr/   the benches (inputs, problems, task files); osr/Integration: OpenSymbolicRules submodule
 lib/           harness: common.jl, supervise.jl, worker.jl, adapters/<system>.jl, poly.jl, mapleish.jl
 envs/          one pinned Julia environment per system (Project.toml + Manifest.toml)
 results/       <bench>_<system>.tsv, summary.md, machine.txt, environment.txt, history.tsv (one row per run)
@@ -191,6 +191,37 @@ to be reduced, and every input polynomial is reduced to zero modulo it by the
 division algorithm over a prime field. The per-case limit is 300 s.
 Singular.jl does not precompile on Julia 1.13 at the pinned versions and is
 not included.
+
+**H, OSR rules** (`H_osr/`; the systems of bench F). The integration rules
+of [OpenSymbolicRules](https://opensymbolicrules.github.io/) v1
+(`osr/Integration/v1/integration.osr.json`, OpenMath 2.0 JSON, pinned as a
+git submodule), converted once by `H_osr/convert.py` into `H_osr/rules.tsv`:
+the integrand of each rule's pattern in the Maple-like syntax of bench F, the
+certified replacement as a Julia expression (residual integrals
+`int(lambda t. H)(x)` become numeric quadratures), the conditions as a Julia
+boolean, and the Lean verdicts over R and C. Each rule is a problem: its
+parameters take the first set of fixed values that satisfies its conditions
+(integers where the rule asks for integers), every system integrates the
+integrand, the answer is checked by differentiation as in bench F, and for a
+rule proved over R it is also compared with the certified replacement up to a
+constant (the note says `certified: agree` or `certified: differ`). Rules
+whose variable names are not among the parameter symbols the adapters know
+are skipped (113 of 1380); 409 usable rules are proved over R and 858 refuted.
+Verdict semantics, as OSR states them: "proved over R / C" is a Lean proof
+that the rule as stated holds in the OSR fragment; "refuted over R" is a Lean
+counterexample to the rule as stated in that fragment (where `ln` is defined
+on the positive reals only, `power` interprets integer exponents only and
+the conditions are exactly those listed), usually a domain subtlety such as
+ln x against ln |x|, a degenerate coefficient or a pole, not a wrong Rubi
+table entry; "unproved" is neither. The check never uses a refuted
+replacement, and a proof is a statement about the rule, not about any CAS.
+The v1 format is a pilot (`osr_format` 1.0.0-alpha.1, no tags yet): the
+commit and the Verification report digest are recorded in the header of
+`rules.tsv`. Citation: OpenSymbolicRules (OSR) v1,
+https://opensymbolicrules.github.io/, rule set
+https://github.com/OpenSymbolicRules/Integration (pinned commit in
+`.gitmodules`), suites https://github.com/OpenSymbolicRules/Conformance.
+OSR lists these benchmarks on its "Used by" page.
 
 ## Adapters
 

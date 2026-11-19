@@ -14,7 +14,7 @@ for (vv, obj) in (:d => d, :e => e, :f => f, :g => g, :h => h, :m => m, :p => p,
 end
 isdefined(Main, :Mapleish) || include(joinpath(@__DIR__, "..", "mapleish.jl"))
 # bench F: sympify the translated text (symbols by name are equal to the @syms ones), then integrate
-INTEGRATE_TEXT(integrand::String, var::String) = S.integrate(S.sympify(Mapleish.translate(integrand, :sympy)), S.Symbol(var))
+INTEGRATE_TEXT(integrand::String, var::String, params = nothing) = S.integrate(S.sympify(Mapleish.translate(integrand, :sympy)), S.Symbol(var))
 toint(m) = Int(N(m))
 # exact rationals must enter SymPy as Sym ratios, not Julia Rationals
 sx(e) = e isa Rational ? Sym(numerator(e)) / Sym(denominator(e)) : e

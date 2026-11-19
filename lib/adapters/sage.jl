@@ -78,13 +78,13 @@ function parse_sage_complex(s::AbstractString)
     end
 end
 
-function INTEGRATE_TEXT(integrand::String, var::String)
+function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     f = Mapleish.translate(integrand, :sage)
     syms = unique([m.match for m in eachmatch(r"\b[A-Za-z_][A-Za-z_0-9]*\b", f)
                    if !occursin(m.match * "(", f) && !(m.match in ("pi", "I", "e", "E"))])
-    params = [k for (k, v) in Main.FPARAMS if string(k) in syms]
-    pt = join(["$k: $(v)" for (k, v) in Main.FPARAMS if k in params], ", ")
-    lines = ["var('" * join(unique([var; string.(params)]), " ") * "')",
+    used = [k for (k, v) in params if string(k) in syms]
+    pt = join(["$k: $(v)" for (k, v) in params if k in used], ", ")
+    lines = ["var('" * join(unique([var; string.(used)]), " ") * "')",
              "f = $f", "t0 = walltime()",
              "try:",
              SAGE_ALGORITHM == "giac" ? "    Fg = giac(f).integrate(giac($var))\n    t1 = walltime()\n    try:\n        F = Fg.sage()\n    except Exception as ex:\n        F = SR(str(Fg))" :

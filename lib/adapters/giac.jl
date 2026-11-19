@@ -16,7 +16,7 @@ for (vv, obj) in (:d => d, :f => f, :g => g, :h => h, :m => m, :p => p, :q => q,
 end
 isdefined(Main, :Mapleish) || include(joinpath(@__DIR__, "..", "mapleish.jl"))
 # bench F: an integrand in the Maple-like text of the 12000.org files
-function INTEGRATE_TEXT(integrand::String, var::String)
+function INTEGRATE_TEXT(integrand::String, var::String, params = nothing)
     s = Mapleish.translate(integrand, :giac)
     s = replace(s, r"\be\b" => "ee", r"\bi\b" => "ii")
     giac_eval("integrate(" * s * "," * var * ")")

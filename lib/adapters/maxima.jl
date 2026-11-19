@@ -23,7 +23,7 @@ Base.string(a::MaximaAnswer) = a.text
 # points of the check (FPOINTS, FPARAMS and h of F_integration/problems.jl, read at call time)
 check_points() = (pts = Main.FPOINTS; h = 1e-5; [x0 + s * h for x0 in pts for s in (-1, 1)])
 # only the parameters the integrand uses
-param_list(integrand) = ["$k=$(v)" for (k, v) in Main.FPARAMS if occursin(Regex("\\b$k\\b"), integrand)]
+param_list(integrand, params) = ["$k=$(v)" for (k, v) in params if occursin(Regex("\\b$k\\b"), integrand)]
 
 function run_maxima(script::String)
     out = IOBuffer()
@@ -32,15 +32,17 @@ function run_maxima(script::String)
     String(take!(out))
 end
 
-function INTEGRATE_TEXT(integrand::String, var::String)
+function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     f = Mapleish.translate(integrand, :maxima)
     xs = check_points()
     # the batch echoes its input: the markers are assembled by concat so that they only occur in the output
-    params = param_list(integrand)
-    assumptions = isempty(params) ? "" : "assume(" * join([replace(p, "=" => ">0*") for p in params], ",") * ")\$"   # a>0*1.7, i.e. a > 0
+    plist = param_list(integrand, params)
+    # the sign of each parameter is assumed as its fixed value has it (a > 0, or m < 0 for a negative candidate value)
+    signs = ["$k$(v > 0 ? ">" : "<")0" for (k, v) in params if v != 0 && occursin(Regex("\\b$k\\b"), integrand)]
+    assumptions = isempty(signs) ? "" : "assume(" * join(signs, ",") * ")\$"
     # questions Maxima asks in batch mode (asksign, askinteger, ...) are answered by an oracle that evaluates the
     # expression asked about at the fixed values of the parameters and at x = 0.57 (the middle check point)
-    subst = join(["$k=$(v)" for (k, v) in Main.FPARAMS] ∪ ["x=0.57"], ",")
+    subst = join(["$k=$(v)" for (k, v) in params] ∪ ["x=0.57"], ",")
     oracle = ["oracle_(e_, t_) := block([v_], v_: errcatch(float(subst([$subst], e_))), " *
               "if length(v_) = 0 or not numberp(first(v_)) then (if ssearch(\"integer\", t_) # false or ssearch(\"even\", t_) # false or ssearch(\"odd\", t_) # false then 'no else 'pos) " *
               "else block([w_: first(v_)], if ssearch(\"integer\", t_) # false then (if integerp(w_) then 'yes else 'no) " *
@@ -53,7 +55,7 @@ function INTEGRATE_TEXT(integrand::String, var::String)
              "print(concat(\"<<T\", \"IME>>\"), string(float(elapsed_real_time() - t0_)))\$",
              "print(concat(\"<<AN\", \"S>>\"), string(res_))\$"]
     for (i, xv) in enumerate(xs)
-        args = join(["$var=$xv"; param_list(integrand); "numer"], ",")
+        args = join(["$var=$xv"; plist; "numer"], ",")
         push!(lines, "print(concat(\"<<V\", $i, \">>\"), string(float(rectform(ev(res_, $args)))))\$")
     end
     txt = run_maxima(join(lines, "\n"))
