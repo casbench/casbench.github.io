@@ -10,6 +10,7 @@ const VAR = Dict{Symbol,Any}()
 isdefined(Main, :Mapleish) || include(joinpath(@__DIR__, "..", "mapleish.jl"))
 
 const FRICAS = get(ENV, "FRICAS", "fricas")
+const CASE_LIMIT = get(ENV, "BENCH_CASE_TIMEOUT", "600")   # seconds; a subprocess never outlives the case
 
 struct FricasAnswer
     text::String
@@ -25,7 +26,7 @@ param_list(xv, integrand, params) = join([["$k = ($(v)::Complex Float)" for (k, 
 
 function run_fricas(script::String)
     out = IOBuffer()
-    run(pipeline(`$FRICAS -nosman -eval ")read $(script) )quiet" -eval ")quit"`; stdout = out, stderr = devnull))
+    run(pipeline(`timeout -k 5 $CASE_LIMIT $FRICAS -nosman -eval ")read $(script) )quiet" -eval ")quit"`; stdout = out, stderr = devnull))
     String(take!(out))
 end
 

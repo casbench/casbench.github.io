@@ -9,6 +9,7 @@ const REPEATS = 1
 isdefined(Main, :Poly) || include(joinpath(@__DIR__, "..", "poly.jl"))
 
 const M2 = get(ENV, "M2", "M2")
+const CASE_LIMIT = get(ENV, "BENCH_CASE_TIMEOUT", "600")   # seconds; a subprocess never outlives the case
 
 struct M2Basis
     polys::Vector{String}
@@ -30,7 +31,7 @@ function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
     write(path, join(lines, "\n") * "\n")
     out = IOBuffer()
     try
-        run(pipeline(`$M2 --script $path`; stdout = out, stderr = devnull))
+        run(pipeline(`timeout -k 5 $CASE_LIMIT $M2 --script $path`; stdout = out, stderr = devnull))
     finally
         rm(path; force = true)
     end

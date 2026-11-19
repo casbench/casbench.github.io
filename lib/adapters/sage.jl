@@ -23,6 +23,7 @@ isdefined(Main, :Mapleish) || include(joinpath(@__DIR__, "..", "mapleish.jl"))
 isdefined(Main, :Poly) || include(joinpath(@__DIR__, "..", "poly.jl"))
 
 const SAGE = get(ENV, "SAGE", "sage")
+const CASE_LIMIT = get(ENV, "BENCH_CASE_TIMEOUT", "600")   # seconds; a subprocess never outlives the case
 
 struct SageAnswer
     text::String
@@ -47,7 +48,7 @@ function run_sage(script::String)
     write(path, script)
     out = IOBuffer()
     try
-        run(pipeline(`$SAGE $path`; stdout = out, stderr = devnull))
+        run(pipeline(`timeout -k 5 $CASE_LIMIT $SAGE $path`; stdout = out, stderr = devnull))
     finally
         rm(path; force = true)
         rm(path * ".py"; force = true)

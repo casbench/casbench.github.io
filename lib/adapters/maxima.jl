@@ -11,6 +11,7 @@ const VAR = Dict{Symbol,Any}()
 isdefined(Main, :Mapleish) || include(joinpath(@__DIR__, "..", "mapleish.jl"))
 
 const MAXIMA = get(ENV, "MAXIMA", "maxima")
+const CASE_LIMIT = get(ENV, "BENCH_CASE_TIMEOUT", "600")   # seconds; a subprocess never outlives the case
 
 struct MaximaAnswer
     text::String                       # the antiderivative as Maxima prints it (1D)
@@ -27,7 +28,7 @@ param_list(integrand, params) = ["$k=$(v)" for (k, v) in params if occursin(Rege
 
 function run_maxima(script::String)
     out = IOBuffer()
-    cmd = pipeline(`$MAXIMA --very-quiet --batch-string=$script`; stdout = out, stderr = devnull)
+    cmd = pipeline(`timeout -k 5 $CASE_LIMIT $MAXIMA --very-quiet --batch-string=$script`; stdout = out, stderr = devnull)
     run(cmd)
     String(take!(out))
 end

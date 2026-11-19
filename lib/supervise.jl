@@ -21,8 +21,12 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
     isfile(progress) && rm(progress)
     start = 1
     while true
-        cmd = `$(Base.julia_cmd()) --startup-file=no --project=$envdir $worker $bench $system $out $start $progress $extra`
+        # setsid: the worker leads a new process group, so that a timeout kills its subprocesses (Maxima, FriCAS,
+        # Sage and their children) with it; the per-case limit is exported for the subprocess adapters' `timeout`
+        cmd = setenv(`setsid $(Base.julia_cmd()) --startup-file=no --project=$envdir $worker $bench $system $out $start $progress $extra`,
+                     "BENCH_CASE_TIMEOUT" => string(round(Int, timeout)); inherit = true)
         proc = run(pipeline(cmd; stdout = logfile, stderr = logfile, append = true); wait = false)
+        killgroup(sig) = (pid = getpid(proc); run(ignorestatus(`kill -$sig -- -$pid`)))
         last_progress = ""
         last_change = time()
         killed = false
@@ -34,7 +38,7 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
                 last_change = time()
             end
             if !isempty(p) && time() - last_change > timeout
-                kill(proc)                       # SIGTERM; a worker blocked in a C call ignores it
+                killgroup("TERM")                # SIGTERM to the group; a worker blocked in a C call ignores it
                 killed = true
                 break
             end
@@ -44,7 +48,7 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
             while process_running(proc) && time() - t0 < 10
                 sleep(0.25)
             end
-            process_running(proc) && kill(proc, Base.SIGKILL)
+            process_running(proc) && killgroup("KILL")
         end
         wait(proc)
         if killed
