@@ -40,6 +40,9 @@ STATUS_HELP = {
     "timeout": "over the per-case limit",
 }
 FIXED_KEYS = {"host", "kernel", "cpu", "memory_GiB", "julia", "julia_threads", "bench"}
+# the supervisor records a timeout or a crash under the system key, not the label
+SYSTEM_LABELS = {"giac": "Giac.jl", "symbolics": "Symbolics.jl", "sympy": "SymPy", "symj": "SymJ.jl",
+                 "primes": "Primes.jl factor", "pari": "LibPARI.jl factors"}
 DISCLAIMER = ("An individual, non-commercial project. The numbers are dated: they were measured on a shared virtual "
               "machine with the package versions recorded in the results files, and the systems compared are moving "
               "quickly. A status is a claim to check against the results files, not a verdict on a system.")
@@ -100,6 +103,7 @@ class Site:
             for r in read_tsv(p):
                 if r["case"] == "_load":
                     continue
+                r["system"] = SYSTEM_LABELS.get(r["system"], r["system"])
                 self.results.setdefault(r["bench"], {}).setdefault(r["system"], []).append(r)
         self.machine = self.read_machine()
         self.categories = self.read_categories()
@@ -151,9 +155,13 @@ class Site:
     def systems(self):
         return sorted({s for systems in self.results.values() for s in systems})
 
+    def packages(self):
+        """Distinct packages behind the system columns (first word of the label)."""
+        return sorted({s.split()[0] for s in self.systems()})
+
     # -- pages --------------------------------------------------------------
     def home(self):
-        nb, ns, nc = len(self.results), len(self.systems()), self.ncases()
+        nb, ns, nc = len(self.results), len(self.packages()), self.ncases()
         out = front("Computer algebra system benchmarks", 0)
         out += '<p class="project-kicker">reproducible · verified · dated</p>\n\n'
         out += ("Benchmarks of computer algebra systems reachable from Julia: Giac.jl, Symbolics.jl, SymPy (through "
@@ -161,7 +169,7 @@ class Site:
                 "repository, run on fixed inputs, with every answer checked by a system-neutral test and every run dated. "
                 f"They are the reproduced numbers of the {PAPER}.\n\n")
         out += '<div class="suite-stats">\n'
-        for n, label, href in ((nb, "benches", "results/"), (ns, "systems", "systems/"),
+        for n, label, href in ((nb, "benches", "results/"), (ns, "packages", "systems/"),
                                (nc, "cases", "results/"), (self.last_date()[:10] or "n/a", "last run", "environment/")):
             out += f'<a class="suite-stat" href="{href}"><strong>{esc(n)}</strong><span>{label}</span></a>\n'
         out += "</div>\n\n"

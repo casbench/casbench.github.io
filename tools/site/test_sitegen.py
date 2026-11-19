@@ -16,6 +16,7 @@ D_coverage\tGiac.jl\t1\tfactor x^4-1\tfactor\tverified\t0.01\t0.0002\t(x-1)*(x+1
 D_coverage\tGiac.jl\t2\tztrans n\tztrans\twrong\t0.01\t0.0003\tz/(z-1)^2\t
 D_coverage\tSymPy\t1\tfactor x^4-1\tfactor\tverified\t0.5\t0.004\t(x - 1)*(x + 1)*(x**2 + 1)\t
 D_coverage\tSymPy\t2\tztrans n\tztrans\tunavailable\tNaN\tNaN\t\tno Z transform
+D_coverage\tsympy\t3\tslow\tslow\ttimeout\tNaN\tNaN\t\tover the limit
 """
 MACHINE = """# 2026-11-18 08:28:32
 host\tvm
@@ -40,14 +41,17 @@ class SiteGenTests(unittest.TestCase):
         root = self.make_root()
         out = pathlib.Path(tempfile.mkdtemp())
         site = sitegen.generate(root, out)
-        self.assertEqual(site.ncases(), 2)                      # _load rows are dropped
+        self.assertEqual(site.ncases(), 3)                      # _load rows are dropped
+        self.assertEqual(site.systems(), ["Giac.jl", "SymPy"])   # the supervisor key sympy is relabelled
+        self.assertEqual(site.packages(), ["Giac.jl", "SymPy"])
         page = (out / "content" / "results" / "d_coverage" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("verdict--verified", page)
         self.assertIn("verdict--unavailable", page)
         self.assertIn("200 µs", page)                            # warm time formatted
         self.assertIn("4.0 ms", page)
         home = (out / "content" / "_index.md").read_text(encoding="utf-8")
-        self.assertIn("<strong>2</strong><span>cases</span>", home)
+        self.assertIn("<strong>3</strong><span>cases</span>", home)
+        self.assertIn("<strong>2</strong><span>packages</span>", home)
         sysp = (out / "content" / "systems" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("| Giac.jl | `0.14.3` | 2026-11-18 |", sysp)
         meth = (out / "content" / "methodology" / "_index.md").read_text(encoding="utf-8")
