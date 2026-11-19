@@ -15,6 +15,23 @@
 include(joinpath(@__DIR__, "common.jl"))
 using .BenchCommon
 
+# every process below `pid` in the process tree (children, grandchildren, ...), from ps
+function descendants(pid::Int)
+    parent = Dict{Int,Int}()
+    for line in eachline(ignorestatus(`ps -e -o pid=,ppid=`))
+        f = split(line)
+        length(f) == 2 && (parent[parse(Int, f[1])] = parse(Int, f[2]))
+    end
+    out = Int[]; frontier = [pid]
+    while !isempty(frontier)
+        p = pop!(frontier)
+        for (c, pp) in parent
+            pp == p && !(c in out) && (push!(out, c); push!(frontier, c))
+        end
+    end
+    out
+end
+
 function supervise(envdir, worker, bench, system, out, timeout, extra)
     progress = out * ".progress"
     logfile = out * ".log"
@@ -26,7 +43,14 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
         cmd = addenv(`setsid $(Base.julia_cmd()) --startup-file=no --project=$envdir $worker $bench $system $out $start $progress $extra`,
                      "BENCH_CASE_TIMEOUT" => string(round(Int, timeout)))
         proc = run(pipeline(cmd; stdout = logfile, stderr = logfile, append = true); wait = false)
-        killgroup(sig) = (pid = getpid(proc); run(ignorestatus(`kill -$sig -- -$pid`)))
+        # the group, and every descendant (Sage's interfaces start FriCAS and giac in sessions of their own,
+        # which a group kill does not reach): descendants are listed before the first kill
+        function killgroup(sig)
+            pid = getpid(proc)
+            kids = descendants(pid)
+            run(ignorestatus(`kill -$sig -- -$pid`))
+            isempty(kids) || run(ignorestatus(`kill -$sig $kids`))
+        end
         last_progress = ""
         last_change = time()
         killed = false
