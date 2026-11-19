@@ -16,7 +16,9 @@ import html
 import math
 import pathlib
 import re
+import shutil
 import subprocess
+import zipfile
 
 REPO = "https://github.com/s-celles/computer-algebra-system-benchmarks"
 BLOB = REPO + "/blob/main"
@@ -393,6 +395,17 @@ class Site:
         """Distinct packages behind the system columns (first word of the label)."""
         return sorted({s.split()[0] for s in self.systems()})
 
+    def system_key(self, key, label):
+        """The file key of a system label: results/<bench>_<key>.tsv (the inverse of SYSTEM_LABELS, else the label itself)."""
+        for k, v in SYSTEM_LABELS.items():
+            if v == label and (self.root / "results" / f"{key}_{k}.tsv").exists():
+                return k
+        for p in (self.root / "results").glob(f"{key}_*.tsv"):
+            rows = read_tsv(p)
+            if rows and SYSTEM_LABELS.get(rows[-1]["system"], rows[-1]["system"]) == label:
+                return p.name[len(key) + 1:-4]
+        return label.lower()
+
     def by_case(self, key):
         """Case index -> {"case", "op", system: row} for a bench."""
         by_idx = {}
@@ -432,7 +445,7 @@ class Site:
         out += "\n## Status vocabulary\n\n| status | meaning |\n|---|---|\n"
         for s in STATUSES:
             out += f"| {badge(s)} | {STATUS_HELP[s]} |\n"
-        out += (f"\n[History](history/) · [Workflow](workflow/) · [Methodology](methodology/) · [Systems and versions](systems/) · "
+        out += (f"\n[Data](data/) · [History](history/) · [Workflow](workflow/) · [Methodology](methodology/) · [Systems and versions](systems/) · "
                 f"[Machine](environment/) · [Repository]({REPO}) · Code MIT, data and pages CC BY 4.0\n")
         return out
 
@@ -458,6 +471,8 @@ class Site:
         out = front(title, weight, linkTitle=title.split(". ", 1)[-1])
         out += f"{desc} Source: [`{key}/`]({BLOB}/{key}), results: [`results/`]({BLOB}/results).\n\n"
         out += "Time shown: the minimum over repeated calls (warm), else the first call. Type to filter, click a heading to sort, click a case for every answer.\n\n"
+        raw = ", ".join(f"[{esc(s)}](../../data/{key}_{self.system_key(key, s)}.tsv)" for s in names)
+        out += f"Raw data (TSV, one file per system): {raw}; [all benches](../../data/results.zip); [every file](../../data/).\n\n"
         by_idx = self.by_case(key)
         if len(names) > 1:
             out += ("Every case's time for every system, on a log scale: a filled mark is a verified answer, a hollow one a "
@@ -545,7 +560,7 @@ class Site:
         return out
 
     def history_page(self):
-        out = front("History", 4)
+        out = front("History", 5)
         out += (f'<p class="site-stamp">{self.stamp()}</p>\n\n'
                 "Every run of every bench and system, from `results/history.tsv` (one row per bench, system and run date; "
                 "appended by `make_tables.jl`, backfilled from the git history by `tools/history_backfill.py`). "
@@ -571,8 +586,53 @@ class Site:
             out += "\n</details>\n\n"
         return out
 
+    def data_files(self):
+        """The raw files the site republishes: (relative path under static/data, source path)."""
+        res = self.root / "results"
+        files = [(p.name, p) for p in sorted(res.glob("*.tsv"))]
+        for name in ("machine.txt", "environment.txt", "summary.md"):
+            if (res / name).exists():
+                files.append((name, res / name))
+        for extra in ("F_integration/sample.tsv", "H_osr/rules.tsv", "G_groebner/inputs.jl", "I_scale/inputs.jl"):
+            p = self.root / extra
+            if p.exists():
+                files.append((extra.replace("/", "_"), p))
+        return files
+
+    def write_data(self, static):
+        """Copy the raw files under static/data and build data/results.zip; returns the file list with sizes."""
+        d = static / "data"
+        d.mkdir(parents=True, exist_ok=True)
+        out = []
+        for name, src in self.data_files():
+            shutil.copyfile(src, d / name)
+            out.append((name, src.stat().st_size))
+        with zipfile.ZipFile(d / "results.zip", "w", zipfile.ZIP_DEFLATED) as z:
+            for name, src in self.data_files():
+                z.write(src, arcname=name)
+        return out
+
+    def data_page(self, files):
+        out = front("Data", 3)
+        out += (f'<p class="site-stamp">{self.stamp()}</p>\n\n'
+                "Every number of this site comes from these files, republished as they are in the repository: one TSV per "
+                "bench and system (columns `bench, system, idx, case, op, status, t_first_s, t_warm_s, result, note`; "
+                "times in seconds, `result` and `note` truncated to 200 and 300 characters), the history of the runs, the "
+                "machine and environment records, and the fixed inputs. Each bench page also offers its table as CSV, "
+                "filtered and sorted as shown.\n\n"
+                "- [results.zip](../data/results.zip): everything below in one archive.\n")
+        for name, size in files:
+            out += f"- [{esc(name)}](../data/{name}) ({size // 1024 + 1} kB)\n"
+        out += ("\n## Reading them\n\n```python\nimport pandas as pd\n"
+                "df = pd.read_csv('https://s-celles.github.io/computer-algebra-system-benchmarks/data/E_suite_giac.tsv', sep='\\t')\n"
+                "df[df.status == 'verified'].t_warm_s.describe()\n```\n\n"
+                "```julia\nusing CSV, DataFrames\n"
+                "df = CSV.read(download(\"https://s-celles.github.io/computer-algebra-system-benchmarks/data/history.tsv\"), DataFrame)\n```\n")
+        out += f"\nLicence of the data: CC BY 4.0 (cite the repository and the run date). Source files: [`results/`]({BLOB}/results).\n"
+        return out
+
     def workflow(self):
-        return front("Workflow", 5) + WORKFLOW.strip() + "\n"
+        return front("Workflow", 6) + WORKFLOW.strip() + "\n"
 
     def methodology(self):
         parts = []
@@ -583,7 +643,7 @@ class Site:
             body = re.sub(r"^# .*\n", "", p.read_text(encoding="utf-8"), count=1)
             body = re.sub(r"\]\((?!https?://|#)([^)]+)\)", lambda m: f"]({BLOB}/docs/{m.group(1)})", body)
             parts.append(f"From [`{rel}`]({BLOB}/{rel}).\n\n" + body)
-        return front("Methodology", 6) + "\n\n---\n\n".join(parts)
+        return front("Methodology", 7) + "\n\n---\n\n".join(parts)
 
     def llms(self):
         return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of computer algebra systems (Julia packages, SymPy, Maxima, FriCAS, SageMath, Macaulay2). {DISCLAIMER}\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
@@ -606,6 +666,8 @@ def generate(root, out):
             write(c / "results" / key.lower() / d / "_index.md", text)
     write(c / "systems" / "_index.md", site.systems_page())
     write(c / "environment" / "_index.md", site.environment_page())
+    files = site.write_data(s)
+    write(c / "data" / "_index.md", site.data_page(files))
     write(c / "history" / "_index.md", site.history_page())
     write(c / "workflow" / "_index.md", site.workflow())
     write(c / "methodology" / "_index.md", site.methodology())

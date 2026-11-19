@@ -62,6 +62,11 @@ class SiteGenTests(unittest.TestCase):
         meth = (out / "content" / "methodology" / "_index.md").read_text(encoding="utf-8")
         self.assertIn(sitegen.BLOB + "/docs/../lib/common.jl", meth)   # relative links rewritten from docs/
         self.assertTrue((out / "static" / "llms.txt").exists())
+        self.assertTrue((out / "static" / "data" / "D_coverage_giac.tsv").exists())   # raw data republished
+        self.assertTrue((out / "static" / "data" / "results.zip").exists())
+        data = (out / "content" / "data" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("D_coverage_giac.tsv", data)
+        self.assertIn("data/D_coverage_giac.tsv", page)                              # linked from the bench page
 
     def test_case_pages(self):
         root = self.make_root()

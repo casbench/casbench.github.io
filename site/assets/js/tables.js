@@ -44,7 +44,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const hint = document.createElement("span");
     hint.className = "table-hint";
     hint.textContent = "click a heading to sort, shift+click to add a sort key";
-    tools.append(input, count, hint);
+    const csvButton = document.createElement("button");
+    csvButton.type = "button";
+    csvButton.className = "table-export";
+    csvButton.textContent = "Export CSV";
+    csvButton.title = "Download the rows shown, filtered and sorted as displayed";
+    csvButton.addEventListener("click", () => {
+      const quote = (t) => '"' + t.replace(/\s+/g, " ").trim().replace(/"/g, '""') + '"';
+      const lines = [headers.map((h) => quote(h.textContent.replace(/[▲▼]\d*$/, ""))).join(",")];
+      Array.from(body.rows).forEach((row) => {
+        if (!row.hidden) lines.push(Array.from(row.cells).map((c) => quote(c.textContent)).join(","));
+      });
+      const blob = new Blob([lines.join("\n") + "\n"], { type: "text/csv;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${document.title.replace(/[^A-Za-z0-9]+/g, "_").toLowerCase()}_${table.id}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+    tools.append(input, count, csvButton, hint);
     table.parentNode.insertBefore(tools, table);
 
     // one filter box per column, in a second header row

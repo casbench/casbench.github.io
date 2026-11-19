@@ -44,3 +44,5 @@
 .table-filters th { padding: .1rem .3rem; }
 .table-col-filter { width: 100%; box-sizing: border-box; font: inherit; font-size: .75rem; padding: .15rem .3rem; border: 1px solid #cbd5e1; border-radius: .25rem; background: transparent; color: inherit; }
 .sort-mark { font-size: .7rem; color: #3174ae; }
+.table-export { font: inherit; font-size: .78rem; padding: .3rem .6rem; border: 1px solid #94a3b8; border-radius: .3rem; background: transparent; color: inherit; cursor: pointer; }
+.table-export:hover { border-color: #3174ae; }
