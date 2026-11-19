@@ -816,3 +816,29 @@ system	SymPy
 SymPy	1.14.0
 SymPyPythonCall	0.5.3
 
+# 2026-11-19 08:29:17
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	E_suite
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-19 08:31:03
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	E_suite
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+

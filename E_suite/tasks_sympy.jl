@@ -106,11 +106,12 @@ const TASKS = Dict{String,Any}(
     "Dirichlet beta(3)" => () -> S.summation((-1)^n / (2n + 1)^3, (n, 0, oo)),
     "Arithmetic-geometric" => () -> S.summation(n^2 / 2^n, (n, 1, oo)),
     "A central binomial series" => () -> S.summation(1 / (n^2 * S.binomial(2n, n)), (n, 1, oo)),
-    "Vandermonde's identity" => () -> S.summation(S.binomial(n, k)^2, (k, 0, n)),
+    "Vandermonde's identity" => () -> (ni = S.symbols("n", integer = true, positive = true); S.summation(S.binomial(ni, k)^2, (k, 0, ni)).subs(ni, n)),   # a plain n gives a Piecewise on re(n)
     "A closed form in n" => () -> S.summation(k * 2^k, (k, 1, n)),
     "A polylogarithm value" => () -> S.summation(x^n / n^2, (n, 1, oo)).subs(x, half),
-    "A telescoping product" => () -> S.product(1 - 1 / n^2, (n, 2, oo)),
-    "Wallis's product" => () -> S.product(4n^2 / (4n^2 - 1), (n, 1, oo)),
+    # SymPy leaves an infinite product unevaluated; as for Giac, the limit of the partial product is asked
+    "A telescoping product" => () -> (NN = S.symbols("N", integer = true, positive = true); S.limit(S.product(1 - 1 / n^2, (n, 2, NN)), NN, oo)),
+    "Wallis's product" => () -> (NN = S.symbols("N", integer = true, positive = true); S.limit(S.product(4n^2 / (4n^2 - 1), (n, 1, NN)), NN, oo)),
     "tan sin - sin tan" => () -> limit((tan(sin(x)) - sin(tan(x))) / x^7, x => 0),
     "Stirling" => () -> limit(S.factorial(n)^(1 / n) / n, n => oo),
     "A second-order term of e" => () -> limit(x * ((1 + 1 / x)^x - E), x => oo),

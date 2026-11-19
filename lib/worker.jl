@@ -25,7 +25,8 @@ end
 const T_LOAD = time() - T_LOAD0
 START == 1 && append_record(OUT, Record(BENCH, SYSTEM, 0, "_load", "using", "verified", T_LOAD, NaN, "", "package load time"))
 
-for i in START:length(PROBLEMS)
+const STOP = parse(Int, get(ENV, "BENCH_STOP", string(length(PROBLEMS))))   # last problem index to run (single-problem reruns)
+for i in START:STOP
     p = PROBLEMS[i]
     write(PROGRESS, string(i, '\t', p.name))
     opf = get(OPS, p.op, missing)

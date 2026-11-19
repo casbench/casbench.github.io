@@ -1,106 +1,106 @@
 bench	system	idx	case	op	status	t_first_s	t_warm_s	result	note
-E_suite	SymPy	0	_load	using	verified	4.47108	NaN		package load time
-E_suite	SymPy	1	sqrt(tan x)	sqrt(tan x)	unsolved	0.220207	0.0745064	Integral(sqrt(tan(x)), x)	int sqrt(tan x) dx
-E_suite	SymPy	2	Chebyshev's pseudo-elliptic integral	Chebyshev's pseudo-elliptic integral	unsolved	0.347323	0.313221	Integral(x/sqrt(x^4 + 10*x^2 - 96*x - 71), x)	int x/sqrt(x^4+10x^2-96x-71) dx
-E_suite	SymPy	3	An arctangent of a radical	An arctangent of a radical	unsolved	0.878867	0.890596	Integral((x - 1)*(x + 1)/((x^2 + 1)*sqrt(x^4 + 1)), x)	int (x^2-1)/((x^2+1) sqrt(x^4+1)) dx
-E_suite	SymPy	4	A quintic denominator	A quintic denominator	verified	0.0605917	0.0532804	RootSum(2869*_t^5 + 160*_t^3 - 80*_t^2 + 15*_t - 1, Lambda(_t, _t*log(183616*_t^4/625 + 45904*_t^3/625 + 21716*_t^2/625 + 309*_t/625 + x + 256/625)))	int dx/(x^5-x+1)
-E_suite	SymPy	5	A fourth root	A fourth root	verified	0.319515	0.230121	x*gamma(1/4)*hyper((1/4, 1/4), (5/4,), x^4*exp_polar(I*pi))/(4*gamma(5/4))	int dx/(1+x^4)^(1/4)
-E_suite	SymPy	6	Parts, twice	Parts, twice	verified	0.120118	0.109364	x^3*asin(x)^2/3 - 2*x^3/27 + 2*x^2*sqrt(1 - x^2)*asin(x)/9 - 4*x/9 + 4*sqrt(1 - x^2)*asin(x)/9	int x^2 asin(x)^2 dx
-E_suite	SymPy	7	Exponential and logarithm (Risch)	Exponential and logarithm (Risch)	verified	0.064964	0.0494965	exp(x)*log(x)	int e^x (1 + x ln x)/x dx
-E_suite	SymPy	8	A Bessel function, to Struve functions	A Bessel function, to Struve functions	verified	0.188652	0.174723	x^3*hyper((3/2,), (1, 5/2), -x^2/4)/3	int x^2 J0(x) dx
-E_suite	SymPy	9	The error function squared	The error function squared	unsolved	0.479516	0.425673	Integral(erf(x)^2, x)	int erf(x)^2 dx
-E_suite	SymPy	10	Bose-Einstein type	Bose-Einstein type	unsolved	0.181146	0.0892224	Integral(x/(exp(x) - 1), (x, 0, oo))	int_0^inf x/(e^x-1) dx = pi^2/6
+E_suite	SymPy	0	_load	using	verified	4.48404	NaN		package load time
+E_suite	SymPy	1	sqrt(tan x)	sqrt(tan x)	unsolved	0.221342	0.074213	Integral(sqrt(tan(x)), x)	int sqrt(tan x) dx
+E_suite	SymPy	2	Chebyshev's pseudo-elliptic integral	Chebyshev's pseudo-elliptic integral	unsolved	0.347404	0.313083	Integral(x/sqrt(x^4 + 10*x^2 - 96*x - 71), x)	int x/sqrt(x^4+10x^2-96x-71) dx
+E_suite	SymPy	3	An arctangent of a radical	An arctangent of a radical	unsolved	0.878399	0.873553	Integral((x - 1)*(x + 1)/((x^2 + 1)*sqrt(x^4 + 1)), x)	int (x^2-1)/((x^2+1) sqrt(x^4+1)) dx
+E_suite	SymPy	4	A quintic denominator	A quintic denominator	verified	0.0602129	0.053534	RootSum(2869*_t^5 + 160*_t^3 - 80*_t^2 + 15*_t - 1, Lambda(_t, _t*log(183616*_t^4/625 + 45904*_t^3/625 + 21716*_t^2/625 + 309*_t/625 + x + 256/625)))	int dx/(x^5-x+1)
+E_suite	SymPy	5	A fourth root	A fourth root	verified	0.316838	0.229446	x*gamma(1/4)*hyper((1/4, 1/4), (5/4,), x^4*exp_polar(I*pi))/(4*gamma(5/4))	int dx/(1+x^4)^(1/4)
+E_suite	SymPy	6	Parts, twice	Parts, twice	verified	0.120253	0.110727	x^3*asin(x)^2/3 - 2*x^3/27 + 2*x^2*sqrt(1 - x^2)*asin(x)/9 - 4*x/9 + 4*sqrt(1 - x^2)*asin(x)/9	int x^2 asin(x)^2 dx
+E_suite	SymPy	7	Exponential and logarithm (Risch)	Exponential and logarithm (Risch)	verified	0.0641986	0.0497278	exp(x)*log(x)	int e^x (1 + x ln x)/x dx
+E_suite	SymPy	8	A Bessel function, to Struve functions	A Bessel function, to Struve functions	verified	0.190411	0.175578	x^3*hyper((3/2,), (1, 5/2), -x^2/4)/3	int x^2 J0(x) dx
+E_suite	SymPy	9	The error function squared	The error function squared	unsolved	0.478732	0.425258	Integral(erf(x)^2, x)	int erf(x)^2 dx
+E_suite	SymPy	10	Bose-Einstein type	Bose-Einstein type	unsolved	0.180521	0.0894631	Integral(x/(exp(x) - 1), (x, 0, oo))	int_0^inf x/(e^x-1) dx = pi^2/6
 E_suite	sympy	11	Serret's integral		timeout	NaN	NaN		killed after 60.0s
-E_suite	SymPy	12	A symmetry trick	A symmetry trick	unsolved	0.77983	0.5559	Integral(x*sin(x)/(cos(x)^2 + 1), (x, 0, pi))	int_0^pi x sin x/(1+cos^2 x) dx = pi^2/4
-E_suite	SymPy	13	Log-sine	Log-sine	unsolved	0.248539	0.250476	Integral(log(sin(x)), (x, 0, pi/2))	int_0^(pi/2) ln sin x dx = -pi ln2/2
-E_suite	SymPy	14	Ahmed's integral	Ahmed's integral	unsolved	29.056	NaN	Integral(atan(sqrt(x^2 + 2))/((x^2 + 1)*sqrt(x^2 + 2)), (x, 0, 1))	int_0^1 atan(sqrt(x^2+2))/((x^2+1) sqrt(x^2+2)) dx = 5pi^2/96
-E_suite	SymPy	15	Laplace's integral	Laplace's integral	verified	0.125687	0.0448158	sqrt(pi)*(-sqrt(pi)*sinh(1) + sqrt(pi)*cosh(1))/2	int_0^inf cos x/(1+x^2) dx = pi/(2e)
-E_suite	SymPy	16	A dilogarithm value	A dilogarithm value	unsolved	2.10212	2.01258	2 - oo*I - I*pi + Integral(Piecewise((-polylog(1, x)/x, (x < 1) & (1/x < 1)), (-polylog(1, x)/x + I*pi/x, (x < 1) | (1/x < 1)), (I*pi*meijerg(((), (1, 1)), ((0, 1), ()), x)/x + I*pi*meijerg(((0, 1), (...	int_0^1 ln x ln(1-x) dx = 2 - pi^2/6
-E_suite	SymPy	17	Euler's constant	Euler's constant	verified	0.194115	0.165741	EulerGamma^2 + pi^2/6	int_0^inf e^-x ln^2 x dx = gamma^2 + pi^2/6
-E_suite	SymPy	18	A Gaussian with a cosine	A Gaussian with a cosine	verified	0.0936813	0.0588501	sqrt(pi)*exp(-1)	int_-inf^inf e^(-x^2) cos 2x dx = sqrt(pi)/e
-E_suite	SymPy	19	Frullani's integral	Frullani's integral	verified	0.85941	0.867983	log(2)	int_0^inf (e^-x - e^-2x)/x dx = ln 2
-E_suite	SymPy	20	The error function	The error function	verified	0.168687	0.147705	(-sqrt(pi)*(-2 + 2*sqrt(2)) + 2*sqrt(pi))/(2*pi)	int_0^inf erfc(x)^2 dx = (2-sqrt2)/sqrt(pi)
-E_suite	SymPy	21	A Bessel function on the half-line	A Bessel function on the half-line	verified	0.0172285	0.00757008	1	int_0^inf J0(x) dx = 1
-E_suite	SymPy	22	A damped Bessel function	A damped Bessel function	verified	0.0579118	0.0575516	sqrt(2)/2	int_0^inf e^-x J0(x) dx = 1/sqrt2
-E_suite	SymPy	23	A pendulum's period	A pendulum's period	unsolved	0.243516	0.180003	Integral(1/sqrt(-cos(a) + cos(x)), (x, 0, a))	int_0^a dtheta/sqrt(cos theta - cos a) = sqrt2 K(sin^2(a/2)), checked at a = 1
-E_suite	SymPy	24	zeta(4)	zeta(4)	verified	0.0193964	0.00783219	pi^4/90	sum 1/n^4 = pi^4/90
-E_suite	SymPy	25	Harmonic numbers	Harmonic numbers	unsolved	0.00995675	0.00728939	Sum(harmonic(n)/n^2, (n, 1, oo))	sum H_n/n^2 = 2 zeta(3)
-E_suite	SymPy	26	Dirichlet beta(3)	Dirichlet beta(3)	unsolved	1.07187	0.642033	I*polylog(3, -I)/2 - I*polylog(3, I)/2	sum (-1)^n/(2n+1)^3 = pi^3/32
-E_suite	SymPy	27	Arithmetic-geometric	Arithmetic-geometric	verified	0.0376061	0.0379077	6	sum n^2/2^n = 6
-E_suite	SymPy	28	A central binomial series	A central binomial series	verified	0.0696856	0.0692015	hyper((1, 1, 1), (3/2, 2), 1/4)/2	sum 1/(n^2 binomial(2n,n)) = pi^2/18
-E_suite	SymPy	29	Vandermonde's identity	Vandermonde's identity	unsolved	0.0979052	0.0996322	Piecewise((gamma(2*n + 1)/gamma(n + 1)^2, re(n) > -1/2), (Sum(binomial(n, k)^2, (k, 0, n)), True))	sum_k binomial(n,k)^2 = binomial(2n,n), checked at n = 7
-E_suite	SymPy	30	A closed form in n	A closed form in n	verified	0.0140431	0.0151795	2*(2^n*n - 2^n + 1)	sum_{k=1}^n k 2^k = (n-1) 2^(n+1) + 2, checked at n = 10
-E_suite	SymPy	31	A polylogarithm value	A polylogarithm value	unsolved	0.000251358	5.55546e-06	polylog(3, 1/2)	sum x^n/n^2 at x = 1/2
-E_suite	SymPy	32	A telescoping product	A telescoping product	unsolved	0.00364899	0.00241354	Product(1 - 1/n^2, (n, 2, oo))	prod_{n>=2} (1 - 1/n^2) = 1/2
-E_suite	SymPy	33	Wallis's product	Wallis's product	unsolved	0.0190133	0.0146493	Product(4*n^2/(4*n^2 - 1), (n, 1, oo))	prod 4n^2/(4n^2-1) = pi/2
-E_suite	SymPy	34	tan sin - sin tan	tan sin - sin tan	verified	0.16865	0.14007	1/30	lim (tan sin x - sin tan x)/x^7 = 1/30
-E_suite	SymPy	35	Stirling	Stirling	verified	0.384695	0.377306	exp(-1)	lim (n!)^(1/n)/n = 1/e
-E_suite	SymPy	36	A second-order term of e	A second-order term of e	verified	0.0464172	0.048046	-E/2	lim x((1+1/x)^x - e) = -e/2
-E_suite	SymPy	37	Nested exponentials (Gruntz)	Nested exponentials (Gruntz)	verified	0.0809292	0.0819672	-1	lim e^x (e^(1/x - e^-x) - e^(1/x)) = -1
-E_suite	SymPy	38	Cancelling poles	Cancelling poles	verified	0.0504174	0.0511118	-1/3	lim (1/x^2 - 1/sin^2 x) = -1/3
-E_suite	SymPy	39	A ratio of Gamma functions	A ratio of Gamma functions	verified	1.45826	1.44555	1	lim Gamma(x+1/2)/(Gamma(x) sqrt x) = 1
-E_suite	SymPy	40	A power of sinc	A power of sinc	verified	0.0224467	0.0217708	exp(-1/6)	lim (sin x/x)^(1/x^2) = e^(-1/6)
-E_suite	SymPy	41	A bounded oscillation	A bounded oscillation	verified	0.00433083	0.00447212	1	lim (x + sin x)/x, x -> inf
+E_suite	SymPy	12	A symmetry trick	A symmetry trick	unsolved	0.805643	0.570074	Integral(x*sin(x)/(cos(x)^2 + 1), (x, 0, pi))	int_0^pi x sin x/(1+cos^2 x) dx = pi^2/4
+E_suite	SymPy	13	Log-sine	Log-sine	unsolved	0.245574	0.250716	Integral(log(sin(x)), (x, 0, pi/2))	int_0^(pi/2) ln sin x dx = -pi ln2/2
+E_suite	SymPy	14	Ahmed's integral	Ahmed's integral	unsolved	29.7704	NaN	Integral(atan(sqrt(x^2 + 2))/((x^2 + 1)*sqrt(x^2 + 2)), (x, 0, 1))	int_0^1 atan(sqrt(x^2+2))/((x^2+1) sqrt(x^2+2)) dx = 5pi^2/96
+E_suite	SymPy	15	Laplace's integral	Laplace's integral	verified	0.132622	0.0444819	sqrt(pi)*(-sqrt(pi)*sinh(1) + sqrt(pi)*cosh(1))/2	int_0^inf cos x/(1+x^2) dx = pi/(2e)
+E_suite	SymPy	16	A dilogarithm value	A dilogarithm value	unsolved	2.11252	2.08016	2 - oo*I - I*pi + Integral(Piecewise((-polylog(1, x)/x, (x < 1) & (1/x < 1)), (-polylog(1, x)/x + I*pi/x, (x < 1) | (1/x < 1)), (I*pi*meijerg(((), (1, 1)), ((0, 1), ()), x)/x + I*pi*meijerg(((0, 1), (...	int_0^1 ln x ln(1-x) dx = 2 - pi^2/6
+E_suite	SymPy	17	Euler's constant	Euler's constant	verified	0.197401	0.161438	EulerGamma^2 + pi^2/6	int_0^inf e^-x ln^2 x dx = gamma^2 + pi^2/6
+E_suite	SymPy	18	A Gaussian with a cosine	A Gaussian with a cosine	verified	0.0877989	0.0545446	sqrt(pi)*exp(-1)	int_-inf^inf e^(-x^2) cos 2x dx = sqrt(pi)/e
+E_suite	SymPy	19	Frullani's integral	Frullani's integral	verified	0.856111	0.87247	log(2)	int_0^inf (e^-x - e^-2x)/x dx = ln 2
+E_suite	SymPy	20	The error function	The error function	verified	0.147355	0.165482	(-sqrt(pi)*(-2 + 2*sqrt(2)) + 2*sqrt(pi))/(2*pi)	int_0^inf erfc(x)^2 dx = (2-sqrt2)/sqrt(pi)
+E_suite	SymPy	21	A Bessel function on the half-line	A Bessel function on the half-line	verified	0.0171958	0.00765117	1	int_0^inf J0(x) dx = 1
+E_suite	SymPy	22	A damped Bessel function	A damped Bessel function	verified	0.0557627	0.057438	sqrt(2)/2	int_0^inf e^-x J0(x) dx = 1/sqrt2
+E_suite	SymPy	23	A pendulum's period	A pendulum's period	unsolved	0.24404	0.180651	Integral(1/sqrt(-cos(a) + cos(x)), (x, 0, a))	int_0^a dtheta/sqrt(cos theta - cos a) = sqrt2 K(sin^2(a/2)), checked at a = 1
+E_suite	SymPy	24	zeta(4)	zeta(4)	verified	0.0197502	0.00785992	pi^4/90	sum 1/n^4 = pi^4/90
+E_suite	SymPy	25	Harmonic numbers	Harmonic numbers	unsolved	0.00971755	0.00744965	Sum(harmonic(n)/n^2, (n, 1, oo))	sum H_n/n^2 = 2 zeta(3)
+E_suite	SymPy	26	Dirichlet beta(3)	Dirichlet beta(3)	unsolved	0.949239	0.635839	I*polylog(3, -I)/2 - I*polylog(3, I)/2	sum (-1)^n/(2n+1)^3 = pi^3/32
+E_suite	SymPy	27	Arithmetic-geometric	Arithmetic-geometric	verified	0.0385007	0.0382162	6	sum n^2/2^n = 6
+E_suite	SymPy	28	A central binomial series	A central binomial series	verified	0.0691049	0.0695151	hyper((1, 1, 1), (3/2, 2), 1/4)/2	sum 1/(n^2 binomial(2n,n)) = pi^2/18
+E_suite	SymPy	29	Vandermonde's identity	Vandermonde's identity	verified	0.641788	0.0892195	gamma(2*n + 1)/gamma(n + 1)^2	sum_k binomial(n,k)^2 = binomial(2n,n), checked at n = 7
+E_suite	SymPy	30	A closed form in n	A closed form in n	verified	0.0145755	0.0151854	2*(2^n*n - 2^n + 1)	sum_{k=1}^n k 2^k = (n-1) 2^(n+1) + 2, checked at n = 10
+E_suite	SymPy	31	A polylogarithm value	A polylogarithm value	unsolved	0.000254934	5.70765e-06	polylog(3, 1/2)	sum x^n/n^2 at x = 1/2
+E_suite	SymPy	32	A telescoping product	A telescoping product	verified	1.02278	1.02357	1/2	prod_{n>=2} (1 - 1/n^2) = 1/2
+E_suite	SymPy	33	Wallis's product	Wallis's product	verified	1.25787	1.21446	pi/2	prod 4n^2/(4n^2-1) = pi/2
+E_suite	SymPy	34	tan sin - sin tan	tan sin - sin tan	verified	0.169609	0.140876	1/30	lim (tan sin x - sin tan x)/x^7 = 1/30
+E_suite	SymPy	35	Stirling	Stirling	verified	0.410783	0.380555	exp(-1)	lim (n!)^(1/n)/n = 1/e
+E_suite	SymPy	36	A second-order term of e	A second-order term of e	verified	0.0464152	0.0475354	-E/2	lim x((1+1/x)^x - e) = -e/2
+E_suite	SymPy	37	Nested exponentials (Gruntz)	Nested exponentials (Gruntz)	verified	0.0820945	0.0827352	-1	lim e^x (e^(1/x - e^-x) - e^(1/x)) = -1
+E_suite	SymPy	38	Cancelling poles	Cancelling poles	verified	0.0503442	0.0511944	-1/3	lim (1/x^2 - 1/sin^2 x) = -1/3
+E_suite	SymPy	39	A ratio of Gamma functions	A ratio of Gamma functions	verified	1.45629	1.40903	1	lim Gamma(x+1/2)/(Gamma(x) sqrt x) = 1
+E_suite	SymPy	40	A power of sinc	A power of sinc	verified	0.0212116	0.021832	exp(-1/6)	lim (sin x/x)^(1/x^2) = e^(-1/6)
+E_suite	SymPy	41	A bounded oscillation	A bounded oscillation	verified	0.00431432	0.0044557	1	lim (x + sin x)/x, x -> inf
 E_suite	sympy	42	A sextic system		timeout	NaN	NaN		killed after 60.0s
 E_suite	sympy	43	A quintic solvable by radicals		timeout	NaN	NaN		killed after 60.0s
-E_suite	SymPy	44	Every solution of cos x = 1/2	Every solution of cos x = 1/2	verified	0.0773712	0.0124527	Union(ImageSet(Lambda(_n, 2*_n*pi + pi/3), Integers), ImageSet(Lambda(_n, 2*_n*pi + 5*pi/3), Integers))	cos x = 1/2, all solutions: six of them in (-10, 10)
-E_suite	SymPy	45	Lambert's W	Lambert's W	verified	0.174877	0.026655	Sym{PythonCall.Py}[LambertW(2)]	x e^x = 2
-E_suite	SymPy	46	A symmetric system	A symmetric system	verified	0.290295	0.0151446	Tuple{ComplexF64, ComplexF64, ComplexF64}[(1.0 + 0.0im, 2.0 + 0.0im, 3.0 + 0.0im), (1.0 + 0.0im, 3.0 + 0.0im, 2.0 + 0.0im), (2.0 + 0.0im, 1.0 + 0.0im, 3.0 + 0.0im), (2.0 + 0.0im, 3.0 + 0.0im, 1.0 + 0....	x+y+z = 6, xy+yz+zx = 11, xyz = 6: six solutions
-E_suite	SymPy	47	A quartic inequality	A quartic inequality	verified	0.0622374	0.0274845	((-2 < x) & (x < -1)) | ((1 < x) & (x < 2))	x^4-5x^2+4 < 0
-E_suite	SymPy	48	Absolute values	Absolute values	verified	0.0199595	0.0191712	(-3 < x) & (x < 2)	|x-1| + |x+2| < 5
-E_suite	SymPy	49	Quantifier elimination	Quantifier elimination	verified	0.00531294	0.00525531	(-2 < b) & (b < 2)	for which b is x^2+bx+1 > 0 for every real x: -2 < b < 2
-E_suite	SymPy	50	Cyclotomic factors	Cyclotomic factors	verified	0.146232	0.00577274	(1, Tuple{Sym{PythonCall.Py}, Int64}[(x - 1, 1), (x^2 + x + 1, 1), (x^4 + x^3 + x^2 + x + 1, 1), (x^6 + x^5 + x^4 + x^3 + x^2 + x + 1, 1), (x^8 - x^7 + x^5 - x^4 + x^3 - x + 1, 1), (x^12 - x^11 + x^9 ...	factor x^105 - 1 over Q: 8 factors
-E_suite	SymPy	51	A symmetric septic	A symmetric septic	verified	0.0287865	0.0256186	(7, Tuple{Sym{PythonCall.Py}, Int64}[(y + z, 1), (x + y, 1), (x + z, 1), (x^4 + 2*x^3*y + 2*x^3*z + 3*x^2*y^2 + 5*x^2*y*z + 3*x^2*z^2 + 2*x*y^3 + 5*x*y^2*z + 5*x*y*z^2 + 2*x*z^3 + y^4 + 2*y^3*z + 3*y^...	factor (x+y+z)^7 - x^7 - y^7 - z^7: 4 factors
-E_suite	SymPy	52	Factoring over Q(sqrt 2)	Factoring over Q(sqrt 2)	verified	0.0974443	0.012392	(1, Tuple{Sym{PythonCall.Py}, Int64}[(x^2 - sqrt(2)*x + 1, 1), (x^2 + sqrt(2)*x + 1, 1)])	factor x^4 + 1 over Q(sqrt 2): 2 factors
+E_suite	SymPy	44	Every solution of cos x = 1/2	Every solution of cos x = 1/2	verified	0.0773385	0.0124108	Union(ImageSet(Lambda(_n, 2*_n*pi + pi/3), Integers), ImageSet(Lambda(_n, 2*_n*pi + 5*pi/3), Integers))	cos x = 1/2, all solutions: six of them in (-10, 10)
+E_suite	SymPy	45	Lambert's W	Lambert's W	verified	0.177227	0.0283437	Sym{PythonCall.Py}[LambertW(2)]	x e^x = 2
+E_suite	SymPy	46	A symmetric system	A symmetric system	verified	0.29032	0.0149778	Tuple{ComplexF64, ComplexF64, ComplexF64}[(1.0 + 0.0im, 2.0 + 0.0im, 3.0 + 0.0im), (1.0 + 0.0im, 3.0 + 0.0im, 2.0 + 0.0im), (2.0 + 0.0im, 1.0 + 0.0im, 3.0 + 0.0im), (2.0 + 0.0im, 3.0 + 0.0im, 1.0 + 0....	x+y+z = 6, xy+yz+zx = 11, xyz = 6: six solutions
+E_suite	SymPy	47	A quartic inequality	A quartic inequality	verified	0.0628303	0.0276403	((-2 < x) & (x < -1)) | ((1 < x) & (x < 2))	x^4-5x^2+4 < 0
+E_suite	SymPy	48	Absolute values	Absolute values	verified	0.0198311	0.019833	(-3 < x) & (x < 2)	|x-1| + |x+2| < 5
+E_suite	SymPy	49	Quantifier elimination	Quantifier elimination	verified	0.00544298	0.00546771	(-2 < b) & (b < 2)	for which b is x^2+bx+1 > 0 for every real x: -2 < b < 2
+E_suite	SymPy	50	Cyclotomic factors	Cyclotomic factors	verified	0.146572	0.00577322	(1, Tuple{Sym{PythonCall.Py}, Int64}[(x - 1, 1), (x^2 + x + 1, 1), (x^4 + x^3 + x^2 + x + 1, 1), (x^6 + x^5 + x^4 + x^3 + x^2 + x + 1, 1), (x^8 - x^7 + x^5 - x^4 + x^3 - x + 1, 1), (x^12 - x^11 + x^9 ...	factor x^105 - 1 over Q: 8 factors
+E_suite	SymPy	51	A symmetric septic	A symmetric septic	verified	0.029315	0.026026	(7, Tuple{Sym{PythonCall.Py}, Int64}[(y + z, 1), (x + y, 1), (x + z, 1), (x^4 + 2*x^3*y + 2*x^3*z + 3*x^2*y^2 + 5*x^2*y*z + 3*x^2*z^2 + 2*x*y^3 + 5*x*y^2*z + 5*x*y*z^2 + 2*x*z^3 + y^4 + 2*y^3*z + 3*y^...	factor (x+y+z)^7 - x^7 - y^7 - z^7: 4 factors
+E_suite	SymPy	52	Factoring over Q(sqrt 2)	Factoring over Q(sqrt 2)	verified	0.0970377	0.0122973	(1, Tuple{Sym{PythonCall.Py}, Int64}[(x^2 - sqrt(2)*x + 1, 1), (x^2 + sqrt(2)*x + 1, 1)])	factor x^4 + 1 over Q(sqrt 2): 2 factors
 E_suite	sympy	53	The cyclic-6 system		timeout	NaN	NaN		killed after 60.0s
-E_suite	SymPy	54	Implicitization	Implicitization	verified	0.0763562	0.00168835	x^3 + x^2 - y^2	eliminate t from x = t^2-1, y = t^3-t
-E_suite	SymPy	55	Polynomial decomposition	Polynomial decomposition	verified	0.059619	0.001167	(x^2 + x - 5, x^3 + 3*x)	x^6+6x^4+x^3+9x^2+3x-5 = g(h(x))
-E_suite	SymPy	56	Denesting	Denesting	verified	0.0133402	0.00157063	sqrt(2) + sqrt(3)	sqrt(5+2 sqrt 6) = sqrt2 + sqrt3
-E_suite	SymPy	57	Ramanujan's denesting	Ramanujan's denesting	unsolved	0.0732318	0.00565226	(-1 + 2^(1/3))^(1/3)	cbrt(cbrt 2 - 1) = cbrt(1/9) - cbrt(2/9) + cbrt(4/9)
-E_suite	SymPy	58	A heptagon sum	A heptagon sum	verified	0.0795127	0.030487	-1/2	cos(2pi/7)+cos(4pi/7)+cos(6pi/7) = -1/2, no cosine left
-E_suite	SymPy	59	A minimal polynomial	A minimal polynomial	verified	0.00864801	0.00857163	x^8 - 40*x^6 + 352*x^4 - 960*x^2 + 576	minimal polynomial of sqrt2+sqrt3+sqrt5, checked at x = 0.7
-E_suite	SymPy	60	A trigonometric identity	A trigonometric identity	verified	0.047462	0.0374725	2	sin 3x/sin x - cos 3x/cos x = 2
-E_suite	SymPy	61	Gauss's 17-gon	Gauss's 17-gon	verified	0.0379723	0.00357664	-1/16 + sqrt(17)/16 + sqrt(2)*sqrt(17 - sqrt(17))/16 + sqrt(2)*sqrt(-8*sqrt(2)*sqrt(sqrt(17) + 17) - sqrt(2)*sqrt(17 - sqrt(17)) + sqrt(34)*sqrt(17 - sqrt(17)) + 6*sqrt(17) + 34)/16	cos(2pi/17) in square roots
-E_suite	SymPy	62	An inverse cosine, with assumptions	An inverse cosine, with assumptions	unsolved	0.0518098	0.000489909	acos(cos(x))	acos(cos x) = 2pi - x for pi < x < 2pi
-E_suite	SymPy	63	Airy	Airy	verified	0.0931956	0.034882	(C1*airyai(x) + C2*airybi(x), var"#413#414"{Vector{var"#682#683"}, Sym{PythonCall.Py}}([var"#682#683"()], C1*airyai(x) + C2*airybi(x)))	y'' = x y
-E_suite	SymPy	64	Bessel, order 1/2	Bessel, order 1/2	verified	0.149523	0.133378	(C1*besselj(1/2, x) + C2*bessely(1/2, x), var"#413#414"{Vector{var"#686#687"}, Sym{PythonCall.Py}}([var"#686#687"()], C1*besselj(1/2, x) + C2*bessely(1/2, x)))	x^2 y'' + x y' + (x^2 - 1/4) y = 0
+E_suite	SymPy	54	Implicitization	Implicitization	verified	0.0735687	0.00157102	x^3 + x^2 - y^2	eliminate t from x = t^2-1, y = t^3-t
+E_suite	SymPy	55	Polynomial decomposition	Polynomial decomposition	verified	0.0638701	0.0011324	(x^2 + x - 5, x^3 + 3*x)	x^6+6x^4+x^3+9x^2+3x-5 = g(h(x))
+E_suite	SymPy	56	Denesting	Denesting	verified	0.014203	0.0015287	sqrt(2) + sqrt(3)	sqrt(5+2 sqrt 6) = sqrt2 + sqrt3
+E_suite	SymPy	57	Ramanujan's denesting	Ramanujan's denesting	unsolved	0.0716382	0.00548635	(-1 + 2^(1/3))^(1/3)	cbrt(cbrt 2 - 1) = cbrt(1/9) - cbrt(2/9) + cbrt(4/9)
+E_suite	SymPy	58	A heptagon sum	A heptagon sum	verified	0.07803	0.0297314	-1/2	cos(2pi/7)+cos(4pi/7)+cos(6pi/7) = -1/2, no cosine left
+E_suite	SymPy	59	A minimal polynomial	A minimal polynomial	verified	0.00829306	0.00817938	x^8 - 40*x^6 + 352*x^4 - 960*x^2 + 576	minimal polynomial of sqrt2+sqrt3+sqrt5, checked at x = 0.7
+E_suite	SymPy	60	A trigonometric identity	A trigonometric identity	verified	0.0455146	0.0362831	2	sin 3x/sin x - cos 3x/cos x = 2
+E_suite	SymPy	61	Gauss's 17-gon	Gauss's 17-gon	verified	0.0372608	0.00346285	-1/16 + sqrt(17)/16 + sqrt(2)*sqrt(17 - sqrt(17))/16 + sqrt(2)*sqrt(-8*sqrt(2)*sqrt(sqrt(17) + 17) - sqrt(2)*sqrt(17 - sqrt(17)) + sqrt(34)*sqrt(17 - sqrt(17)) + 6*sqrt(17) + 34)/16	cos(2pi/17) in square roots
+E_suite	SymPy	62	An inverse cosine, with assumptions	An inverse cosine, with assumptions	unsolved	0.0493259	0.00044135	acos(cos(x))	acos(cos x) = 2pi - x for pi < x < 2pi
+E_suite	SymPy	63	Airy	Airy	verified	0.0878059	0.0332119	(C1*airyai(x) + C2*airybi(x), var"#413#414"{Vector{var"#682#683"}, Sym{PythonCall.Py}}([var"#682#683"()], C1*airyai(x) + C2*airybi(x)))	y'' = x y
+E_suite	SymPy	64	Bessel, order 1/2	Bessel, order 1/2	verified	0.143359	0.129158	(C1*besselj(1/2, x) + C2*bessely(1/2, x), var"#413#414"{Vector{var"#686#687"}, Sym{PythonCall.Py}}([var"#686#687"()], C1*besselj(1/2, x) + C2*bessely(1/2, x)))	x^2 y'' + x y' + (x^2 - 1/4) y = 0
 E_suite	SymPy	65	Riccati	Riccati	error	NaN	NaN		Python: TypeError: bad operand type for unary -: 'list'
 E_suite	SymPy	66	A nonlinear autonomous equation	A nonlinear autonomous equation	unsolved	NaN	NaN		Python: NotImplementedError: The given ODE -sqrt(y(x)*Derivative(y(x), (x, 2))) + Derivative(y(x), x) cannot be solved by the factorable group method
-E_suite	SymPy	67	A forced Euler-Cauchy equation	A forced Euler-Cauchy equation	verified	0.231185	0.218574	(x^2*(C1 + C2*log(x) + log(x)^3/6), var"#413#414"{Vector{var"#698#699"}, Sym{PythonCall.Py}}([var"#698#699"()], x^2*(C1 + C2*log(x) + log(x)^3/6)))	x^2 y'' - 3x y' + 4y = x^2 ln x
-E_suite	SymPy	68	Bernoulli	Bernoulli	unsolved	0.825055	0.642747	(nothing, var"#413#414"{Vector{var"#702#703"}, Nothing}([var"#702#703"()], nothing))	y' + y = x y^3
-E_suite	SymPy	69	An exponential solution (Kovacic)	An exponential solution (Kovacic)	unsolved	0.308966	0.29633	(x^5*r(3)/20 + C2*(x^4/8 + x^2/2 + 1) + C1*x*(x^4/20 + 1) + O(x^6), var"#413#414"{Vector{var"#706#707"}, Sym{PythonCall.Py}}([var"#706#707"()], x^5*r(3)/20 + C2*(x^4/8 + x^2/2 + 1) + C1*x*(x^4/20 + 1)...	y'' = (x^2+1) y
+E_suite	SymPy	67	A forced Euler-Cauchy equation	A forced Euler-Cauchy equation	verified	0.217361	0.209178	(x^2*(C1 + C2*log(x) + log(x)^3/6), var"#413#414"{Vector{var"#698#699"}, Sym{PythonCall.Py}}([var"#698#699"()], x^2*(C1 + C2*log(x) + log(x)^3/6)))	x^2 y'' - 3x y' + 4y = x^2 ln x
+E_suite	SymPy	68	Bernoulli	Bernoulli	unsolved	0.874056	0.738091	(nothing, var"#413#414"{Vector{var"#702#703"}, Nothing}([var"#702#703"()], nothing))	y' + y = x y^3
+E_suite	SymPy	69	An exponential solution (Kovacic)	An exponential solution (Kovacic)	unsolved	0.492634	0.363926	(x^5*r(3)/20 + C2*(x^4/8 + x^2/2 + 1) + C1*x*(x^4/20 + 1) + O(x^6), var"#413#414"{Vector{var"#706#707"}, Sym{PythonCall.Py}}([var"#706#707"()], x^5*r(3)/20 + C2*(x^4/8 + x^2/2 + 1) + C1*x*(x^4/20 + 1)...	y'' = (x^2+1) y
 E_suite	SymPy	70	A forced initial-value problem	A forced initial-value problem	unsolved	NaN	NaN		Python: NotImplementedError: solve: Cannot solve -x*exp(-x**2/2) - (x**2 + 1)*y(x) + Derivative(y(x), (x, 2))
 E_suite	SymPy	71	A Riccati equation with Airy solutions	A Riccati equation with Airy solutions	error	NaN	NaN		Python: TypeError: bad operand type for unary -: 'list'
 E_suite	sympy	72	A pendulum released from rest		timeout	NaN	NaN		killed after 60.0s
 E_suite	sympy	73	Duffing's oscillator from rest		timeout	NaN	NaN		killed after 60.0s
-E_suite	SymPy	74	A Jordan block	A Jordan block	verified	2.44672	0.0106612	[3.9167490160300766, 3.4233796026998102, 2.0137527074704766]	X' = J X, X(0) = (1,1,1), J the 3x3 Jordan block of 1; X(0.7)
-E_suite	SymPy	75	The transport equation	The transport equation	verified	0.056493	0.00696416	(F(2*x - y), var"#742#743"{Sym{PythonCall.Py}}(F(2*x - y)))	u_x + 2 u_y = 0, general solution: residual with the arbitrary function chosen
+E_suite	SymPy	74	A Jordan block	A Jordan block	verified	4.71728	0.0190149	[3.9167490160300766, 3.4233796026998102, 2.0137527074704766]	X' = J X, X(0) = (1,1,1), J the 3x3 Jordan block of 1; X(0.7)
+E_suite	SymPy	75	The transport equation	The transport equation	verified	0.100948	0.0117373	(F(2*x - y), var"#742#743"{Sym{PythonCall.Py}}(F(2*x - y)))	u_x + 2 u_y = 0, general solution: residual with the arbitrary function chosen
 E_suite	SymPy	76	The heat equation	The heat equation	unavailable	NaN	NaN		u_t = u_xx, u(0,t) = u(pi,t) = 0, u(x,0) = sin x: residual and the three conditions
-E_suite	SymPy	77	Symbolic eigenvalues	Symbolic eigenvalues	verified	0.208655	0.00905029	[-0.11421356237309505, 2.714213562373095, 1.3]	eigenvalues of [[a,1,0],[1,a,1],[0,1,a]], at a = 13/10
-E_suite	SymPy	78	A Jordan form	A Jordan form	verified	0.129616	0.00541611	[1.0 0.0 0.0 0.0; 0.0 2.0 0.0 0.0; 0.0 0.0 4.0 1.0; 0.0 0.0 0.0 4.0]	the Jordan form J of a 4x4 with a block for the eigenvalue 4
-E_suite	SymPy	79	A matrix exponential	A matrix exponential	verified	0.0570248	0.0175527	[0.7648421872844884 0.644217687237691; -0.644217687237691 0.7648421872844884]	exp(t [[0,1],[-1,0]]) at t = 7/10
-E_suite	SymPy	80	A Vandermonde determinant	A Vandermonde determinant	verified	1.72378	1.47392	(1, Tuple{Sym{PythonCall.Py}, Int64}[(y - z, 1), (-a + y, 1), (-b + y, 1), (-a + z, 1), (-b + z, 1), (a - b, 1), (x - y, 1), (x - z, 1), (-a + x, 1), (-b + x, 1)])	factor det[v_i^(j-1)] for v = (a,b,x,y,z): 10 factors
+E_suite	SymPy	77	Symbolic eigenvalues	Symbolic eigenvalues	verified	0.392636	0.0162297	[1.3, -0.11421356237309505, 2.714213562373095]	eigenvalues of [[a,1,0],[1,a,1],[0,1,a]], at a = 13/10
+E_suite	SymPy	78	A Jordan form	A Jordan form	verified	0.249116	0.00959076	[1.0 0.0 0.0 0.0; 0.0 2.0 0.0 0.0; 0.0 0.0 4.0 1.0; 0.0 0.0 0.0 4.0]	the Jordan form J of a 4x4 with a block for the eigenvalue 4
+E_suite	SymPy	79	A matrix exponential	A matrix exponential	verified	0.107817	0.030247	[0.7648421872844884 0.644217687237691; -0.644217687237691 0.7648421872844884]	exp(t [[0,1],[-1,0]]) at t = 7/10
+E_suite	SymPy	80	A Vandermonde determinant	A Vandermonde determinant	verified	2.98846	2.45769	(1, Tuple{Sym{PythonCall.Py}, Int64}[(y - z, 1), (-a + y, 1), (-b + y, 1), (-a + z, 1), (-b + z, 1), (a - b, 1), (x - y, 1), (x - z, 1), (-a + x, 1), (-b + x, 1)])	factor det[v_i^(j-1)] for v = (a,b,x,y,z): 10 factors
 E_suite	SymPy	81	A Smith normal form	A Smith normal form	error	NaN	NaN		MethodError: no method matching Float64(::Matrix{Sym{PythonCall.Py}}) The type `Float64` exists, but no method is defined for this combination of argument types when trying to construct it.  Closest candidates are:   Float64(!Matched::IrrationalConstants.Sqrthalfπ)    @ IrrationalConstants ~/.julia/...
-E_suite	SymPy	82	The Fermat number F7	The Fermat number F7	verified	2.89809	8.5133e-05	BigInt[59649589127497217, 5704689200685129054721]	factor 2^128 + 1
-E_suite	SymPy	83	A Mersenne prime	A Mersenne prime	verified	0.0128667	0.000825198	True	2^521 - 1 is prime
-E_suite	SymPy	84	A discrete logarithm	A discrete logarithm	verified	0.00693274	0.00360985	981640996	5^x = 123456789 mod 10^9+7
-E_suite	SymPy	85	Pell's equation	Pell's equation	verified	0.00382273	1.1032e-05	(1766319049, 226153980)	x^2 - 61 y^2 = 1 in positive integers
-E_suite	SymPy	86	A periodic continued fraction	A periodic continued fraction	verified	0.0528193	0.0115359	Any[7, Sym{PythonCall.Py}[1, 4, 3, 1, 2, 2, 1, 3, 4, 1, 14]]	sqrt 61 = [7; 1,4,3,1,2,2,1,3,4,1,14 periodic]
-E_suite	SymPy	87	Partitions	Partitions	verified	0.00310736	4.9423e-05	3972999029388	p(200) = 3972999029388
-E_suite	SymPy	88	A Laplace transform	A Laplace transform	verified	0.198013	0.103885	I/(s + 1 + I)^3 - I/(s + 1 - I)^3	L{t^2 e^-t sin t}(s), checked at s = 2: 13/250
-E_suite	SymPy	89	An inverse Laplace transform	An inverse Laplace transform	verified	0.0176268	0.0132684	(-t*cos(t)/2 + sin(t)/2)*Heaviside(t)	L^-1{1/(s^2+1)^2} = (sin t - t cos t)/2
-E_suite	SymPy	90	A delayed step	A delayed step	verified	0.00717818	0.0102549	Heaviside(t - 1)	L^-1{e^-s/s}(t) = theta(t-1), checked at t = 1/2 and 3/2
-E_suite	SymPy	91	The series of Lambert's W	The series of Lambert's W	verified	0.0134233	0.00886099	125*x^5/24 - 8*x^4/3 + 3*x^3/2 - x^2 + x	W(x) to order 5 at 0, polynomial part at x = 1/10
-E_suite	SymPy	92	A hypergeometric function	A hypergeometric function	verified	0.129703	0.00749654	-log(1 - x)/x	2F1(1,1;2;x) = -ln(1-x)/x
-E_suite	SymPy	93	Gamma's reflection formula	Gamma's reflection formula	verified	0.00334777	0.00274972	sqrt(2)*pi	Gamma(1/4) Gamma(3/4) = pi sqrt 2
-E_suite	SymPy	94	The sine integral's Laplace transform	The sine integral's Laplace transform	verified	0.214569	0.165249	-atan(sqrt(s^2))/sqrt(s^2) + pi/(2*s)	L{Si t}(s) = (pi/2 - atan s)/s, at s = 2
-E_suite	SymPy	95	An inverse Laplace transform to a Bessel function	An inverse Laplace transform to a Bessel function	verified	0.0145798	0.00719101	Heaviside(t)*besselj(0, t)	L^-1{1/sqrt(s^2+1)} = J0(t), at t = 7/10
-E_suite	SymPy	96	A polylogarithm value	A polylogarithm value	unsolved	0.00325015	9.1622e-05	polylog(3, 1/2)	Li3(1/2) = 7/8 zeta(3) - pi^2/12 ln2 + ln^3 2/6
-E_suite	SymPy	97	A stability region	A stability region	verified	0.0707367	0.00519957	(-1 < k) & (k < 8)	for which k is s^3+3s^2+3s+1+k Hurwitz: -1 < k < 8
-E_suite	SymPy	98	A Lyapunov equation	A Lyapunov equation	verified	0.191453	0.00552376	[1.25 0.25; 0.25 0.25]	A'P + PA = -I, A = [[0,1],[-2,-3]]
-E_suite	SymPy	99	A Riccati equation (LQR)	A Riccati equation (LQR)	verified	0.144739	0.0195532	[1.7320508075688772 1.0; 1.0 1.7320508075688772]	A'P + PA - PBB'P + I = 0, the positive definite solution
-E_suite	SymPy	100	The unicycle's Lie algebra rank	The unicycle's Lie algebra rank	verified	0.137352	0.0183261	3	rank{f1, f2, [f1,f2]}, f1 = (cos th, sin th, 0), f2 = (0,0,1)
-E_suite	SymPy	101	A center manifold	A center manifold	verified	0.0186966	0.0107236	-2*x^4 - x^2	x' = xy, y' = -y - x^2: y = h(x) = -x^2 - 2x^4 + O(x^6), at x = 1/10
+E_suite	SymPy	82	The Fermat number F7	The Fermat number F7	verified	5.83397	0.000235781	BigInt[59649589127497217, 5704689200685129054721]	factor 2^128 + 1
+E_suite	SymPy	83	A Mersenne prime	A Mersenne prime	verified	0.0282334	0.00141712	True	2^521 - 1 is prime
+E_suite	SymPy	84	A discrete logarithm	A discrete logarithm	verified	0.0136022	0.00622341	981640996	5^x = 123456789 mod 10^9+7
+E_suite	SymPy	85	Pell's equation	Pell's equation	verified	0.00793343	1.7438e-05	(1766319049, 226153980)	x^2 - 61 y^2 = 1 in positive integers
+E_suite	SymPy	86	A periodic continued fraction	A periodic continued fraction	verified	0.1029	0.0198614	Any[7, Sym{PythonCall.Py}[1, 4, 3, 1, 2, 2, 1, 3, 4, 1, 14]]	sqrt 61 = [7; 1,4,3,1,2,2,1,3,4,1,14 periodic]
+E_suite	SymPy	87	Partitions	Partitions	verified	0.00655544	7.4237e-05	3972999029388	p(200) = 3972999029388
+E_suite	SymPy	88	A Laplace transform	A Laplace transform	verified	0.364256	0.171164	I/(s + 1 + I)^3 - I/(s + 1 - I)^3	L{t^2 e^-t sin t}(s), checked at s = 2: 13/250
+E_suite	SymPy	89	An inverse Laplace transform	An inverse Laplace transform	verified	0.0293215	0.0226163	(-t*cos(t)/2 + sin(t)/2)*Heaviside(t)	L^-1{1/(s^2+1)^2} = (sin t - t cos t)/2
+E_suite	SymPy	90	A delayed step	A delayed step	verified	0.0114638	0.0171579	Heaviside(t - 1)	L^-1{e^-s/s}(t) = theta(t-1), checked at t = 1/2 and 3/2
+E_suite	SymPy	91	The series of Lambert's W	The series of Lambert's W	verified	0.0205071	0.0143877	125*x^5/24 - 8*x^4/3 + 3*x^3/2 - x^2 + x	W(x) to order 5 at 0, polynomial part at x = 1/10
+E_suite	SymPy	92	A hypergeometric function	A hypergeometric function	verified	0.229377	0.012476	-log(1 - x)/x	2F1(1,1;2;x) = -ln(1-x)/x
+E_suite	SymPy	93	Gamma's reflection formula	Gamma's reflection formula	verified	0.00520921	0.00460569	sqrt(2)*pi	Gamma(1/4) Gamma(3/4) = pi sqrt 2
+E_suite	SymPy	94	The sine integral's Laplace transform	The sine integral's Laplace transform	verified	0.35996	0.278805	-atan(sqrt(s^2))/sqrt(s^2) + pi/(2*s)	L{Si t}(s) = (pi/2 - atan s)/s, at s = 2
+E_suite	SymPy	95	An inverse Laplace transform to a Bessel function	An inverse Laplace transform to a Bessel function	verified	0.0258927	0.0119777	Heaviside(t)*besselj(0, t)	L^-1{1/sqrt(s^2+1)} = J0(t), at t = 7/10
+E_suite	SymPy	96	A polylogarithm value	A polylogarithm value	unsolved	0.00636901	0.000142748	polylog(3, 1/2)	Li3(1/2) = 7/8 zeta(3) - pi^2/12 ln2 + ln^3 2/6
+E_suite	SymPy	97	A stability region	A stability region	verified	0.127134	0.00900199	(-1 < k) & (k < 8)	for which k is s^3+3s^2+3s+1+k Hurwitz: -1 < k < 8
+E_suite	SymPy	98	A Lyapunov equation	A Lyapunov equation	verified	0.335152	0.00960646	[1.25 0.25; 0.25 0.25]	A'P + PA = -I, A = [[0,1],[-2,-3]]
+E_suite	SymPy	99	A Riccati equation (LQR)	A Riccati equation (LQR)	verified	0.293944	0.0324441	[1.7320508075688772 1.0; 1.0 1.7320508075688772]	A'P + PA - PBB'P + I = 0, the positive definite solution
+E_suite	SymPy	100	The unicycle's Lie algebra rank	The unicycle's Lie algebra rank	verified	0.239347	0.0311755	3	rank{f1, f2, [f1,f2]}, f1 = (cos th, sin th, 0), f2 = (0,0,1)
+E_suite	SymPy	101	A center manifold	A center manifold	verified	0.0344279	0.0185048	-2*x^4 - x^2	x' = xy, y' = -y - x^2: y = h(x) = -x^2 - 2x^4 + O(x^6), at x = 1/10
 E_suite	SymPy	102	A sum-of-squares certificate	A sum-of-squares certificate	unavailable	NaN	NaN		x^4 - 2x^2 y + y^2 + x^2 - 2x + 1 >= 0 (a proof)
 E_suite	SymPy	103	Motzkin's polynomial	Motzkin's polynomial	unavailable	NaN	NaN		x^4 y^2 + x^2 y^4 - 3x^2 y^2 + 1 >= 0 (a proof; not a sum of squares)
 E_suite	SymPy	104	Jacobian: Brusselator N=10 (build)	Jacobian: Brusselator N=10 (build)	error	NaN	NaN		Python: TypeError: Julia: MethodError: objects of type Vector{PythonCall.Py} are not callable. In case you did not try calling it explicitly, check if a Vector{PythonCall.Py} has been passed as an argument to a method that expects a callable instead. In case you're trying to index into the array, us...
