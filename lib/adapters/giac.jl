@@ -4,12 +4,13 @@ using Giac
 using LinearAlgebra: det
 
 const SYSTEM = "Giac.jl"
+geval(s) = (log_input!(s); giac_eval(s))   # every string sent to the engine is logged for the input column
 @giac_var x y z u v a b c s t k n
 # the parameters of bench F; `e` and `i` are constants in Giac, so those two symbols are ee and ii
 @giac_var d f g h m p q r j A B C D F ee ii w
 const VAR = Dict{Symbol,Any}(:x => x, :y => y, :z => z, :u => u, :v => v, :a => a, :b => b, :c => c,
                              :s => s, :t => t, :k => k, :n => n)
-VAR[:pi] = giac_eval("pi")
+VAR[:pi] = geval("pi")
 for (vv, obj) in (:d => d, :f => f, :g => g, :h => h, :m => m, :p => p, :q => q, :r => r, :j => j,
                   :A => A, :B => B, :C => C, :D => D, :F => F, :e => ee, :i => ii, :w => w)
     VAR[vv] = obj
@@ -19,15 +20,15 @@ isdefined(Main, :Mapleish) || include(joinpath(@__DIR__, "..", "mapleish.jl"))
 function INTEGRATE_TEXT(integrand::String, var::String, params = nothing)
     s = Mapleish.translate(integrand, :giac)
     s = replace(s, r"\be\b" => "ee", r"\bi\b" => "ii")
-    giac_eval("integrate(" * s * "," * var * ")")
+    geval("integrate(" * s * "," * var * ")")
 end
 
 gx(e) = e isa GiacExpr ? e :
-    e isa Rational ? giac_eval("($(numerator(e)))/($(denominator(e)))") :
-    e isa Real && isinf(e) ? giac_eval(e > 0 ? "+infinity" : "-infinity") : giac_eval(string(e))
+    e isa Rational ? geval("($(numerator(e)))/($(denominator(e)))") :
+    e isa Real && isinf(e) ? geval(e > 0 ? "+infinity" : "-infinity") : geval(string(e))
 # vector-valued results as a Julia vector of GiacExpr / numbers
 elements(r) = (v = to_julia(r); v isa AbstractVector ? v : [v])
-cmd(c, args...) = invoke_cmd(c, args...)
+cmd(c, args...) = (log_input!(string(c, "(", join(string.(args), ", "), ")")); invoke_cmd(c, args...))
 toint(m) = Int(to_julia(gx(m)))
 r12(p::Real) = round(p; sigdigits = 12)
 r12(p::Complex) = complex(r12(real(p)), r12(imag(p)))
@@ -57,15 +58,15 @@ function DIOPHANTINE(lhs, rhs, u, v, k)
 end
 function DESOLVE_IVP(eq_lhs, eq_rhs, yname, t, y0)
     # desolve([y'=rhs(y), y(0)=y0], t, y); a one-element list is unwrapped
-    rhs = string(eq_rhs(giac_eval(yname)))
-    r = giac_eval("desolve([" * yname * "'=" * rhs * "," * yname * "(0)=" * string(y0) * "]," * string(t) * "," * yname * ")")
+    rhs = string(eq_rhs(geval(yname)))
+    r = geval("desolve([" * yname * "'=" * rhs * "," * yname * "(0)=" * string(y0) * "]," * string(t) * "," * yname * ")")
     v = elements(r)
     length(v) == 1 ? v[1] : r
 end
 LAPLACE(f, t, s) = cmd(:laplace, f, t, s)
 ILAPLACE(F, s, t) = cmd(:ilaplace, F, s, t)
 LIMIT(f, x, x0) = cmd(:limit, f, x, gx(x0))
-SERIES(f, x, n) = giac_eval("convert(series(" * string(f) * "," * string(x) * ",0," * string(n) * "),polynom)")
+SERIES(f, x, n) = geval("convert(series(" * string(f) * "," * string(x) * ",0," * string(n) * "),polynom)")
 GCD(p, q) = cmd(:gcd, p, q)
 RESULTANT(p, q, x) = cmd(:resultant, p, q, x)
 DISCRIMINANT(p, x) = cmd(:discriminant, p, x)
@@ -76,7 +77,7 @@ ZTRANS(f, n, z) = cmd(:ztrans, f, n, z)
 SUM(f, k, lo, hi) = cmd(:sum, f, k, gx(lo), gx(hi))
 IFACTOR(nn) = to_julia(cmd(:ifactors, gx(nn)))
 function ASSUME_SIMPLIFY(expr, x)
-    giac_eval("assume(" * string(x) * ">0)")
+    geval("assume(" * string(x) * ">0)")
     r = cmd(:simplify, expr)
     cmd(:purge, x)
     r
@@ -89,7 +90,7 @@ CFACTOR(f) = cmd(:cfactor, f)
 function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
     L = "[" * replace(join(polys, ","), "//" => "/") * "]"   # Giac writes rationals with one slash
     V = "[" * join(vars, ",") * "]"
-    r = giac_eval(p == 0 ? "gbasis($L,$V,revlex)" : "gbasis($L % $p,$V,revlex)")
+    r = geval(p == 0 ? "gbasis($L,$V,revlex)" : "gbasis($L % $p,$V,revlex)")
     [replace(string(e), r" % -?\d+" => "") for e in elements(r)]
 end
 
@@ -102,15 +103,15 @@ end
 Base.string(c::CodegenAnswer) = c.text
 
 gtext(s::String) = replace(Mapleish.translate(s, :giac), r"\be\b" => "ee", r"\bi\b" => "ii")
-EXPAND_TEXT(s) = giac_eval("expand(" * gtext(s) * ")")
-EXPAND_DIFF_TEXT(s, v) = giac_eval("diff(expand(" * gtext(s) * ")," * v * ")")
-SERIES_TEXT(s, v, x0, nn) = giac_eval("convert(series(" * gtext(s) * "," * v * "=" * string(x0) * "," * string(nn) * "),polynom)")
-SUBS_TEXT(s, rules) = giac_eval("subst(" * gtext(s) * ",[" * join(["$l=" * gtext(r) for (l, r) in rules], ",") * "])")
-EVAL_TEXT(s, pt) = to_julia(giac_eval("evalf(subst(" * gtext(s) * ",[" * join(["$k=$v" for (k, v) in pt], ",") * "]))"))
+EXPAND_TEXT(s) = geval("expand(" * gtext(s) * ")")
+EXPAND_DIFF_TEXT(s, v) = geval("diff(expand(" * gtext(s) * ")," * v * ")")
+SERIES_TEXT(s, v, x0, nn) = geval("convert(series(" * gtext(s) * "," * v * "=" * string(x0) * "," * string(nn) * "),polynom)")
+SUBS_TEXT(s, rules) = geval("subst(" * gtext(s) * ",[" * join(["$l=" * gtext(r) for (l, r) in rules], ",") * "])")
+EVAL_TEXT(s, pt) = to_julia(geval("evalf(subst(" * gtext(s) * ",[" * join(["$k=$v" for (k, v) in pt], ",") * "]))"))
 # a compiled function in Giac is an unapply'd expression, evaluated by the interpreter
 function CODEGEN_TEXT(s, vars, points)
-    fn = giac_eval("unapply(" * gtext(s) * ",[" * join(vars, ",") * "])")
-    call(p) = to_julia(cmd(:evalf, invoke_cmd(:apply, fn, giac_eval("[" * join(string.(p), ",") * "]"))))
+    fn = geval("unapply(" * gtext(s) * ",[" * join(vars, ",") * "])")
+    call(p) = to_julia(cmd(:evalf, invoke_cmd(:apply, fn, geval("[" * join(string.(p), ",") * "]"))))
     vals = Any[]; t0 = time_ns()
     for p in points; push!(vals, call(p)); end
     CodegenAnswer(vals, (time_ns() - t0) / 1e9, "unapply(...): $(length(vals)) calls")
@@ -170,4 +171,4 @@ CLEARCACHE() = nothing
 VERSIONS() = ["Giac.jl" => string(pkgversion(Giac)),
               "GIAC_jll" => string(pkgversion(Giac.GIAC_jll)),
               "libgiac_julia_jll" => string(pkgversion(Giac.libgiac_julia_jll)),
-              "giac_version" => string(giac_eval("version()"))]
+              "giac_version" => string(geval("version()"))]

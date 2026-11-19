@@ -56,7 +56,10 @@ SYSTEM_LABELS = {"giac": "Giac.jl", "symbolics": "Symbolics.jl", "sympy": "SymPy
                  "sage_singular": "Sage/Singular", "macaulay2": "Macaulay2", "symengine": "SymEngine.jl"}
 DISCLAIMER = ("An individual, non-commercial project. The numbers are dated: they were measured on a shared virtual "
               "machine with the package versions recorded in the results files, and the systems compared are moving "
-              "quickly. A status is a claim to check against the results files, not a verdict on a system.")
+              "quickly. A status is a claim to check against the results files, not a verdict on a system: an unsolved "
+              "or wrong case may hide an error of the benchmark itself, a command generated wrongly for that system, "
+              "which is why every case page shows the exact input sent to each system next to its output. Corrections "
+              "are welcome.")
 
 WORKFLOW = """
 Every bench follows the same path from fixed inputs to the pages of this site. The diagrams are the
@@ -160,6 +163,7 @@ def read_tsv(path):
     rows = []
     with open(path, newline="", encoding="utf-8") as f:
         for r in csv.DictReader(f, delimiter="\t", quoting=csv.QUOTE_NONE):
+            r.setdefault("input", "")
             try:
                 r["idx"] = int(r["idx"])
                 r["t_first_s"] = float(r["t_first_s"])
@@ -524,6 +528,11 @@ class Site:
             for s in systems:
                 r = e[s]
                 out += f"### {esc(s)} {badge(r['status'])}\n\n"
+                if r.get("input"):
+                    out += "**Input**, what the benchmark sent to the system (its own syntax; a status may hide a wrongly generated command, which is an error of the benchmark):\n\n"
+                    out += fence(r["input"].replace(" ⏎ ", "\n")) + "\n**Output**\n\n"
+                else:
+                    out += "*Input not recorded in this run (files written before 2026-11-20 have no input column; the task file names what was asked).*\n\n"
                 if r["result"]:
                     out += fence(r["result"]) + "\n"
                 if r["note"]:

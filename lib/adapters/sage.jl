@@ -60,6 +60,7 @@ function sage_process()
 end
 
 function run_sage(script::String)
+    log_input!(script)
     path = tempname() * ".sage"
     write(path, script)
     out = IOBuffer()

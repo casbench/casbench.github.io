@@ -10,11 +10,11 @@ import sitegen  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 
-TSV = """bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote
+TSV = """bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput
 D_coverage\tGiac.jl\t0\t_load\tusing\tverified\t4.1\tNaN\t\tpackage load time
 D_coverage\tGiac.jl\t1\tfactor x^4-1\tfactor\tverified\t0.01\t0.0002\t(x-1)*(x+1)*(x^2+1)\t
 D_coverage\tGiac.jl\t2\tztrans n\tztrans\twrong\t0.01\t0.0003\tz/(z-1)^2\t
-D_coverage\tSymPy\t1\tfactor x^4-1\tfactor\tverified\t0.5\t0.004\t(x - 1)*(x + 1)*(x**2 + 1)\t
+D_coverage\tSymPy\t1\tfactor x^4-1\tfactor\tverified\t0.5\t0.004\t(x - 1)*(x + 1)*(x**2 + 1)\t\tfactor(x**4 - 1)
 D_coverage\tSymPy\t2\tztrans n\tztrans\tunavailable\tNaN\tNaN\t\tno Z transform
 D_coverage\tsympy\t3\tslow\tslow\ttimeout\tNaN\tNaN\t\tover the limit
 """
@@ -78,6 +78,8 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("(x-1)*(x+1)*(x^2+1)", text)                 # every system's full answer
         self.assertIn("(x - 1)*(x + 1)*(x**2 + 1)", text)
         self.assertIn("| Giac.jl | <span", text)
+        self.assertIn("factor(x**4 - 1)", text)                      # the input sent to SymPy
+        self.assertIn("Input not recorded", text)                    # the Giac row of the fixture has no input
         self.assertTrue((out / "content" / "results" / "d_coverage" / "003-slow" / "_index.md").exists())
 
     def test_history(self):

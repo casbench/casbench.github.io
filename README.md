@@ -21,8 +21,12 @@ OpenSymbolicRules.
 > measured on a shared virtual machine with the package versions recorded in
 > `results/machine.txt`, and the systems compared are moving quickly. A
 > status is a claim to check against the results files, not a verdict on a
-> system. Corrections of a task that does not ask a system the way its users
-> would are welcome: open an issue or a pull request with the idiom.
+> system. An unsolved or wrong case may hide an error of the benchmark
+> itself, a command generated wrongly for that system; every case page of the
+> site therefore shows the exact input sent to each system next to its
+> output, and every results file has an `input` column (runs from
+> 2026-11-20). Corrections of a task that does not ask a system the way its
+> users would are welcome: open an issue or a pull request with the idiom.
 
 They are the reproduced numbers of the JuliaCon Proceedings paper on Giac.jl
 (in preparation for 2027), whose repository includes this one as a git

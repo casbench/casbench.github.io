@@ -49,6 +49,7 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     end
     path = tempname() * ".input"
     write(path, join(lines, "\n") * "\n")
+    log_input!(join(lines, "\n"))
     txt = try
         run_fricas(path)
     finally

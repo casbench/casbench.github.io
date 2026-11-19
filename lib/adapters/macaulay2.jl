@@ -29,6 +29,7 @@ function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
              "scan(G, g -> print(\"<<G>> \" | toString g));"]
     path = tempname() * ".m2"
     write(path, join(lines, "\n") * "\n")
+    log_input!(join(lines, "\n"))
     out = IOBuffer()
     try
         run(pipeline(`timeout -k 5 $CASE_LIMIT $M2 --script $path`; stdout = out, stderr = devnull))

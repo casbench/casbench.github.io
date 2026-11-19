@@ -16,7 +16,7 @@ VAR[:pi] = SymEngine.PI
 isdefined(Main, :Mapleish) || include(joinpath(@__DIR__, "..", "mapleish.jl"))
 
 # an expression from the Maple-like text (symengine's parser reads the Python-like dialect)
-parse_text(s::String) = Basic(Mapleish.translate(s, :sympy))
+parse_text(s::String) = (t = Mapleish.translate(s, :sympy); log_input!(t); Basic(t))
 
 
 struct CodegenAnswer

@@ -14,7 +14,7 @@ for (vv, obj) in (:d => d, :e => e, :f => f, :g => g, :h => h, :m => m, :p => p,
 end
 isdefined(Main, :Mapleish) || include(joinpath(@__DIR__, "..", "mapleish.jl"))
 # bench F: sympify the translated text (symbols by name are equal to the @syms ones), then integrate
-INTEGRATE_TEXT(integrand::String, var::String, params = nothing) = S.integrate(S.sympify(Mapleish.translate(integrand, :sympy)), S.Symbol(var))
+INTEGRATE_TEXT(integrand::String, var::String, params = nothing) = (t = "integrate(" * Mapleish.translate(integrand, :sympy) * ", " * var * ")"; log_input!(t); S.integrate(S.sympify(Mapleish.translate(integrand, :sympy)), S.Symbol(var)))
 toint(m) = Int(N(m))
 # exact rationals must enter SymPy as Sym ratios, not Julia Rationals
 sx(e) = e isa Rational ? Sym(numerator(e)) / Sym(denominator(e)) : e
@@ -88,7 +88,7 @@ struct CodegenAnswer
 end
 Base.string(c::CodegenAnswer) = c.text
 
-stext(s::String) = S.sympify(Mapleish.translate(s, :sympy))
+stext(s::String) = (t = Mapleish.translate(s, :sympy); log_input!(t); S.sympify(t))
 EXPAND_TEXT(s) = S.expand(stext(s))
 EXPAND_DIFF_TEXT(s, v) = S.diff(S.expand(stext(s)), S.Symbol(v))
 SERIES_TEXT(s, v, x0, nn) = S.series(stext(s), S.Symbol(v), x0, nn + 1).removeO()

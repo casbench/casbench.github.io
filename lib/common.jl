@@ -10,7 +10,7 @@ module BenchCommon
 using Dates
 using Printf
 
-export Record, HEADER, append_record, read_records, write_machine_info,
+export Record, HEADER, append_record, read_records, write_machine_info, INPUT_LOG, log_input!,
        time_call, truncate_str, clean, numeq, POINTS, POINTS_POS
 
 # ---------------------------------------------------------------------------
@@ -38,9 +38,19 @@ struct Record
     t_warm::Float64    # seconds, minimum over repeated calls (NaN if not measured)
     result::String     # truncated textual result
     note::String
+    input::String      # what was sent to the system (its own syntax), truncated; "" in files written before 2026-11-20
 end
+Record(bench, system, idx, case, op, status, t_first, t_warm, result, note) =
+    Record(bench, system, idx, case, op, status, t_first, t_warm, result, note, "")
 
-const HEADER = "bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote"
+const HEADER = "bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput"
+
+# what the adapters send to their system during one case, in that system's syntax: the adapters call
+# log_input! with every command, script or expression text; the worker clears it before each case and
+# records it, so that a status can be checked against the exact input (a wrongly generated command is
+# an error of the benchmark, not of the system)
+const INPUT_LOG = String[]
+log_input!(s) = (push!(INPUT_LOG, String(string(s))); nothing)
 
 clean(s) = replace(String(string(s)), '\t' => ' ', '\n' => ' ', '\r' => ' ')
 truncate_str(s, n = 200) = (s = clean(s); length(s) > n ? first(s, n) * "..." : s)
@@ -51,7 +61,7 @@ function append_record(path::AbstractString, r::Record)
         new && println(io, HEADER)
         println(io, join([r.bench, r.system, string(r.idx), clean(r.case), r.op, r.status,
                           @sprintf("%.6g", r.t_first), @sprintf("%.6g", r.t_warm),
-                          truncate_str(r.result), truncate_str(r.note, 300)], '\t'))
+                          truncate_str(r.result), truncate_str(r.note, 300), truncate_str(r.input, 2000)], '\t'))
     end
 end
 
@@ -61,9 +71,9 @@ function read_records(path::AbstractString)
     for (i, line) in enumerate(eachline(path))
         i == 1 && continue
         f = split(line, '\t'; keepempty = true)
-        length(f) == 10 || continue
+        length(f) in (10, 11) || continue
         push!(out, Record(f[1], f[2], parse(Int, f[3]), f[4], f[5], f[6],
-                          parse(Float64, f[7]), parse(Float64, f[8]), f[9], f[10]))
+                          parse(Float64, f[7]), parse(Float64, f[8]), f[9], f[10], length(f) == 11 ? f[11] : ""))
     end
     out
 end

@@ -61,6 +61,7 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
         args = join(["$var=$xv"; plist; "numer"], ",")
         push!(lines, "print(concat(\"<<V\", $i, \">>\"), string(float(rectform(ev(res_, $args)))))\$")
     end
+    log_input!(join(lines, "\n"))
     txt = run_maxima(join(lines, "\n"))
     m = match(r"<<ANS>>\s*(.*)", txt)
     m === nothing && error("maxima gave no answer: " * first(txt, 200))

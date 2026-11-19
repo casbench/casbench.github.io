@@ -7,7 +7,7 @@
 # with post() an auxiliary computation for the check outside the timed call.
 using Symbolics   # the documented route to a compiled function: to_symbolics + build_function
 
-ge(s) = giac_eval(s)
+ge(s) = geval(s)
 tj(e) = e isa GiacExpr ? to_julia(e) : e
 num(s) = tj(tj(ge("evalf(" * s * ")")))
 # a Giac list of lists to a Julia matrix of Float64/ComplexF64

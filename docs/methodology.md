@@ -26,6 +26,13 @@ worker at the next case after a timeout or a crash. Results are appended to
 `results/<bench>_<system>.tsv` (one line per case: status, first-call time,
 warm time, textual result, note); `make_tables.jl` turns them into
 `tables/*.tex`, `figures/E_times.tex` and `results/summary.md`.
+Since 2026-11-20 every row also carries an `input` column: what the adapter
+sent to the system during the case, in that system's syntax (the strings
+evaluated by Giac, the text given to SymPy, the scripts of Maxima, FriCAS,
+Sage and Macaulay2; for the Julia-side task files, the arguments), truncated
+to 2 000 characters. It is there so that a status can be checked against the
+exact input: an unsolved or wrong case may be a command the benchmark
+generated wrongly, not a limit of the system.
 `results/history.tsv` keeps one summary row per bench, system and run date
 (appended by `make_tables.jl`; `tools/history_backfill.py` rebuilds the past
 rows from the git history), from which the site draws its time series.
