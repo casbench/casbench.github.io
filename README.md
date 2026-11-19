@@ -61,7 +61,7 @@ Written with an AI assistant, checked and run by the author; the paper and
   4.0 International (CC BY 4.0), see `LICENSE-DATA`. Cite the repository (or
   `CITATION.cff`) and the run date of the numbers you reuse.
 - **Third-party statements**: the problem statements of bench E are those of
-  the fork notebook cited above; the entries of `F_integration/sample.tsv`
+  the fork notebook cited in `docs/benches.md`; the entries of `F_integration/sample.tsv`
   are quoted from the 12000.org test files (themselves from the Rubi test
   suite, MIT, and the collections they cite), with the file and line of each;
   `H_osr/rules.tsv` derives from OpenSymbolicRules (MIT); the polynomial
