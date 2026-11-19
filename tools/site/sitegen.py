@@ -11,10 +11,12 @@ See tools/site/build.sh.
 """
 import argparse
 import csv
+import datetime
 import html
 import math
 import pathlib
 import re
+import subprocess
 
 REPO = "https://github.com/s-celles/computer_algebra_system_benchmarks"
 BLOB = REPO + "/blob/main"
@@ -172,6 +174,84 @@ def fence(text):
     return "```text\n" + text.replace("```", "'''") + "\n```\n"
 
 
+PALETTE = ["#1f77b4", "#d62728", "#2ca02c", "#9467bd", "#ff7f0e", "#8c564b", "#e377c2", "#17becf", "#7f7f7f", "#bcbd22"]
+
+
+def read_history(path):
+    """Rows of results/history.tsv (dates as ISO strings, numbers parsed)."""
+    rows = []
+    if not path.exists():
+        return rows
+    with open(path, newline="", encoding="utf-8") as f:
+        for r in csv.DictReader(f, delimiter="\t", quoting=csv.QUOTE_NONE):
+            try:
+                for k in ("n", "verified", "wrong", "unverified", "unsolved", "unavailable", "error", "timeout"):
+                    r[k] = int(r[k])
+                r["t_warm_median"] = float(r["t_warm_median"])
+                r["t_warm_sum"] = float(r["t_warm_sum"])
+            except (KeyError, ValueError):
+                continue
+            rows.append(r)
+    rows.sort(key=lambda r: r["date"])
+    return rows
+
+
+def svg_chart(series, title, ylabel, log=False, width=720, height=260):
+    """A line chart as inline SVG: series = {label: [(date, value), ...]}; dates are ISO strings, placed by time."""
+    pts = [(d, v) for ps in series.values() for d, v in ps if v == v and (not log or v > 0)]
+    if not pts:
+        return f"<p><em>{esc(title)}: no data yet.</em></p>\n"
+    def tnum(d):
+        try:
+            return datetime.datetime.fromisoformat(d.replace(" ", "T")).timestamp()
+        except ValueError:
+            return 0.0
+    xs = [tnum(d) for d, _ in pts]
+    x0, x1 = min(xs), max(xs)
+    x1 = x1 if x1 > x0 else x0 + 86400
+    vals = [math.log10(v) if log else v for _, v in pts]
+    y0, y1 = min(vals), max(vals)
+    if y1 <= y0:
+        y0, y1 = (y0 - 1, y1 + 1) if log else (0, max(1, y1 * 1.1))
+    if not log:
+        y0 = 0
+    ml, mr, mt, mb = 56, 16, 30, 46
+    pw, ph = width - ml - mr, height - mt - mb
+    X = lambda t: ml + (t - x0) / (x1 - x0) * pw
+    Y = lambda v: mt + ph - ((math.log10(v) if log else v) - y0) / (y1 - y0) * ph
+    out = [f'<svg class="chart" viewBox="0 0 {width} {height}" width="100%" role="img" aria-label="{esc(title)}">',
+           f'<text x="{ml}" y="18" font-size="13" font-weight="600">{esc(title)}</text>']
+    # y grid: 4 ticks
+    for i in range(5):
+        v = y0 + (y1 - y0) * i / 4
+        y = mt + ph - ph * i / 4
+        label = f"{10 ** v:.3g}" if log else f"{v:.0f}"
+        out.append(f'<line x1="{ml}" y1="{y:.1f}" x2="{ml + pw}" y2="{y:.1f}" stroke="#ddd"/>'
+                   f'<text x="{ml - 6}" y="{y + 4:.1f}" font-size="10" text-anchor="end">{label}</text>')
+    out.append(f'<text x="12" y="{mt + ph / 2:.0f}" font-size="10" transform="rotate(-90 12 {mt + ph / 2:.0f})" text-anchor="middle">{esc(ylabel)}</text>')
+    # x ticks: first, last and up to 3 between
+    dates = sorted({d for d, _ in pts}, key=tnum)
+    step = max(1, len(dates) // 4)
+    for d in dates[::step] + ([dates[-1]] if dates[-1] not in dates[::step] else []):
+        x = X(tnum(d))
+        out.append(f'<line x1="{x:.1f}" y1="{mt + ph}" x2="{x:.1f}" y2="{mt + ph + 4}" stroke="#888"/>'
+                   f'<text x="{x:.1f}" y="{mt + ph + 16}" font-size="10" text-anchor="middle">{esc(d[:10])}</text>')
+    for i, (label, ps) in enumerate(series.items()):
+        color = PALETTE[i % len(PALETTE)]
+        ps = [(d, v) for d, v in sorted(ps, key=lambda q: tnum(q[0])) if v == v and (not log or v > 0)]
+        if not ps:
+            continue
+        path = " ".join(f"{'M' if j == 0 else 'L'}{X(tnum(d)):.1f},{Y(v):.1f}" for j, (d, v) in enumerate(ps))
+        out.append(f'<path d="{path}" fill="none" stroke="{color}" stroke-width="2"/>')
+        for d, v in ps:
+            out.append(f'<circle cx="{X(tnum(d)):.1f}" cy="{Y(v):.1f}" r="3" fill="{color}"><title>{esc(label)} {esc(d)}: {v:.4g}</title></circle>')
+        lx = ml + (i % 4) * (pw / 4)
+        ly = height - 8 - (i // 4) * 12
+        out.append(f'<rect x="{lx:.0f}" y="{ly - 8}" width="10" height="10" fill="{color}"/><text x="{lx + 14:.0f}" y="{ly}" font-size="10">{esc(label)}</text>')
+    out.append("</svg>")
+    return "\n".join(out) + "\n"
+
+
 class Site:
     def __init__(self, root):
         self.root = pathlib.Path(root)
@@ -184,6 +264,26 @@ class Site:
                 self.results.setdefault(r["bench"], {}).setdefault(r["system"], []).append(r)
         self.machine = self.read_machine()
         self.categories = self.read_categories()
+        self.history = read_history(self.root / "results" / "history.tsv")
+        self.generated = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+        self.results_commit = self.git_results_commit()
+
+    def git_results_commit(self):
+        """(short hash, date) of the last commit that changed results/, or None outside a git checkout."""
+        try:
+            out = subprocess.run(["git", "log", "-1", "--format=%h %cI", "--", "results"], cwd=self.root,
+                                 capture_output=True, text=True, check=True).stdout.split()
+            return (out[0], out[1]) if len(out) == 2 else None
+        except (OSError, subprocess.CalledProcessError):
+            return None
+
+    def stamp(self):
+        s = f"Site generated {self.generated}"
+        if self.last_date():
+            s += f" · last run recorded {esc(self.last_date())}"
+        if self.results_commit:
+            s += f" · results commit {esc(self.results_commit[0])} ({esc(self.results_commit[1][:16].replace('T', ' '))})"
+        return s
 
     # -- inputs -------------------------------------------------------------
     def read_machine(self):
@@ -249,6 +349,7 @@ class Site:
         nb, ns, nc = len(self.results), len(self.packages()), self.ncases()
         out = front("Computer algebra system benchmarks", 0)
         out += '<p class="project-kicker">reproducible · verified · dated</p>\n\n'
+        out += f'<p class="site-stamp">{self.stamp()}</p>\n\n'
         out += ("Benchmarks of computer algebra systems reachable from Julia: Giac.jl, Symbolics.jl, SymPy (through "
                 "SymPyPythonCall.jl), SymJ.jl, Primes.jl, LibPARI.jl, Groebner.jl and msolve. Every number comes from a script in the "
                 "repository, run on fixed inputs, with every answer checked by a system-neutral test and every run dated. "
@@ -266,7 +367,7 @@ class Site:
         out += "\n## Status vocabulary\n\n| status | meaning |\n|---|---|\n"
         for s in STATUSES:
             out += f"| {badge(s)} | {STATUS_HELP[s]} |\n"
-        out += (f"\n[Workflow](workflow/) · [Methodology](methodology/) · [Systems and versions](systems/) · "
+        out += (f"\n[History](history/) · [Workflow](workflow/) · [Methodology](methodology/) · [Systems and versions](systems/) · "
                 f"[Machine](environment/) · [Repository]({REPO})\n")
         return out
 
@@ -372,14 +473,41 @@ class Site:
             out += "## environment.txt\n\n" + fence(env.read_text(encoding="utf-8").strip())
         return out
 
+    def history_page(self):
+        out = front("History", 4)
+        out += (f'<p class="site-stamp">{self.stamp()}</p>\n\n'
+                "Every run of every bench and system, from `results/history.tsv` (one row per bench, system and run date; "
+                "appended by `make_tables.jl`, backfilled from the git history by `tools/history_backfill.py`). "
+                "Verified counts and median warm times over the verified cases; hover a point for its value.\n\n")
+        if not self.history:
+            return out + "*No history yet.*\n"
+        benches = [b for b in BENCHES if any(r["bench"] == b for r in self.history)] + \
+                  sorted({r["bench"] for r in self.history} - set(BENCHES))
+        for b in benches:
+            title = BENCHES.get(b, (b, ""))[0]
+            rows = [r for r in self.history if r["bench"] == b]
+            systems = sorted({r["system"] for r in rows})
+            lab = lambda s: SYSTEM_LABELS.get(s, s)
+            out += f"## {esc(title)}\n\n"
+            out += svg_chart({lab(s): [(r["date"], r["verified"]) for r in rows if r["system"] == s] for s in systems},
+                             f"{title}: verified cases per run", "verified")
+            out += svg_chart({lab(s): [(r["date"], r["t_warm_median"]) for r in rows if r["system"] == s] for s in systems},
+                             f"{title}: median warm time of the verified cases (s, log)", "seconds", log=True)
+            out += "<details><summary>runs</summary>\n\n| date | system | n | verified | wrong | unverified | unsolved | unavailable | error | timeout | median warm | source |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n"
+            for r in rows:
+                out += (f"| {esc(r['date'][:16].replace('T', ' '))} | {esc(lab(r['system']))} | {r['n']} | {r['verified']} | {r['wrong']} | {r['unverified']} | "
+                        f"{r['unsolved']} | {r['unavailable']} | {r['error']} | {r['timeout']} | {fmt_time(r['t_warm_median'])} | `{esc(r['source'])}` |\n")
+            out += "\n</details>\n\n"
+        return out
+
     def workflow(self):
-        return front("Workflow", 4) + WORKFLOW.strip() + "\n"
+        return front("Workflow", 5) + WORKFLOW.strip() + "\n"
 
     def methodology(self):
         readme = (self.root / "README.md").read_text(encoding="utf-8")
         body = re.sub(r"^# .*\n", "", readme, count=1)
         body = re.sub(r"\]\((?!https?://|#)([^)]+)\)", lambda m: f"]({BLOB}/{m.group(1)})", body)
-        return front("Methodology", 5) + f"From [`README.md`]({BLOB}/README.md).\n\n" + body
+        return front("Methodology", 6) + f"From [`README.md`]({BLOB}/README.md).\n\n" + body
 
     def llms(self):
         return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of CAS reachable from Julia. {DISCLAIMER}\n\n"
@@ -402,6 +530,7 @@ def generate(root, out):
             write(c / "results" / key.lower() / d / "_index.md", text)
     write(c / "systems" / "_index.md", site.systems_page())
     write(c / "environment" / "_index.md", site.environment_page())
+    write(c / "history" / "_index.md", site.history_page())
     write(c / "workflow" / "_index.md", site.workflow())
     write(c / "methodology" / "_index.md", site.methodology())
     write(s / "llms.txt", site.llms())

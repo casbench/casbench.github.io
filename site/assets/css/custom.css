@@ -35,3 +35,7 @@
 .dark .disclaimer { background: #33260f; border-color: #f59e0b; }
 .dark .table-count { color: #a1bdd5; }
 @media (max-width: 760px) { .suite-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .suite-stat strong { font-size: 1.8rem; } }
+.site-stamp { font-size: .8rem; color: #465160; font-variant-numeric: tabular-nums; }
+.dark .site-stamp { color: #a1bdd5; }
+.chart { max-width: 760px; margin: .5rem 0 1rem; font-family: ui-sans-serif, system-ui, sans-serif; }
+.chart text { fill: currentColor; }

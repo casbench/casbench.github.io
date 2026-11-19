@@ -21,22 +21,25 @@ menu:
     - name: Results
       pageRef: /results
       weight: 1
+    - name: History
+      pageRef: /history
+      weight: 2
     - name: Systems
       pageRef: /systems
-      weight: 2
+      weight: 3
     - name: Environment
       pageRef: /environment
-      weight: 3
+      weight: 4
     - name: Methodology
       pageRef: /methodology
-      weight: 4
+      weight: 5
     - name: GitHub
       url: https://github.com/s-celles/computer_algebra_system_benchmarks
-      weight: 5
+      weight: 6
       params:
         icon: github
     - name: Search
-      weight: 6
+      weight: 7
       params:
         type: search
 params:

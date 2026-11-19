@@ -29,6 +29,6 @@ jobs:
             julia --startup-file=no make_tables.jl
           diff -r tables "$RUNNER_TEMP/tables"
           diff -r figures "$RUNNER_TEMP/figures"
-          git diff --exit-code results/summary.md
+          git diff --exit-code results/summary.md results/history.tsv
       - name: Site generator tests
         run: python3 -I tools/site/test_sitegen.py
