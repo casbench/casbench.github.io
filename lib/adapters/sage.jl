@@ -48,12 +48,14 @@ function run_sage(script::String)
     write(path, script)
     out = IOBuffer()
     try
-        run(pipeline(`timeout -k 5 $CASE_LIMIT $SAGE $path`; stdout = out, stderr = devnull))
+        run(pipeline(ignorestatus(`timeout -k 5 $CASE_LIMIT $SAGE $path`); stdout = out, stderr = out))   # a non-zero exit is read from the output
     finally
         rm(path; force = true)
         rm(path * ".py"; force = true)
     end
-    String(take!(out))
+    txt = String(take!(out))
+    get(ENV, "BENCH_DEBUG", "0") == "1" && (println(stderr, "--- sage script\n", script, "--- sage output\n", txt); flush(stderr))
+    txt
 end
 
 marker(txt, m) = (r = match(Regex(m * raw"\s*(.*)"), txt); r === nothing ? nothing : strip(r[1]))
@@ -86,8 +88,9 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     used = [k for (k, v) in params if string(k) in syms]
     pt = join(["$k: $(v)" for (k, v) in params if k in used], ", ")
     lines = ["var('" * join(unique([var; string.(used)]), " ") * "')",
-             "f = $f", "t0 = walltime()",
+             "t0 = walltime()",
              "try:",
+             "    f = $f",
              SAGE_ALGORITHM == "giac" ? "    Fg = giac(f).integrate(giac($var))\n    t1 = walltime()\n    try:\n        F = Fg.sage()\n    except Exception as ex:\n        F = SR(str(Fg))" :
                                         "    F = integrate(f, $var, algorithm='$SAGE_ALGORITHM')\n    t1 = walltime()",
              "except Exception as ex:",
@@ -100,7 +103,10 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     end
     txt = run_sage(join(lines, "\n") * "\n")
     ans = marker(txt, "<<ANS>>")
-    ans === nothing && error("sage gave no answer: " * last(strip(replace(txt, "\n" => " ")), 200))
+    ans === nothing && error("sage gave no answer: " * last(strip(replace(txt, "\n" => " ")), 300))
+    # an exception inside Sage is an error of the interface (e.g. the pexpect giac interface cannot parse an answer that
+    # giac prints with a warning), unless the system declares that it cannot integrate (then the worker says unsolved)
+    startswith(ans, "sage_error:") && !occursin(r"not implemented|NotImplemented|cannot|unable", ans) && error(ans)
     vals = Dict{Float64,ComplexF64}()
     for (i, xv) in enumerate(check_points())
         v = marker(txt, "<<V$i>>")

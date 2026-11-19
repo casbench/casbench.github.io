@@ -22,23 +22,30 @@ Base.string(a::FricasAnswer) = a.text
 check_points() = (pts = Main.FPOINTS; h = 1e-5; [x0 + s * h for x0 in pts for s in (-1, 1)])
 # only the parameters the integrand uses (D is FriCAS's differentiation operator, F and others are fine as symbols)
 # values substituted as Complex Float, so that a logarithm or a root of a negative value evaluates instead of raising
-param_list(xv, integrand, params) = join([["$k = ($(v)::Complex Float)" for (k, v) in params if occursin(Regex("\\b$k\\b"), integrand)]; "x = ($xv::Complex Float)"], ", ")
+param_list(xv, integrand, params, cplx) = (ty = cplx ? "::Complex Float" : "::Float";
+    join([["$k = ($(v)$ty)" for (k, v) in params if occursin(Regex("\\b$k\\b"), integrand)]; "x = ($xv$ty)"], ", "))
 
 function run_fricas(script::String)
     out = IOBuffer()
     run(pipeline(`timeout -k 5 $CASE_LIMIT $FRICAS -nosman -eval ")read $(script) )quiet" -eval ")quit"`; stdout = out, stderr = devnull))
-    String(take!(out))
+    txt = String(take!(out))
+    get(ENV, "BENCH_DEBUG", "0") == "1" && (println(stderr, "--- fricas script\n", read(script, String), "--- fricas output\n", txt); flush(stderr))
+    txt
 end
 
 function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     f = Mapleish.translate(integrand, :fricas)
     xs = check_points()
-    lines = [")set message autoload off", ")set message type off", ")set output algebra off", ")set output length 245",
+    lines = [")set message autoload off", ")set message type off", ")set output algebra off", ")set output length 245", ")set break resume",
              "f := $f", "resf := integrate(f, $var)",
              "output(concat(\"<<ANS>>\", unparse(resf::InputForm)))"]
     for (i, xv) in enumerate(xs)
-        push!(lines, "v$i := complexNumeric(eval(resf, [$(param_list(xv, integrand, params))]))")
+        # real values first (an Expression Integer evaluates cleanly), complex ones second (logarithms of negative values);
+        # with )set break resume an error in one line does not stop the next
+        push!(lines, "v$i := complexNumeric(eval(resf, [$(param_list(xv, integrand, params, false))]))")
         push!(lines, "output(concat(\"<<V$i>>\", unparse(v$i::InputForm)))")
+        push!(lines, "w$i := complexNumeric(eval(resf, [$(param_list(xv, integrand, params, true))]))")
+        push!(lines, "output(concat(\"<<W$i>>\", unparse(w$i::InputForm)))")
     end
     path = tempname() * ".input"
     write(path, join(lines, "\n") * "\n")
@@ -51,10 +58,14 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     ans === nothing && error("fricas gave no answer: " * last(strip(replace(txt, "\n" => " ")), 200))
     vals = Dict{Float64,ComplexF64}()
     for (i, xv) in enumerate(xs)
-        mv = marker_text(txt, "<<V$i>>")
-        mv === nothing && continue
-        v = parse_fricas_number(mv)
-        v === nothing || (vals[xv] = v)
+        for mk in ("<<V$i>>", "<<W$i>>")
+            mv = marker_text(txt, mk)
+            mv === nothing && continue
+            v = parse_fricas_number(mv)
+            v === nothing && continue
+            vals[xv] = v
+            break
+        end
     end
     FricasAnswer(ans, vals)
 end

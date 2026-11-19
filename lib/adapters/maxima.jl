@@ -30,7 +30,9 @@ function run_maxima(script::String)
     out = IOBuffer()
     cmd = pipeline(`timeout -k 5 $CASE_LIMIT $MAXIMA --very-quiet --batch-string=$script`; stdout = out, stderr = devnull)
     run(cmd)
-    String(take!(out))
+    txt = String(take!(out))
+    get(ENV, "BENCH_DEBUG", "0") == "1" && (println(stderr, "--- maxima output\n", txt); flush(stderr))
+    txt
 end
 
 function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
