@@ -1,5 +1,5 @@
-# SageMath adapter (benches F and G), as a subprocess: one `sage script.sage`
-# per case. The thin files sage_<algorithm>.jl set SAGE_ALGORITHM and include
+# SageMath adapter (benches F and G), as a subprocess: one Sage process per
+# worker (sage_server.py), fed one script per case. The thin files sage_<algorithm>.jl set SAGE_ALGORITHM and include
 # this one, so that Sage drives one engine per system column:
 #   F: integrate(f, x, algorithm=...)  with maxima, fricas, sympy
 #      (the configuration of the 12000.org tests for Maxima and FriCAS); for giac,
@@ -43,15 +43,37 @@ Base.isempty(b::SageBasis) = isempty(b.polys)
 
 check_points() = (pts = Main.FPOINTS; h = 1e-5; [x0 + s * h for x0 in pts for s in (-1, 1)])
 
+# one Sage process per worker (lib/adapters/sage_server.py), fed the path of a script per case; restarted if it died
+const SAGE_PROC = Ref{Any}(nothing)
+function sage_process()
+    p = SAGE_PROC[]
+    if p === nothing || !process_running(p)
+        p = open(`$SAGE -python $(joinpath(@__DIR__, "sage_server.py"))`, "r+")
+        t0 = time()
+        while time() - t0 < 120
+            l = readline(p)
+            (l == "<<READY>>" || (!process_running(p) && eof(p))) && break
+        end
+        SAGE_PROC[] = p
+    end
+    p
+end
+
 function run_sage(script::String)
     path = tempname() * ".sage"
     write(path, script)
     out = IOBuffer()
     try
-        run(pipeline(ignorestatus(`timeout -k 5 $CASE_LIMIT $SAGE $path`); stdout = out, stderr = out))   # a non-zero exit is read from the output
+        p = sage_process()
+        println(p, path); flush(p)
+        while true
+            (eof(p) && !process_running(p)) && break
+            l = readline(p)
+            l == "<<END>>" && break
+            println(out, l)
+        end
     finally
         rm(path; force = true)
-        rm(path * ".py"; force = true)
     end
     txt = String(take!(out))
     get(ENV, "BENCH_DEBUG", "0") == "1" && (println(stderr, "--- sage script\n", script, "--- sage output\n", txt); flush(stderr))
@@ -91,7 +113,7 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
              "t0 = walltime()",
              "try:",
              "    f = $f",
-             SAGE_ALGORITHM == "giac" ? "    Fg = giac(f).integrate(giac($var))\n    t1 = walltime()\n    try:\n        F = Fg.sage()\n    except Exception as ex:\n        F = SR(str(Fg))" :
+             SAGE_ALGORITHM == "giac" ? "    Fg = giac(f).integrate(giac($var))\n    t1 = walltime()\n    try:\n        F = Fg.sage()\n    except Exception as ex:\n        F = str(Fg)   # an unevaluated integral or a form Sage cannot read back: kept as text" :
                                         "    F = integrate(f, $var, algorithm='$SAGE_ALGORITHM')\n    t1 = walltime()",
              "except Exception as ex:",
              "    print('<<' + 'ANS>>', 'sage_error: ' + str(ex)[:200])",
