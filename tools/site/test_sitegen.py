@@ -49,6 +49,7 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("verdict--unavailable", page)
         self.assertIn("200 µs", page)                            # warm time formatted
         self.assertIn("4.0 ms", page)
+        self.assertIn("[factor x^4-1](001-factor-x-4-1/)", page)  # each case links to its page
         home = (out / "content" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("<strong>3</strong><span>cases</span>", home)
         self.assertIn("<strong>2</strong><span>packages</span>", home)
@@ -58,11 +59,35 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn(sitegen.BLOB + "/lib/common.jl", meth)      # relative links rewritten
         self.assertTrue((out / "static" / "llms.txt").exists())
 
+    def test_case_pages(self):
+        root = self.make_root()
+        out = pathlib.Path(tempfile.mkdtemp())
+        sitegen.generate(root, out)
+        case = out / "content" / "results" / "d_coverage" / "001-factor-x-4-1" / "_index.md"
+        self.assertTrue(case.exists(), "one page per case")
+        text = case.read_text(encoding="utf-8")
+        self.assertIn("(x-1)*(x+1)*(x^2+1)", text)                 # every system's full answer
+        self.assertIn("(x - 1)*(x + 1)*(x**2 + 1)", text)
+        self.assertIn("| Giac.jl | <span", text)
+        self.assertTrue((out / "content" / "results" / "d_coverage" / "003-slow" / "_index.md").exists())
+
+    def test_workflow(self):
+        root = self.make_root()
+        out = pathlib.Path(tempfile.mkdtemp())
+        sitegen.generate(root, out)
+        wf = (out / "content" / "workflow" / "_index.md").read_text(encoding="utf-8")
+        self.assertEqual(wf.count("```mermaid"), 4)
+        self.assertIn("sequenceDiagram", wf)
+
     def test_fmt_time(self):
         self.assertEqual(sitegen.fmt_time(2.5e-6), "2 µs")
         self.assertEqual(sitegen.fmt_time(0.0123), "12.3 ms")
         self.assertEqual(sitegen.fmt_time(3.0), "3.00 s")
         self.assertEqual(sitegen.fmt_time(float("nan")), "")
+
+    def test_slug(self):
+        self.assertEqual(sitegen.slug(7, "Serret's integral"), "007-serret-s-integral")
+        self.assertEqual(sitegen.slug(12, "∫ x²"), "012-x")
 
     def test_real_repository(self):
         if not (ROOT / "results").exists():
