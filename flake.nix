@@ -40,7 +40,7 @@
         '';
       };
       python = pkgs.python3.withPackages (p: [ p.sympy p.numpy ]);
-      runtimeInputs = [ julia python pkgs.git pkgs.util-linux pkgs.coreutils pkgs.maxima pkgs.fricas pkgs.sage pkgs.macaulay2 ];   # Maxima, FriCAS, SageMath, Macaulay2: subprocess adapters of benches F and G
+      runtimeInputs = [ julia python pkgs.git pkgs.util-linux pkgs.coreutils pkgs.maxima pkgs.fricas pkgs.sage pkgs.giac pkgs.macaulay2 ];   # giac: the binary Sage drives   # Maxima, FriCAS, SageMath, Macaulay2: subprocess adapters of benches F and G
       envHook = ''
         export JULIA_PYTHONCALL_EXE=${python}/bin/python3
         export JULIA_CONDAPKG_BACKEND=Null

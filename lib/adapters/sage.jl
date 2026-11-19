@@ -1,9 +1,13 @@
 # SageMath adapter (benches F and G), as a subprocess: one `sage script.sage`
 # per case. The thin files sage_<algorithm>.jl set SAGE_ALGORITHM and include
 # this one, so that Sage drives one engine per system column:
-#   F: integrate(f, x, algorithm=...)  with giac, maxima, fricas, sympy
-#      (the configuration of the 12000.org tests for Giac, Maxima and FriCAS)
-#   G: ideal.groebner_basis(...)       with 'libsingular:std' (singular) or 'giac:gbasis'
+#   F: integrate(f, x, algorithm=...)  with maxima, fricas, sympy
+#      (the configuration of the 12000.org tests for Maxima and FriCAS); for giac,
+#      Sage's pexpect interface to the giac binary (nixpkgs' Sage lacks the
+#      sagemath_giac library binding, and algorithm='giac' then returns the
+#      integral unevaluated), the answer converted back with .sage()
+#   G: ideal.groebner_basis('libsingular:std') (singular), or gbasis through the
+#      same giac interface
 # The script prints the answer, Sage's own wall time of the call (the warm
 # time; the first-call time includes Sage's start-up) and, for F, the complex
 # numeric value of the answer at the six check points.
@@ -81,7 +85,10 @@ function INTEGRATE_TEXT(integrand::String, var::String)
     params = [k for (k, v) in Main.FPARAMS if string(k) in syms]
     pt = join(["$k: $(v)" for (k, v) in Main.FPARAMS if k in params], ", ")
     lines = ["var('" * join(unique([var; string.(params)]), " ") * "')",
-             "f = $f", "t0 = walltime()", "F = integrate(f, $var, algorithm='$SAGE_ALGORITHM')", "t1 = walltime()",
+             "f = $f", "t0 = walltime()",
+             SAGE_ALGORITHM == "giac" ? "Fg = giac(f).integrate(giac($var))" : "F = integrate(f, $var, algorithm='$SAGE_ALGORITHM')",
+             "t1 = walltime()",
+             SAGE_ALGORITHM == "giac" ? "try:\n    F = Fg.sage()\nexcept Exception as ex:\n    F = SR(str(Fg))" : "pass",
              "print('<<' + 'ANS>>', str(F))", "print('<<' + 'TIME>>', t1 - t0)"]
     for (i, xv) in enumerate(check_points())
         push!(lines, "try:\n    v = CC(F.subs({$var: $xv" * (isempty(pt) ? "" : ", " * pt) * "}))\n    print('<<' + 'V$i>>', str(v))\nexcept Exception as ex:\n    print('<<' + 'V$i>>', 'fail')")
@@ -100,15 +107,18 @@ function INTEGRATE_TEXT(integrand::String, var::String)
     SageAnswer(ans, vals, t === nothing ? NaN : parse(Float64, t))
 end
 
-const GB_ALGORITHM = Dict("singular" => "libsingular:std", "giac" => "giac:gbasis")
 function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
-    haskey(GB_ALGORITHM, SAGE_ALGORITHM) || error("no Gröbner basis through Sage with $SAGE_ALGORITHM")
+    SAGE_ALGORITHM in ("singular", "giac") || error("no Gröbner basis through Sage with $SAGE_ALGORITHM")
     ring = p == 0 ? "QQ" : "GF($p)"
-    lines = ["R = PolynomialRing($ring, '" * join(vars, ",") * "', order='degrevlex')",
-             "R.inject_variables(verbose=False)",
-             "I = R.ideal([" * join([replace(s, "//" => "/") for s in polys], ", ") * "])",
-             "t0 = walltime()", "B = I.groebner_basis('$(GB_ALGORITHM[SAGE_ALGORITHM])')", "t1 = walltime()",
-             "print('<<' + 'TIME>>', t1 - t0)", "for g in B:", "    print('<<' + 'G>>', str(g))"]
+    L = "[" * join([replace(s, "//" => "/") for s in polys], ", ") * "]"
+    V = "[" * join(vars, ",") * "]"
+    lines = SAGE_ALGORITHM == "singular" ?
+        ["R = PolynomialRing($ring, '" * join(vars, ",") * "', order='degrevlex')",
+         "R.inject_variables(verbose=False)", "I = R.ideal($L)",
+         "t0 = walltime()", "B = I.groebner_basis('libsingular:std')", "t1 = walltime()",
+         "print('<<' + 'TIME>>', t1 - t0)", "for g in B:", "    print('<<' + 'G>>', str(g))"] :
+        ["t0 = walltime()", "B = giac('gbasis(" * (p == 0 ? L : L * " % $p") * ",$V,revlex)')", "t1 = walltime()",
+         "print('<<' + 'TIME>>', t1 - t0)", "for g in B:", "    print('<<' + 'G>>', str(g).replace(' % $p', ''))"]
     txt = run_sage(join(lines, "\n") * "\n")
     gs = [strip(m[1]) for m in eachmatch(r"<<G>>\s*(.*)", txt)]
     isempty(gs) && error("sage gave no basis: " * last(strip(replace(txt, "\n" => " ")), 200))

@@ -26,6 +26,7 @@ const PRIME = 1073741827          # 2^30 + 3, the field of the modular cases
 const CHECK_PRIME = 2147483647    # 2^31 - 1, used for the membership check of the rational cases
 
 function check_gb(out, polys_in::Vector{String}, vars::Vector{String}, p::Int)
+    hasfield(typeof(out), :polys) && (out = out.polys)        # the subprocess adapters wrap the basis with its timing
     out isa AbstractVector || return (:unverified, "not a list of polynomials")
     strs = [string(e) for e in out]
     polys, canon = try

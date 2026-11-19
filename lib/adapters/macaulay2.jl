@@ -23,7 +23,7 @@ function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
     ring = p == 0 ? "QQ" : "ZZ/$p"
     lines = ["R = $ring[" * join(vars, ",") * ", MonomialOrder => GRevLex];",
              "I = ideal(" * join([replace(s, "//" => "/") for s in polys], ", ") * ");",
-             "t0 = currentTime();", "G = flatten entries gens gb I;", "t1 = currentTime();",
+             "t0 = cpuTime();", "G = flatten entries gens gb I;", "t1 = cpuTime();",
              "print(\"<<TIME>> \" | toString(t1 - t0));",
              "scan(G, g -> print(\"<<G>> \" | toString g));"]
     path = tempname() * ".m2"
