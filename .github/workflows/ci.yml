@@ -1,0 +1,34 @@
+name: CI
+
+# Light checks only: the benches themselves run on a dedicated machine (see
+# README.md) and their results are committed. This workflow checks that the
+# committed LaTeX tables and the figure are exactly what make_tables.jl
+# produces from the committed results, and that the site generator passes
+# its tests.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tables:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: "1.13"
+      - name: Regenerate the tables from the committed results
+        run: |
+          mkdir -p "$RUNNER_TEMP/tables" "$RUNNER_TEMP/figures"
+          BENCH_TABLES_DIR="$RUNNER_TEMP/tables" BENCH_FIGURES_DIR="$RUNNER_TEMP/figures" \
+            julia --startup-file=no make_tables.jl
+          diff -r tables "$RUNNER_TEMP/tables"
+          diff -r figures "$RUNNER_TEMP/figures"
+          git diff --exit-code results/summary.md
+      - name: Site generator tests
+        run: python3 -I tools/site/test_sitegen.py

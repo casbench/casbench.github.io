@@ -1,0 +1,3 @@
+<meta name="theme-color" content="#173f66">
+{{- $tables := resources.Get "js/tables.js" | minify | fingerprint }}
+<script src="{{ $tables.RelPermalink }}" integrity="{{ $tables.Data.Integrity }}" defer></script>

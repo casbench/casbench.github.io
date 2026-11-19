@@ -1,4 +1,4 @@
-# Shared helpers for the Giac.jl paper benchmarks.
+# Shared helpers for the benchmarks.
 #
 # Every bench writes one tab-separated line per (system, case) into
 # benchmark/results/<bench>_<system>.tsv. The columns are fixed by HEADER below.

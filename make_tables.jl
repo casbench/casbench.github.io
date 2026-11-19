@@ -1,6 +1,6 @@
-# Turn benchmark/results/*.tsv into the LaTeX table bodies included by
-# paper/paper.tex (paper/tables/*.tex) and a Markdown summary
-# (benchmark/results/summary.md). Only the standard library is used.
+# Turn results/*.tsv into the LaTeX table bodies (tables/*.tex, copied into the
+# paper repository) and a Markdown summary (results/summary.md). Only the
+# standard library is used.
 #
 #   julia benchmark/make_tables.jl
 
@@ -9,7 +9,7 @@ using .BenchCommon
 using Printf
 
 const RESULTS = joinpath(@__DIR__, "results")
-const TABLES = joinpath(@__DIR__, "..", "paper", "tables")
+const TABLES = get(ENV, "BENCH_TABLES_DIR", joinpath(@__DIR__, "tables"))   # LaTeX tables; the paper repository copies them
 mkpath(TABLES)
 
 texesc(s) = replace(string(s), "\\" => "\\textbackslash{}", "_" => "\\_", "%" => "\\%", "&" => "\\&", "#" => "\\#", "^" => "\\^{}")

@@ -1,4 +1,4 @@
-# Run every bench and regenerate the paper tables.
+# Run every bench and regenerate the tables.
 #
 #   julia benchmark/run_all.jl [A|B|C|D ...]
 #

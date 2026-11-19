@@ -1,0 +1,59 @@
+# Project site, deployed to GitHub Pages by .github/workflows/site.yml.
+# Content is generated outside the repository by tools/site/sitegen.py from
+# the results files; build with tools/site/build.sh OUT.
+baseURL: https://s-celles.github.io/computer_algebra_system_benchmarks/
+title: Computer algebra system benchmarks
+languageCode: en
+enableRobotsTXT: true
+noBuildLock: true
+disableKinds: [taxonomy, term]
+module:
+  imports:
+    - path: github.com/imfing/hextra
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+  highlight:
+    noClasses: false
+menu:
+  main:
+    - name: Results
+      pageRef: /results
+      weight: 1
+    - name: Systems
+      pageRef: /systems
+      weight: 2
+    - name: Environment
+      pageRef: /environment
+      weight: 3
+    - name: Methodology
+      pageRef: /methodology
+      weight: 4
+    - name: GitHub
+      url: https://github.com/s-celles/computer_algebra_system_benchmarks
+      weight: 5
+      params:
+        icon: github
+    - name: Search
+      weight: 6
+      params:
+        type: search
+params:
+  description: Reproducible, verified and dated benchmarks of computer algebra systems reachable from Julia. An individual, non-commercial project.
+  navbar:
+    displayTitle: true
+  theme:
+    default: system
+    displayToggle: true
+  search:
+    enable: true
+    type: flexsearch
+    flexsearch:
+      index: content
+      tokenize: forward
+  page:
+    width: wide
+  footer:
+    displayCopyright: false
+    displayPoweredBy: false

@@ -330,7 +330,7 @@ version = "0.21.0+0"
 
 [[deps.Giac]]
 deps = ["CommonSolve", "CxxWrap", "GIAC_jll", "Libdl", "LinearAlgebra", "Tables", "libcxxwrap_julia_jll", "libgiac_julia_jll"]
-path = "../../../Giac.jl"
+path = "../../Giac.jl"
 uuid = "e4421f97-9838-4fd0-9fa5-94f11373bf78"
 version = "0.14.3"
 

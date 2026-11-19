@@ -1,9 +1,12 @@
 {
-  # Reproducible toolchain for the paper benchmarks.
+  # Reproducible toolchain for the benchmarks.
   #
-  #   nix develop ./benchmark            # shell with julia, python3+sympy, git
-  #   nix run ./benchmark#bench          # run every bench (benchmark/run_all.jl)
-  #   nix develop ./benchmark#paper      # shell with latexmk, texlive and ruby for paper/
+  #   nix develop               # shell with julia, python3+sympy, git
+  #   nix run .#bench           # run every bench (run_all.jl)
+  #   nix develop .#site        # shell with hugo, go and python3 for tools/site/build.sh
+  #
+  # When this repository is the `benchmark` submodule of the paper repository,
+  # the same commands work with ./benchmark in place of `.`.
   #
   # nixpkgs is pinned by flake.lock. Julia is the official 1.13.3 binary
   # tarball (nixpkgs only ships 1.12 at the pinned revision), patched for the
@@ -11,7 +14,7 @@
   # interpreter with sympy; PythonCall is pointed at it so that CondaPkg does
   # not resolve anything at run time. Giac, PARI and the C++ wrapper come from
   # the Julia artifacts pinned in the environments' Manifest.toml files.
-  description = "Giac.jl JuliaCon proceedings benchmarks";
+  description = "Computer algebra system benchmarks (Giac.jl, Symbolics.jl, SymPy, SymJ.jl, Primes.jl, LibPARI.jl)";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -73,11 +76,8 @@
           packages = runtimeInputs;
           shellHook = envHook;
         };
-        paper = pkgs.mkShell {
-          packages = [
-            (pkgs.texliveMedium.withPackages (ps: with ps; [ preprint eurosym psnfss microtype caption listings xcolor hyperref url latexmk pgfplots pgf ]))
-            pkgs.ruby pkgs.ghostscript
-          ];
+        site = pkgs.mkShell {
+          packages = [ pkgs.hugo pkgs.go pkgs.python3 ];
         };
       };
     };

@@ -3,4 +3,4 @@ Giac = "e4421f97-9838-4fd0-9fa5-94f11373bf78"
 Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [sources]
-Giac = {path = "../../../Giac.jl"}
+Giac = {path = "../../Giac.jl"}

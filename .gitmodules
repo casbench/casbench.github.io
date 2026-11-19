@@ -1,0 +1,3 @@
+[submodule "Giac.jl"]
+	path = Giac.jl
+	url = https://github.com/JuliaGiac/Giac.jl.git
