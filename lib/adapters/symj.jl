@@ -72,6 +72,8 @@ function EVAL(ex, vals)
 end
 NTERMS(ex) = ex isa Sym && TermInterface.iscall(ex) && TermInterface.operation(ex) === (+) ?
     length(TermInterface.arguments(ex)) : 1
+NFACTORS(ex) = ex isa Sym && TermInterface.iscall(ex) && TermInterface.operation(ex) === (*) ?
+    length(TermInterface.arguments(ex)) : 1
 IS_EXACT(ex) = occursin("π", string(ex)) && !occursin(r"\d\.\d", string(ex))
 CLEARCACHE() = nothing
 VERSIONS() = ["SymJ" => string(pkgversion(SymJ)), "GruntzLimit" => string(pkgversion(GruntzLimit)),

@@ -116,6 +116,7 @@ function EVAL(ex, vals)
     u isa Number ? u : nothing
 end
 NTERMS(ex) = ex isa GiacExpr && string(cmd(:sommet, ex)) == "'+'" ? toint(cmd(:nops, ex)) : 1
+NFACTORS(ex) = ex isa GiacExpr && string(cmd(:sommet, ex)) == "'*'" ? toint(cmd(:nops, ex)) : 1
 IS_EXACT(ex) = occursin("pi", string(ex)) && !occursin(r"\d\.\d", string(ex))
 CLEARCACHE() = nothing
 VERSIONS() = ["Giac.jl" => string(pkgversion(Giac)),

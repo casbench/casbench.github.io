@@ -92,6 +92,7 @@ function EVAL(ex, vals)
     uu isa Number && !(uu isa Sym) ? uu : nothing
 end
 NTERMS(ex) = ex isa Sym && Bool(ex.is_Add) ? length(ex.args) : 1
+NFACTORS(ex) = ex isa Sym && Bool(ex.is_Mul) ? length(ex.args) : 1
 IS_EXACT(ex) = occursin("pi", string(ex)) && !occursin(r"\d\.\d", string(ex))
 CLEARCACHE() = S.core.cache.clear_cache()
 VERSIONS() = ["SymPy" => string(S.__version__), "SymPyPythonCall" => string(pkgversion(SymPyPythonCall))]

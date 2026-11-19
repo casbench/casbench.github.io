@@ -105,6 +105,10 @@ function NTERMS(ex)
     e = unwrap(ex)
     iscall(e) && operation(e) === (+) ? length(arguments(e)) : 1
 end
+function NFACTORS(ex)
+    e = unwrap(ex)
+    iscall(e) && operation(e) === (*) ? length(arguments(e)) : 1
+end
 IS_EXACT(ex) = occursin("π", string(ex)) && !occursin(r"\d\.\d", string(ex))
 CLEARCACHE() = nothing
 VERSIONS() = ["Symbolics" => string(pkgversion(Symbolics)), "SymbolicUtils" => string(pkgversion(SymbolicUtils)),

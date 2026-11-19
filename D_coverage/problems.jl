@@ -158,8 +158,18 @@ const PROBLEMS = [
     P("groebner [x^2+y^2-2, x-y]", :groebner, V -> ([V[:x]^2 + V[:y]^2 - 2, V[:x] - V[:y]], [V[:x], V[:y]]),
       o -> check_groebner(o, 2)),
     P("cfactor x^2+1 over C", :cfactor, V -> (V[:x]^2 + 1,),
-      o -> (s = string(o); (occursin("i", s) || occursin("I", s) || occursin("im", s)) ? :unverified : :wrong),
-      "unverified = a factorisation involving i was returned; not checked numerically"),
+      o -> begin
+          s = string(o)
+          (occursin("i", s) || occursin("I", s)) || return :unsolved   # x^2+1 returned unfactored
+          NFACTORS(o) == 2 || return :unsolved                          # expected two linear factors
+          for pt in (Dict(:x => 0.37), Dict(:x => -1.53 + 0.8im), Dict(:x => 2.11 - 1.3im))
+              v = evalat(o, pt)
+              v === nothing && return :unverified
+              numeq(v, pt[:x]^2 + 1) || return :wrong
+          end
+          :verified
+      end,
+      "verified = a product of two factors, containing i, equal to x^2+1 at one real and two complex points"),
     # ---- linear algebra -------------------------------------------------------------
     P("det [[a,b],[c,x]]", :det, V -> ([[V[:a], V[:b]], [V[:c], V[:x]]],),
       o -> check_equal(o, p -> p[:a] * p[:x] - p[:b] * p[:c])),
