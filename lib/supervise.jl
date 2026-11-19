@@ -23,8 +23,8 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
     while true
         # setsid: the worker leads a new process group, so that a timeout kills its subprocesses (Maxima, FriCAS,
         # Sage and their children) with it; the per-case limit is exported for the subprocess adapters' `timeout`
-        cmd = setenv(`setsid $(Base.julia_cmd()) --startup-file=no --project=$envdir $worker $bench $system $out $start $progress $extra`,
-                     "BENCH_CASE_TIMEOUT" => string(round(Int, timeout)); inherit = true)
+        cmd = addenv(`setsid $(Base.julia_cmd()) --startup-file=no --project=$envdir $worker $bench $system $out $start $progress $extra`,
+                     "BENCH_CASE_TIMEOUT" => string(round(Int, timeout)))
         proc = run(pipeline(cmd; stdout = logfile, stderr = logfile, append = true); wait = false)
         killgroup(sig) = (pid = getpid(proc); run(ignorestatus(`kill -$sig -- -$pid`)))
         last_progress = ""
