@@ -5,9 +5,22 @@ using LinearAlgebra: det
 
 const SYSTEM = "Giac.jl"
 @giac_var x y z u v a b c s t k n
+# the parameters of bench F; `e` and `i` are constants in Giac, so those two symbols are ee and ii
+@giac_var d f g h m p q r j A B C D F ee ii
 const VAR = Dict{Symbol,Any}(:x => x, :y => y, :z => z, :u => u, :v => v, :a => a, :b => b, :c => c,
                              :s => s, :t => t, :k => k, :n => n)
 VAR[:pi] = giac_eval("pi")
+for (vv, obj) in (:d => d, :f => f, :g => g, :h => h, :m => m, :p => p, :q => q, :r => r, :j => j,
+                  :A => A, :B => B, :C => C, :D => D, :F => F, :e => ee, :i => ii)
+    VAR[vv] = obj
+end
+isdefined(Main, :Mapleish) || include(joinpath(@__DIR__, "..", "mapleish.jl"))
+# bench F: an integrand in the Maple-like text of the 12000.org files
+function INTEGRATE_TEXT(integrand::String, var::String)
+    s = Mapleish.translate(integrand, :giac)
+    s = replace(s, r"\be\b" => "ee", r"\bi\b" => "ii")
+    giac_eval("integrate(" * s * "," * var * ")")
+end
 
 gx(e) = e isa GiacExpr ? e :
     e isa Rational ? giac_eval("($(numerator(e)))/($(denominator(e)))") :
@@ -72,7 +85,17 @@ TRIGSIMP(f) = cmd(:simplify, f)
 PARTFRAC(f, x) = cmd(:partfrac, f, x)
 CFACTOR(f) = cmd(:cfactor, f)
 
+# reduced Gröbner basis (degrevlex) of polynomials given as strings; p == 0 for Q, else GF(p)
+function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
+    L = "[" * replace(join(polys, ","), "//" => "/") * "]"   # Giac writes rationals with one slash
+    V = "[" * join(vars, ",") * "]"
+    r = giac_eval(p == 0 ? "gbasis($L,$V,revlex)" : "gbasis($L % $p,$V,revlex)")
+    [replace(string(e), r" % -?\d+" => "") for e in elements(r)]
+end
+
 const OPS = Dict{Symbol,Any}(
+    :groebner => GROEBNER,
+    :integrate_text => INTEGRATE_TEXT,
     :expand => f -> cmd(:expand, f),
     :factor => FACTOR,
     :integrate => (f, x) -> cmd(:integrate, f, x),

@@ -8,7 +8,7 @@ import GruntzLimit, RischIntegrate, TermInterface
 import SpecialFunctions, PolyLog, HypergeometricFunctions
 
 const SYSTEM = "SymJ.jl"
-const NAMES = (:x, :y, :z, :u, :v, :a, :b, :c, :s, :t, :k, :n)
+const NAMES = (:x, :y, :z, :u, :v, :a, :b, :c, :s, :t, :k, :n, :d, :e, :f, :g, :h, :m, :p, :q, :r, :j, :i, :A, :B, :C, :D, :F)   # the last ones: parameters of bench F
 const VAR = Dict{Symbol,Any}(vv => Sym(vv) for vv in NAMES)
 VAR[:pi] = Sym(π)
 sym(e) = e isa Sym ? e : Sym(e)
@@ -35,7 +35,17 @@ function DESOLVE_IVP(eq_lhs, eq_rhs, yname, t, y0)
     r isa SymJ.Relation ? r.rhs : r
 end
 
+isdefined(Main, :Mapleish) || include(joinpath(@__DIR__, "..", "mapleish.jl"))
+# bench F: the translated text evaluated as Julia with the symbols bound to the Sym variables, then RischIntegrate
+function INTEGRATE_TEXT(integrand::String, var::String)
+    ex = Mapleish.julia_expr(integrand)
+    bindings = Expr(:block, (Expr(:(=), vv, obj) for (vv, obj) in VAR if vv != :pi)...)
+    f = Core.eval(Main, Expr(:let, bindings, ex))
+    RischIntegrate.integrate(sym(f), VAR[Symbol(var)])
+end
+
 const OPS = Dict{Symbol,Any}(
+    :integrate_text => INTEGRATE_TEXT,
     :expand => f -> expand(f),
     :factor => FACTOR,
     :integrate => (f, x) -> RischIntegrate.integrate(f, x),

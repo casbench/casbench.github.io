@@ -13,6 +13,7 @@ using TermInterface: iscall, operation, arguments
 
 const SYSTEM = "Symbolics.jl"
 @variables x y z u v a b c s t k n
+@variables d e f g h m p q r j i A B C D F   # the parameters of bench F
 const VAR = Dict{Symbol,Any}(:x => x, :y => y, :z => z, :u => u, :v => v, :a => a, :b => b, :c => c,
                              :s => s, :t => t, :k => k, :n => n)
 VAR[:pi] = Num(SymbolicUtils.maketerm(typeof(unwrap(x)), identity, Any[π], nothing))
@@ -51,7 +52,21 @@ function DESOLVE_IVP(eq_lhs, eq_rhs, yname, t, y0)
     Symbolics.laplace_solve_ode(D(𝑦(t)) ~ eq_rhs(𝑦(t)), 𝑦, t, [y0])
 end
 
+for (vv, obj) in (:d => d, :e => e, :f => f, :g => g, :h => h, :m => m, :p => p, :q => q, :r => r, :j => j, :i => i,
+                  :A => A, :B => B, :C => C, :D => D, :F => F)
+    VAR[vv] = obj
+end
+isdefined(Main, :Mapleish) || include(joinpath(@__DIR__, "..", "mapleish.jl"))
+# bench F: the translated text evaluated as Julia with the symbols bound to the Num variables, then RischIntegrate
+function INTEGRATE_TEXT(integrand::String, var::String)
+    ex = Mapleish.julia_expr(integrand)
+    bindings = Expr(:block, (Expr(:(=), vv, obj) for (vv, obj) in VAR if vv != :pi)...)
+    f = Core.eval(Main, Expr(:let, bindings, ex))
+    RischIntegrate.integrate(unwrap(Num(f)), unwrap(VAR[Symbol(var)]))
+end
+
 const OPS = Dict{Symbol,Any}(
+    :integrate_text => INTEGRATE_TEXT,
     :expand => f -> Symbolics.expand(f),
     :factor => FACTOR,
     :integrate => (f, x) -> RischIntegrate.integrate(unwrap(f), unwrap(x)),

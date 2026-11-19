@@ -40,7 +40,7 @@
         '';
       };
       python = pkgs.python3.withPackages (p: [ p.sympy p.numpy ]);
-      runtimeInputs = [ julia python pkgs.git pkgs.util-linux pkgs.coreutils ];
+      runtimeInputs = [ julia python pkgs.git pkgs.util-linux pkgs.coreutils pkgs.maxima pkgs.fricas ];   # Maxima and FriCAS: subprocess adapters of bench F
       envHook = ''
         export JULIA_PYTHONCALL_EXE=${python}/bin/python3
         export JULIA_CONDAPKG_BACKEND=Null

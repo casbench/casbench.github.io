@@ -248,7 +248,7 @@ class Site:
         out = front("Computer algebra system benchmarks", 0)
         out += '<p class="project-kicker">reproducible · verified · dated</p>\n\n'
         out += ("Benchmarks of computer algebra systems reachable from Julia: Giac.jl, Symbolics.jl, SymPy (through "
-                "SymPyPythonCall.jl), SymJ.jl, Primes.jl and LibPARI.jl. Every number comes from a script in the "
+                "SymPyPythonCall.jl), SymJ.jl, Primes.jl, LibPARI.jl, Groebner.jl and msolve. Every number comes from a script in the "
                 "repository, run on fixed inputs, with every answer checked by a system-neutral test and every run dated. "
                 f"They are the reproduced numbers of the {PAPER}.\n\n")
         out += '<div class="suite-stats">\n'

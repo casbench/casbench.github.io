@@ -23,13 +23,19 @@ envs = Dict("giac" => joinpath(ROOT, "envs", "giac"),
             "symbolics" => joinpath(ROOT, "envs", "symbolics"),
             "sympy" => joinpath(ROOT, "envs", "sympy"),
             "symj" => joinpath(ROOT, "envs", "symj"),
-            "intfactor" => joinpath(ROOT, "envs", "intfactor"))
+            "intfactor" => joinpath(ROOT, "envs", "intfactor"),
+            "groebner" => joinpath(ROOT, "envs", "groebner"),
+            "msolve" => joinpath(ROOT, "envs", "msolve"),
+            "maxima" => joinpath(ROOT, "envs", "subprocess"),
+            "fricas" => joinpath(ROOT, "envs", "subprocess"))
 
-benches = isempty(ARGS) ? ["A", "B", "C", "D", "E"] : ARGS
+benches = isempty(ARGS) ? ["A", "B", "C", "D", "E", "F", "G"] : ARGS
 tB = get(ENV, "BENCH_TIMEOUT_B", "120")
 tD = get(ENV, "BENCH_TIMEOUT_D", "120")
 tC = get(ENV, "BENCH_TIMEOUT_C", "600")
 tE = get(ENV, "BENCH_TIMEOUT_E", "60")
+tG = get(ENV, "BENCH_TIMEOUT_G", "300")
+tF = get(ENV, "BENCH_TIMEOUT_F", "30")
 
 if get(ENV, "BENCH_SKIP_INSTANTIATE", "0") != "1"
     for (k, dir) in envs
@@ -51,6 +57,18 @@ for b in benches
             out = joinpath(RESULTS, "$(bench)_$(sys).tsv")
             isfile(out) && rm(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), bench, sys, out, b == "B" ? tB : b == "D" ? tD : tE)
+        end
+    elseif b == "F"
+        for sys in ("giac", "symbolics", "sympy", "symj", "maxima", "fricas")
+            out = joinpath(RESULTS, "F_integration_$(sys).tsv")
+            isfile(out) && rm(out)
+            supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "F_integration", sys, out, tF)
+        end
+    elseif b == "G"
+        for sys in ("giac", "groebner", "msolve", "sympy")
+            out = joinpath(RESULTS, "G_groebner_$(sys).tsv")
+            isfile(out) && rm(out)
+            supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "G_groebner", sys, out, tG)
         end
     elseif b == "C"
         for sys in ("giac", "primes", "pari")

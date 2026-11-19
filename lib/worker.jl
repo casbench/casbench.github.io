@@ -1,4 +1,4 @@
-# Generic worker for benches B (CAS operations) and D (functional coverage).
+# Generic worker for the benches with a problem file (B, D, E, F, G).
 #
 #   julia --project=envs/<system> lib/worker.jl BENCH SYSTEM OUT_TSV START_IDX PROGRESS_FILE
 #
@@ -27,33 +27,34 @@ START == 1 && append_record(OUT, Record(BENCH, SYSTEM, 0, "_load", "using", "ver
 
 const STOP = parse(Int, get(ENV, "BENCH_STOP", string(length(PROBLEMS))))   # last problem index to run (single-problem reruns)
 for i in START:STOP
-    p = PROBLEMS[i]
-    write(PROGRESS, string(i, '\t', p.name))
-    opf = get(OPS, p.op, missing)
+    prob = PROBLEMS[i]
+    write(PROGRESS, string(i, '\t', prob.name))
+    opf = get(OPS, prob.op, missing)
     if opf === missing
-        append_record(OUT, Record(BENCH, SYSTEM, i, p.name, string(p.op), "unavailable", NaN, NaN, "", p.note))
+        append_record(OUT, Record(BENCH, SYSTEM, i, prob.name, string(prob.op), "unavailable", NaN, NaN, "", prob.note))
         continue
     end
     rec = try
-        args = p.args(VAR)
+        args = prob.args(VAR)
         out, tf, tw = time_call(() -> opf(args...); between = CLEARCACHE)
-        note = p.note
-        status = if out === nothing || (out isa Tuple && !isempty(out) && out[1] === nothing) || UNSOLVED(p.op, out)
+        note = prob.note
+        status = if out === nothing || (out isa Tuple && !isempty(out) && out[1] === nothing) || (UNSOLVED(prob.op, out) && !get(prob, :accept_unsolved, false))
             :unsolved
         else
             try
-                p.check(out)
-            catch e
-                note = "check raised: " * sprint(showerror, e)
+                st = prob.check(out)
+                st isa Tuple ? (note = string(st[2]); st[1]) : st   # a check may return (status, note)
+            catch err
+                note = "check raised: " * sprint(showerror, err)
                 :unverified
             end
         end
-        Record(BENCH, SYSTEM, i, p.name, string(p.op), string(status), tf, tw, string(out), note)
-    catch e
-        msg = sprint(showerror, e)
+        Record(BENCH, SYSTEM, i, prob.name, string(prob.op), string(status), tf, tw, string(out), note)
+    catch err
+        msg = sprint(showerror, err)
         # a system that says it cannot do the problem has not solved it; a crash is an error
         declined = occursin(r"NotImplemented|NotElementary|[Nn]ot implemented|cannot be solved|Cannot solve|Unable to solve|unsupported operation|no elementary antiderivative|no roots in radicals|no method for", msg)
-        Record(BENCH, SYSTEM, i, p.name, string(p.op), declined ? "unsolved" : "error", NaN, NaN, "", msg)
+        Record(BENCH, SYSTEM, i, prob.name, string(prob.op), declined ? "unsolved" : "error", NaN, NaN, "", msg)
     end
     append_record(OUT, rec)
     GC.gc()
