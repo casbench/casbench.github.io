@@ -105,11 +105,14 @@ end
 
 function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     f = Mapleish.translate(integrand, :sage)
+    # the symbols of the integrand: identifiers that are not function names ("c" is a symbol even when "csc(" occurs)
     syms = unique([m.match for m in eachmatch(r"\b[A-Za-z_][A-Za-z_0-9]*\b", f)
-                   if !occursin(m.match * "(", f) && !(m.match in ("pi", "I", "e", "E"))])
+                   if !occursin(Regex("\\b" * m.match * "\\("), f) && !(m.match in ("pi", "I", "e", "E"))])
     used = [k for (k, v) in params if string(k) in syms]
     pt = join(["$k: $(v)" for (k, v) in params if k in used], ", ")
-    lines = ["var('" * join(unique([var; string.(used)]), " ") * "')",
+    # the sign of each parameter is assumed as its fixed value has it (Maxima asks otherwise)
+    assumptions = ["assume($k " * (params[k] > 0 ? ">" : "<") * " 0)" for k in used if params[k] != 0]
+    lines = ["var('" * join(unique([var; string.(used)]), " ") * "')", assumptions...,
              "t0 = walltime()",
              "try:",
              "    f = $f",
