@@ -47,7 +47,7 @@ function make_G()
             ratios = [tm(rec(s, c)) / minimum(tm(rec(s2, c)) for s2 in G_SYSTEMS) for c in allv]
             agree = count(cases) do c
                 r = rec(s, c)
-                r === nothing || r.status != "verified" && return false
+                (r === nothing || r.status != "verified") && return false
                 others = [digest(rec(s2, c)) for s2 in G_SYSTEMS if s2 != s && rec(s2, c) !== nothing && rec(s2, c).status == "verified"]
                 !isempty(others) && all(==(digest(r)), others)
             end

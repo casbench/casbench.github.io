@@ -36,7 +36,20 @@ function INTEGRATE_TEXT(integrand::String, var::String)
     f = Mapleish.translate(integrand, :maxima)
     xs = check_points()
     # the batch echoes its input: the markers are assembled by concat so that they only occur in the output
-    lines = ["display2d:false\$", "ratprint:false\$", "linel:1000000\$", "t0_: elapsed_real_time()\$", "res_: integrate($f, $var)\$",
+    params = param_list(integrand)
+    assumptions = isempty(params) ? "" : "assume(" * join([replace(p, "=" => ">0*") for p in params], ",") * ")\$"   # a>0*1.7, i.e. a > 0
+    # questions Maxima asks in batch mode (asksign, askinteger, ...) are answered by an oracle that evaluates the
+    # expression asked about at the fixed values of the parameters and at x = 0.57 (the middle check point)
+    subst = join(["$k=$(v)" for (k, v) in Main.FPARAMS] ∪ ["x=0.57"], ",")
+    oracle = ["oracle_(e_, t_) := block([v_], v_: errcatch(float(subst([$subst], e_))), " *
+              "if length(v_) = 0 or not numberp(first(v_)) then (if ssearch(\"integer\", t_) # false or ssearch(\"even\", t_) # false or ssearch(\"odd\", t_) # false then 'no else 'pos) " *
+              "else block([w_: first(v_)], if ssearch(\"integer\", t_) # false then (if integerp(w_) then 'yes else 'no) " *
+              "elseif ssearch(\"even\", t_) # false then (if evenp(w_) then 'yes else 'no) elseif ssearch(\"odd\", t_) # false then (if oddp(w_) then 'yes else 'no) " *
+              "elseif ssearch(\"zero or nonzero\", t_) # false then (if w_ = 0 then 'zero else 'nonzero) " *
+              "else (if w_ > 0 then 'pos elseif w_ < 0 then 'neg else 'zero)))\$",
+              ":lisp (defun retrieve (msg flag &aux tem) (declare (ignore flag tem)) (let ((e (find-if-not #'stringp (cdr msg))) (text (apply #'concatenate 'string (mapcar (lambda (z) (if (stringp z) z \"\")) (cdr msg))))) (mfuncall '\$oracle_ e text)))"]
+    lines = ["display2d:false\$", "ratprint:false\$", "linel:1000000\$", oracle..., assumptions, "t0_: elapsed_real_time()\$",
+             "res_: errcatch(integrate($f, $var))\$", "res_: if length(res_) = 0 then 'maxima_error else first(res_)\$",
              "print(concat(\"<<T\", \"IME>>\"), string(float(elapsed_real_time() - t0_)))\$",
              "print(concat(\"<<AN\", \"S>>\"), string(res_))\$"]
     for (i, xv) in enumerate(xs)
@@ -79,7 +92,7 @@ const OPS = Dict{Symbol,Any}(:integrate_text => INTEGRATE_TEXT)
 EVAL(ex, vals) = ex isa MaximaAnswer ? get(ex.values, vals[:x], nothing) : (ex isa Number ? ex : nothing)
 NTERMS(ex) = 1
 NFACTORS(ex) = 1
-UNSOLVED(op, out) = out isa MaximaAnswer && occursin(r"integrate\(|'integrate", out.text)
+UNSOLVED(op, out) = out isa MaximaAnswer && occursin(r"integrate\(|'integrate|maxima_error", out.text)
 CLEARCACHE() = nothing
 function VERSIONS()
     v = try

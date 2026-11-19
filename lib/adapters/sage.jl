@@ -86,9 +86,13 @@ function INTEGRATE_TEXT(integrand::String, var::String)
     pt = join(["$k: $(v)" for (k, v) in Main.FPARAMS if k in params], ", ")
     lines = ["var('" * join(unique([var; string.(params)]), " ") * "')",
              "f = $f", "t0 = walltime()",
-             SAGE_ALGORITHM == "giac" ? "Fg = giac(f).integrate(giac($var))" : "F = integrate(f, $var, algorithm='$SAGE_ALGORITHM')",
-             "t1 = walltime()",
-             SAGE_ALGORITHM == "giac" ? "try:\n    F = Fg.sage()\nexcept Exception as ex:\n    F = SR(str(Fg))" : "pass",
+             "try:",
+             SAGE_ALGORITHM == "giac" ? "    Fg = giac(f).integrate(giac($var))\n    t1 = walltime()\n    try:\n        F = Fg.sage()\n    except Exception as ex:\n        F = SR(str(Fg))" :
+                                        "    F = integrate(f, $var, algorithm='$SAGE_ALGORITHM')\n    t1 = walltime()",
+             "except Exception as ex:",
+             "    print('<<' + 'ANS>>', 'sage_error: ' + str(ex)[:200])",
+             "    print('<<' + 'TIME>>', walltime() - t0)",
+             "    raise SystemExit(0)",
              "print('<<' + 'ANS>>', str(F))", "print('<<' + 'TIME>>', t1 - t0)"]
     for (i, xv) in enumerate(check_points())
         push!(lines, "try:\n    v = CC(F.subs({$var: $xv" * (isempty(pt) ? "" : ", " * pt) * "}))\n    print('<<' + 'V$i>>', str(v))\nexcept Exception as ex:\n    print('<<' + 'V$i>>', 'fail')")
@@ -130,7 +134,7 @@ const OPS = Dict{Symbol,Any}(:integrate_text => INTEGRATE_TEXT, :groebner => GRO
 EVAL(ex, vals) = ex isa SageAnswer ? get(ex.values, vals[:x], nothing) : (ex isa Number ? ex : nothing)
 NTERMS(ex) = 1
 NFACTORS(ex) = 1
-UNSOLVED(op, out) = out isa SageAnswer && occursin(r"integrate\(", out.text)
+UNSOLVED(op, out) = out isa SageAnswer && occursin(r"integrate\(|sage_error: .*(not implemented|NotImplemented|cannot|unable)", out.text)
 CLEARCACHE() = nothing
 function VERSIONS()
     v = try

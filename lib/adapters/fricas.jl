@@ -20,7 +20,8 @@ Base.string(a::FricasAnswer) = a.text
 
 check_points() = (pts = Main.FPOINTS; h = 1e-5; [x0 + s * h for x0 in pts for s in (-1, 1)])
 # only the parameters the integrand uses (D is FriCAS's differentiation operator, F and others are fine as symbols)
-param_list(xv, integrand) = join([["$k = $(v)" for (k, v) in Main.FPARAMS if occursin(Regex("\\b$k\\b"), integrand)]; "x = $xv"], ", ")
+# values substituted as Complex Float, so that a logarithm or a root of a negative value evaluates instead of raising
+param_list(xv, integrand) = join([["$k = ($(v)::Complex Float)" for (k, v) in Main.FPARAMS if occursin(Regex("\\b$k\\b"), integrand)]; "x = ($xv::Complex Float)"], ", ")
 
 function run_fricas(script::String)
     out = IOBuffer()
