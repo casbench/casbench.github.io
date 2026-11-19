@@ -52,6 +52,8 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("200 µs", page)                            # warm time formatted
         self.assertIn("4.0 ms", page)
         self.assertIn("[factor x^4-1](001-factor-x-4-1/)", page)  # each case links to its page
+        self.assertIn('class="chart dotplot"', page)                 # the dot plot of the bench
+        self.assertIn('fill="none"', page)                           # a hollow mark for the wrong answer
         home = (out / "content" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("<strong>3</strong><span>cases</span>", home)
         self.assertIn("<strong>2</strong><span>packages</span>", home)

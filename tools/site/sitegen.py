@@ -255,6 +255,60 @@ def svg_chart(series, title, ylabel, log=False, width=720, height=260):
     return "\n".join(out) + "\n"
 
 
+def svg_dotplot(by_idx, systems, categories=None, title="", width=760):
+    """A dot plot: one row per case, time on a log x axis, one marker per system; filled when verified,
+    hollow when the system returned something it did not solve, absent when it has no such operation."""
+    solved = ("verified",)
+    shown = ("verified", "wrong", "unverified", "unsolved", "error", "timeout")
+    rows = sorted(by_idx)
+    times = [etime(r) for i in rows for s in systems if (r := by_idx[i].get(s)) and r["status"] in shown and etime(r) == etime(r) and etime(r) > 0]
+    if not times:
+        return ""
+    x0, x1 = math.log10(min(times)), math.log10(max(times))
+    x1 = x1 if x1 > x0 else x0 + 1
+    rh = 9
+    ml, mr, mt, mb = 230, 110, 34, 30
+    pw = width - ml - mr
+    height = mt + rh * len(rows) + mb
+    X = lambda t: ml + (math.log10(t) - x0) / (x1 - x0) * pw
+    out = [f'<svg class="chart dotplot" viewBox="0 0 {width} {height}" width="100%" role="img" aria-label="{esc(title)}">',
+           f'<text x="{ml}" y="16" font-size="12" font-weight="600">{esc(title)}</text>']
+    # x grid at powers of ten
+    for e in range(math.floor(x0), math.ceil(x1) + 1):
+        x = X(10 ** e)
+        if ml <= x <= ml + pw:
+            out.append(f'<line x1="{x:.1f}" y1="{mt}" x2="{x:.1f}" y2="{mt + rh * len(rows)}" stroke="#ddd"/>'
+                       f'<text x="{x:.1f}" y="{height - 12}" font-size="10" text-anchor="middle">1e{e}</text>')
+    out.append(f'<text x="{ml + pw / 2:.0f}" y="{height - 1}" font-size="10" text-anchor="middle">seconds (warm, else first call)</text>')
+    prev_cat = None
+    for k, i in enumerate(rows):
+        y = mt + rh * k + rh / 2
+        e = by_idx[i]
+        cat = categories.get(i) if categories else None
+        if categories and cat != prev_cat:
+            k > 0 and out.append(f'<line x1="{ml}" y1="{mt + rh * k:.1f}" x2="{ml + pw}" y2="{mt + rh * k:.1f}" stroke="#999"/>')
+            out.append(f'<text x="{ml + pw + 6}" y="{y + 3:.1f}" font-size="9" fill="#555">{esc(cat)}</text>')
+            prev_cat = cat
+        label = e["case"] if len(e["case"]) <= 40 else e["case"][:38] + "…"
+        out.append(f'<text x="{ml - 6}" y="{y + 3:.1f}" font-size="8" text-anchor="end">{esc(label)}</text>')
+        for j, sname in enumerate(systems):
+            r = e.get(sname)
+            if r is None or r["status"] not in shown:
+                continue
+            t = etime(r)
+            if not (t == t and t > 0):
+                t = 10 ** x1
+            color = PALETTE[j % len(PALETTE)]
+            fill = color if r["status"] in solved else "none"
+            out.append(f'<circle cx="{X(t):.1f}" cy="{y:.1f}" r="2.6" fill="{fill}" stroke="{color}" stroke-width="1.2">'
+                       f'<title>{esc(sname)} · {esc(e["case"])} · {esc(r["status"])} · {fmt_time(t)}</title></circle>')
+    for j, sname in enumerate(systems):
+        lx = ml + j * (pw / max(1, len(systems)))
+        out.append(f'<circle cx="{lx + 5:.0f}" cy="27" r="3" fill="{PALETTE[j % len(PALETTE)]}"/><text x="{lx + 12:.0f}" y="30" font-size="10">{esc(sname)}</text>')
+    out.append("</svg>")
+    return "\n".join(out) + "\n"
+
+
 class Site:
     def __init__(self, root):
         self.root = pathlib.Path(root)
@@ -405,6 +459,12 @@ class Site:
         out += f"{desc} Source: [`{key}/`]({BLOB}/{key}), results: [`results/`]({BLOB}/results).\n\n"
         out += "Time shown: the minimum over repeated calls (warm), else the first call. Type to filter, click a heading to sort, click a case for every answer.\n\n"
         by_idx = self.by_case(key)
+        if len(names) > 1:
+            out += ("Every case's time for every system, on a log scale: a filled mark is a verified answer, a hollow one a "
+                    "case the system did not solve (wrong, unverified, unsolved, error or timeout) at the time it took, "
+                    "no mark an operation the system does not have.\n\n")
+            out += svg_dotplot(by_idx, names, self.categories if key == "E_suite" else None, f"{title}: time per case and system")
+            out += "\n"
         out += '<div class="filterable">\n\n'
         cat = key == "E_suite" and self.categories
         out += "| # | case |" + (" category |" if cat else "") + " op | " + " | ".join(esc(s) for s in names) + " |\n"
