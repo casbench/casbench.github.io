@@ -73,7 +73,7 @@ function check_integral(out, integrand::String, reference::String)
         dF = (Fp - Fm) / (2h)
         (isfinite(abs(dF)) && isfinite(abs(fx))) || continue
         npts += 1
-        tol = 1e-5 * max(abs(fx), 1.0) + 1e-7
+        tol = 2e-4 * max(abs(fx), 1.0) + 1e-7     # a central difference of a long printed answer loses a few digits
         if abs(dF - fx) > tol
             # an answer derived on another domain can carry a non-constant imaginary part on this one;
             # its real part is then the antiderivative (sqrt(1 - sqrt(x + 1)) and the like)

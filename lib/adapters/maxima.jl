@@ -20,7 +20,8 @@ Base.string(a::MaximaAnswer) = a.text
 
 # points of the check (FPOINTS, FPARAMS and h of F_integration/problems.jl, read at call time)
 check_points() = (pts = Main.FPOINTS; h = 1e-5; [x0 + s * h for x0 in pts for s in (-1, 1)])
-param_list() = join(["$k=$(v)" for (k, v) in Main.FPARAMS], ",")
+# only the parameters the integrand uses
+param_list(integrand) = ["$k=$(v)" for (k, v) in Main.FPARAMS if occursin(Regex("\\b$k\\b"), integrand)]
 
 function run_maxima(script::String)
     out = IOBuffer()
@@ -32,10 +33,12 @@ end
 function INTEGRATE_TEXT(integrand::String, var::String)
     f = Mapleish.translate(integrand, :maxima)
     xs = check_points()
-    lines = ["display2d:false\$", "ratprint:false\$", "F: integrate($f, $var)\$",
-             "print(\"<<ANS>>\", string(F))\$"]
+    # the batch echoes its input: the markers are assembled by concat so that they only occur in the output
+    lines = ["display2d:false\$", "ratprint:false\$", "linel:1000000\$", "res_: integrate($f, $var)\$",
+             "print(concat(\"<<AN\", \"S>>\"), string(res_))\$"]
     for (i, xv) in enumerate(xs)
-        push!(lines, "print(\"<<V$i>>\", string(float(rectform(ev(F, $var=$xv, $(param_list()), numer)))))\$")
+        args = join(["$var=$xv"; param_list(integrand); "numer"], ",")
+        push!(lines, "print(concat(\"<<V\", $i, \">>\"), string(float(rectform(ev(res_, $args)))))\$")
     end
     txt = run_maxima(join(lines, "\n"))
     m = match(r"<<ANS>>\s*(.*)", txt)
