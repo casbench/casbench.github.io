@@ -43,7 +43,7 @@ menu:
       params:
         type: search
 params:
-  description: Reproducible, verified and dated benchmarks of computer algebra systems reachable from Julia. An individual, non-commercial project.
+  description: Reproducible, verified and dated benchmarks of computer algebra systems (Julia packages, SymPy, Maxima, FriCAS, SageMath, Macaulay2). An individual, non-commercial project.
   navbar:
     displayTitle: true
   theme:

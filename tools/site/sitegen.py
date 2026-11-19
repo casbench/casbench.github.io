@@ -352,8 +352,9 @@ class Site:
         out = front("Computer algebra system benchmarks", 0)
         out += '<p class="project-kicker">reproducible · verified · dated</p>\n\n'
         out += f'<p class="site-stamp">{self.stamp()}</p>\n\n'
-        out += ("Benchmarks of computer algebra systems reachable from Julia: Giac.jl, Symbolics.jl, SymPy (through "
-                "SymPyPythonCall.jl), SymJ.jl, Primes.jl, LibPARI.jl, Groebner.jl and msolve. Every number comes from a script in the "
+        out += ("Benchmarks of computer algebra systems: Julia packages (Giac.jl, Symbolics.jl, SymJ.jl, Groebner.jl, Primes.jl, "
+                "LibPARI.jl, msolve through AlgebraicSolving.jl), Python's SymPy, and Maxima, FriCAS, SageMath and Macaulay2 driven "
+                "as processes from the same harness. Every number comes from a script in the "
                 "repository, run on fixed inputs, with every answer checked by a system-neutral test and every run dated. "
                 f"They are the reproduced numbers of the {PAPER}.\n\n")
         out += '<div class="suite-stats">\n'
@@ -513,13 +514,18 @@ class Site:
         return front("Workflow", 5) + WORKFLOW.strip() + "\n"
 
     def methodology(self):
-        readme = (self.root / "README.md").read_text(encoding="utf-8")
-        body = re.sub(r"^# .*\n", "", readme, count=1)
-        body = re.sub(r"\]\((?!https?://|#)([^)]+)\)", lambda m: f"]({BLOB}/{m.group(1)})", body)
-        return front("Methodology", 6) + f"From [`README.md`]({BLOB}/README.md).\n\n" + body
+        parts = []
+        for rel in ("docs/methodology.md", "docs/benches.md"):
+            p = self.root / rel
+            if not p.exists():
+                continue
+            body = re.sub(r"^# .*\n", "", p.read_text(encoding="utf-8"), count=1)
+            body = re.sub(r"\]\((?!https?://|#)([^)]+)\)", lambda m: f"]({BLOB}/docs/{m.group(1)})", body)
+            parts.append(f"From [`{rel}`]({BLOB}/{rel}).\n\n" + body)
+        return front("Methodology", 6) + "\n\n---\n\n".join(parts)
 
     def llms(self):
-        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of CAS reachable from Julia. {DISCLAIMER}\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
+        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of computer algebra systems (Julia packages, SymPy, Maxima, FriCAS, SageMath, Macaulay2). {DISCLAIMER}\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
                 + "\n".join(f"- {t}: {d}" for k, (t, d) in BENCHES.items() if k in self.results) + f"\n- Repository: {REPO}\n")
 
 

@@ -34,7 +34,9 @@ class SiteGenTests(unittest.TestCase):
         (d / "results").mkdir()
         (d / "results" / "D_coverage_giac.tsv").write_text(TSV, encoding="utf-8")
         (d / "results" / "machine.txt").write_text(MACHINE, encoding="utf-8")
-        (d / "README.md").write_text("# Title\n\nSee [lib/common.jl](lib/common.jl).\n", encoding="utf-8")
+        (d / "README.md").write_text("# Title\n", encoding="utf-8")
+        (d / "docs").mkdir()
+        (d / "docs" / "methodology.md").write_text("# Methodology\n\nSee [../lib/common.jl](../lib/common.jl).\n", encoding="utf-8")
         return d
 
     def test_pages(self):
@@ -56,7 +58,7 @@ class SiteGenTests(unittest.TestCase):
         sysp = (out / "content" / "systems" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("| Giac.jl | `0.14.3` | 2026-11-18 |", sysp)
         meth = (out / "content" / "methodology" / "_index.md").read_text(encoding="utf-8")
-        self.assertIn(sitegen.BLOB + "/lib/common.jl", meth)      # relative links rewritten
+        self.assertIn(sitegen.BLOB + "/docs/../lib/common.jl", meth)   # relative links rewritten from docs/
         self.assertTrue((out / "static" / "llms.txt").exists())
 
     def test_case_pages(self):
