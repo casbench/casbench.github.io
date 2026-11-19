@@ -22,8 +22,8 @@ header, rows = lines[1], lines[2:end]
 for i in idxs
     tmp = tempname() * ".tsv"
     prog = tmp * ".progress"
-    cmd = setenv(`$JULIA --startup-file=no -t 1 --project=$envdir $(joinpath(ROOT, "lib", "worker.jl")) $bench $system $tmp $i $prog`,
-                 "BENCH_STOP" => string(i); dir = ROOT)
+    cmd = Cmd(addenv(`$JULIA --startup-file=no -t 1 --project=$envdir $(joinpath(ROOT, "lib", "worker.jl")) $bench $system $tmp $i $prog`,
+                     "BENCH_STOP" => string(i)); dir = ROOT)
     proc = run(pipeline(ignorestatus(cmd); stdout = devnull, stderr = devnull); wait = false)
     t0 = time()
     while process_running(proc) && time() - t0 < timeout
