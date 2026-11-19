@@ -19,7 +19,7 @@ keywords:
   - Giac
   - benchmark
 abstract: >-
-  Five benches of computer algebra systems reachable from Julia (Giac.jl,
+  Benches of computer algebra systems reachable from Julia (Giac.jl,
   Symbolics.jl, SymPy through SymPyPythonCall.jl, SymJ.jl, Primes.jl and
   LibPARI.jl): FFI overhead, CAS operations, integer factorisation,
   functional coverage and a 107-problem suite. Fixed inputs, one adapter per
