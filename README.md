@@ -180,9 +180,10 @@ to those, only to each other.
 **G, Gröbner bases** (`G_groebner/`; Giac.jl `gbasis`, Groebner.jl, msolve
 through AlgebraicSolving.jl, SymPy `groebner`; Singular and Giac through
 SageMath, and Macaulay2, as subprocesses). Reduced degrevlex Gröbner
-bases of sixteen classical systems (katsura 5 to 9, cyclic 4 to 7, eco 7 and
-10, noon 4 to 6, henrion 5, chandran 5), generated once from Groebner.jl's
-`Examples` and stored as strings in `G_groebner/inputs.jl`, each over Q and
+bases of sixteen classical systems of the literature (katsura 5 to 9,
+cyclic 4 to 7, eco 7 and 10, noon 4 to 6, henrion 5, chandran 5), whose
+strings were generated once with the `Examples` module of Groebner.jl
+(GPL-2.0) and stored in `G_groebner/inputs.jl`, each over Q and
 over GF(1073741827). The printed basis is parsed and put in canonical form by
 `lib/poly.jl` (monic, sorted by leading monomial; a reduced Gröbner basis is
 unique, so correct answers have the same canonical form, whose digest is in
@@ -282,6 +283,10 @@ inside the repository. `.github/workflows/site.yml` deploys it to GitHub Pages.
   the fork notebook cited above; the entries of `F_integration/sample.tsv`
   are quoted from the 12000.org test files (themselves from the Rubi test
   suite, MIT, and the collections they cite), with the file and line of each;
-  `H_osr/rules.tsv` derives from OpenSymbolicRules (MIT); the Gröbner systems
-  come from Groebner.jl's examples (MIT). Their own terms apply to them.
+  `H_osr/rules.tsv` derives from OpenSymbolicRules (MIT); the polynomial
+  systems of bench G are the classical ones of the literature (Katsura,
+  cyclic-n, eco, noon, Henrion, Chandrasekhar), whose strings were generated
+  once with the `Examples` module of Groebner.jl (GPL-2.0; the strings are
+  the systems themselves, not that code); the fork notebook of bench E is
+  under GPL-3.0 like Giac.jl. Their own terms apply to them.
 - The structure of the adapters follows SymJ.jl's comparison (MIT).
