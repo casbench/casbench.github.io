@@ -327,6 +327,7 @@ class Site:
                 self.results.setdefault(r["bench"], {}).setdefault(r["system"], []).append(r)
         self.machine = self.read_machine()
         self.categories = self.read_categories()
+        self._task_cache = {}
         self.history = read_history(self.root / "results" / "history.tsv")
         self.generated = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
         self.results_commit = self.git_results_commit()
@@ -376,6 +377,39 @@ class Site:
             k = int(cm.group(1))
             cats[i] = names[k - 1] if 0 < k <= len(names) else str(k)
         return cats
+
+    def task_sources(self, key):
+        """system label -> {case name: source text} from the task files (bench E) or the problem file (B, D, I):
+        the code the adapter runs for the case, shown when the run recorded no input."""
+        if key in self._task_cache:
+            return self._task_cache[key]
+        out = {}
+        if key == "E_suite":
+            for sk, label in (("giac", "Giac.jl"), ("sympy", "SymPy"), ("symbolics", "Symbolics.jl"), ("symj", "SymJ.jl")):
+                p = self.root / "E_suite" / f"tasks_{sk}.jl"
+                if not p.exists():
+                    continue
+                txt = p.read_text(encoding="utf-8")
+                d = {}
+                if sk == "giac":
+                    for m in re.finditer(r'^task!\("((?:[^"\\]|\\.)*)",\s*(.*?)(?=^task!\(|\Z)', txt, re.M | re.S):
+                        src = m.group(2).strip()
+                        d[m.group(1)] = (src[:-1] if src.endswith(")") else src).strip()   # the closing paren of task!(
+                else:
+                    for m in re.finditer(r'^    "((?:[^"\\]|\\.)*)" => (.*?)(?=^    "(?:[^"\\]|\\.)*" =>|^\)|\Z)', txt, re.M | re.S):
+                        d[m.group(1)] = m.group(2).strip().rstrip(",").strip()
+                out[label] = d
+        else:
+            p = self.root / key / "problems.jl"
+            if p.exists():
+                txt = p.read_text(encoding="utf-8")
+                d = {}
+                for m in re.finditer(r'^\s+P\((?:CAT\[\d+\], )?"((?:[^"\\]|\\.)*)",\s*(.*?)(?=^\s+P\(|^\]|\Z)', txt, re.M | re.S):
+                    d[m.group(1)] = "P(\"" + m.group(1) + "\", " + m.group(2).strip().rstrip(",").strip()
+                for label in SYSTEM_LABELS.values():
+                    out[label] = d
+        self._task_cache[key] = out
+        return out
 
     def versions(self):
         """Package -> (version, date), from the last machine block of each bench."""
@@ -517,28 +551,42 @@ class Site:
             if key == "E_suite" and i in self.categories:
                 out += f" · category *{esc(self.categories[i])}*"
             out += "\n\n"
-            asked = sorted({e[s]["note"] for s in systems if e[s]["note"] and e[s]["status"] in ("verified", "wrong", "unverified", "unsolved")})
+            # the problem's own note is the one most systems share; error messages are each system's own
+            notes = [e[s]["note"] for s in systems if e[s]["note"] and not e[s]["note"].startswith(("check raised", "worker ", "rerun"))]
+            asked = [n for n, _ in __import__("collections").Counter(notes).most_common(1)]
             if asked:
                 out += f"**What is asked.** {esc(asked[0])}\n\n"
             out += "| system | status | first call | warm |\n|---|---|---|---|\n"
             for s in systems:
                 r = e[s]
                 out += f"| {esc(s)} | {badge(r['status'])} | {fmt_time(r['t_first_s'])} | {fmt_time(r['t_warm_s'])} |\n"
-            out += "\n## Answers\n\n"
+            out += "\n## Problem\n\n"
+            out += (f"{esc(asked[0])}\n\n" if asked else "") + (
+                "The same problem is given to every system through its own adapter. For each system below, **Input** is what "
+                "the benchmark sent (the system's own syntax, as recorded during the run; else the task or problem source the "
+                "adapter runs) and **Output** is what came back. A status may hide a wrongly generated input, which is an error "
+                "of the benchmark, not of the system.\n\n")
+            sources = self.task_sources(key)
             for s in systems:
                 r = e[s]
-                out += f"### {esc(s)} {badge(r['status'])}\n\n"
+                out += f"## {esc(s)} {badge(r['status'])}\n\n#### Input\n\n"
                 if r.get("input"):
-                    out += "**Input**, what the benchmark sent to the system (its own syntax; a status may hide a wrongly generated command, which is an error of the benchmark):\n\n"
-                    out += fence(r["input"].replace(" ⏎ ", "\n")) + "\n**Output**\n\n"
+                    out += fence(r["input"].replace(" ⏎ ", "\n")) + "\n"
                 else:
-                    out += "*Input not recorded in this run (files written before 2026-11-20 have no input column; the task file names what was asked).*\n\n"
+                    src = sources.get(s, {}).get(name)
+                    if src:
+                        out += "*From the task source (the run recorded no input):*\n\n" + fence(src) + "\n"
+                    else:
+                        out += "*Not recorded in this run (files written before 2026-11-20 have no input column).*\n\n"
+                out += "#### Output\n\n"
                 if r["result"]:
                     out += fence(r["result"]) + "\n"
-                if r["note"]:
-                    out += f"*{esc(r['note'])}*\n\n"
-                if not r["result"] and not r["note"]:
+                elif r["status"] in ("unavailable",):
+                    out += "*No such operation in this system (as wired in its adapter).*\n\n"
+                else:
                     out += "*(nothing returned)*\n\n"
+                if r["note"]:
+                    out += f"*Check: {esc(r['note'])}*\n\n"
             pages.append((slug(i, name), out))
         return pages
 

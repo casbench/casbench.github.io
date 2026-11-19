@@ -79,7 +79,8 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("(x - 1)*(x + 1)*(x**2 + 1)", text)
         self.assertIn("| Giac.jl | <span", text)
         self.assertIn("factor(x**4 - 1)", text)                      # the input sent to SymPy
-        self.assertIn("Input not recorded", text)                    # the Giac row of the fixture has no input
+        self.assertIn("Not recorded in this run", text)              # the Giac row of the fixture has no input
+        self.assertIn("#### Output", text)
         self.assertTrue((out / "content" / "results" / "d_coverage" / "003-slow" / "_index.md").exists())
 
     def test_history(self):
