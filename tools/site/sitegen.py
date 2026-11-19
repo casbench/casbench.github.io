@@ -100,12 +100,12 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     participant U as you
-    participant N as nix run .#bench
+    participant N as nix run (the bench app)
     participant J as julia (one process per bench and system)
-    U->>N: git clone --recurse-submodules; nix run .#bench
-    N->>N: pin julia 1.13.3, python3+sympy, record environment.txt
-    N->>J: run_all.jl: supervise(env, worker, bench, system, out, timeout)
-    J-->>N: results/<bench>_<system>.tsv
+    U->>N: git clone --recurse-submodules, then nix run the bench app
+    N->>N: pin julia 1.13.3 and python3+sympy, record environment.txt
+    N->>J: run_all.jl calls supervise(env, worker, bench, system, out, timeout)
+    J-->>N: results/BENCH_SYSTEM.tsv
     N->>N: make_tables.jl
     N-->>U: tables/, figures/, results/summary.md
 ```
