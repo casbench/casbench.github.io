@@ -1,4 +1,4 @@
-module github.com/s-celles/computer_algebra_system_benchmarks/site
+module github.com/s-celles/computer-algebra-system-benchmarks/site
 
 go 1.25.5
 

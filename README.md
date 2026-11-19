@@ -1,7 +1,7 @@
 # Computer algebra system benchmarks
 
-[![CI](https://github.com/s-celles/computer_algebra_system_benchmarks/actions/workflows/ci.yml/badge.svg)](https://github.com/s-celles/computer_algebra_system_benchmarks/actions/workflows/ci.yml)
-[![Site](https://github.com/s-celles/computer_algebra_system_benchmarks/actions/workflows/site.yml/badge.svg)](https://s-celles.github.io/computer_algebra_system_benchmarks/)
+[![CI](https://github.com/s-celles/computer-algebra-system-benchmarks/actions/workflows/ci.yml/badge.svg)](https://github.com/s-celles/computer-algebra-system-benchmarks/actions/workflows/ci.yml)
+[![Site](https://github.com/s-celles/computer-algebra-system-benchmarks/actions/workflows/site.yml/badge.svg)](https://s-celles.github.io/computer-algebra-system-benchmarks/)
 
 Reproducible, verified and dated benchmarks of computer algebra systems
 reachable from Julia: Giac.jl, Symbolics.jl, SymPy (through
@@ -10,7 +10,7 @@ in the repository, one adapter per system, every answer checked by a
 system-neutral test, every run dated with its environment pinned by
 `flake.lock` and the `Manifest.toml` of each Julia environment.
 
-**Results, per case and per system: https://s-celles.github.io/computer_algebra_system_benchmarks/**
+**Results, per case and per system: https://s-celles.github.io/computer-algebra-system-benchmarks/**
 
 > [!IMPORTANT]
 > An individual, non-commercial project. The numbers are dated: they were

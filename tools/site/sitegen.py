@@ -18,7 +18,7 @@ import pathlib
 import re
 import subprocess
 
-REPO = "https://github.com/s-celles/computer_algebra_system_benchmarks"
+REPO = "https://github.com/s-celles/computer-algebra-system-benchmarks"
 BLOB = REPO + "/blob/main"
 PAPER = "JuliaCon Proceedings paper on Giac.jl (in preparation, 2027)"
 

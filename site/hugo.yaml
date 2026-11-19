@@ -1,7 +1,7 @@
 # Project site, deployed to GitHub Pages by .github/workflows/site.yml.
 # Content is generated outside the repository by tools/site/sitegen.py from
 # the results files; build with tools/site/build.sh OUT.
-baseURL: https://s-celles.github.io/computer_algebra_system_benchmarks/
+baseURL: https://s-celles.github.io/computer-algebra-system-benchmarks/
 title: Computer algebra system benchmarks
 languageCode: en
 enableRobotsTXT: true
@@ -34,7 +34,7 @@ menu:
       pageRef: /methodology
       weight: 5
     - name: GitHub
-      url: https://github.com/s-celles/computer_algebra_system_benchmarks
+      url: https://github.com/s-celles/computer-algebra-system-benchmarks
       weight: 6
       params:
         icon: github
