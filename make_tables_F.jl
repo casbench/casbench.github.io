@@ -5,10 +5,10 @@
 # count, the A grade count (verified and not more than twice the reference's
 # leaf count) and the median warm time over the verified cases.
 
-const F_SYSTEMS = ["giac", "symbolics", "sympy", "symj", "maxima", "fricas", "sage_giac", "sage_maxima", "sage_fricas", "sage_sympy"]
+const F_SYSTEMS = ["giac", "symbolics", "sympy", "symj", "maxima", "fricas", "sage_giac", "sage_maxima", "sage_fricas", "sage_sympy", "computeengine"]
 const F_LABEL = Dict("giac" => "Giac.jl", "symbolics" => "Symbolics.jl", "sympy" => "SymPy", "symj" => "SymJ.jl",
                      "maxima" => "Maxima", "fricas" => "FriCAS", "sage_giac" => "Sage/Giac", "sage_maxima" => "Sage/Maxima",
-                     "sage_fricas" => "Sage/FriCAS", "sage_sympy" => "Sage/SymPy")
+                     "sage_fricas" => "Sage/FriCAS", "sage_sympy" => "Sage/SymPy", "computeengine" => "Compute Engine")
 
 function make_F()
     data = Dict(s => read_records(joinpath(RESULTS, "F_integration_$(s).tsv")) for s in F_SYSTEMS)

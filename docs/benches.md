@@ -135,8 +135,11 @@ congruential generator, a given seed), printed in the Maple-like syntax for
 the systems and evaluated in plain Julia for the check: the number of terms
 of an expansion must be the expected one and the value of every answer at a
 point, by the system's own numeric evaluation, must equal the value computed
-from the input. SymEngine.jl (the C++ symengine core) joins here and in
-benches B and D, where most of its cells are *unavailable*: it has no
+from the input. The CortexJS Compute Engine (a JavaScript engine working on
+MathJSON, driven through Node.js, `lib/adapters/computeengine.jl`) joins
+benches F, H and I: the Maple-like text becomes MathJSON, the answer comes
+back as LaTeX with the numeric values the check needs. SymEngine.jl (the C++
+symengine core) joins here and in benches B and D, where most of its cells are *unavailable*: it has no
 integration, factorisation or solving. A finding of this bench: Symbolics.jl
 (7.49, SymbolicUtils 3) expands (x+y+z)^50 with wrong coefficients (the
 value at (1,1,1) is 6.33e20 instead of 3^50 = 7.18e23, while degree 20 is

@@ -40,13 +40,19 @@
         '';
       };
       python = pkgs.python3.withPackages (p: [ p.sympy p.numpy ]);
-      runtimeInputs = [ julia python pkgs.git pkgs.util-linux pkgs.coreutils pkgs.maxima pkgs.fricas pkgs.sage pkgs.giac pkgs.macaulay2 ];   # giac: the binary Sage drives   # Maxima, FriCAS, SageMath, Macaulay2: subprocess adapters of benches F and G
+      # the CortexJS Compute Engine (MathJSON, JavaScript), pinned by the npm tarball; driven by Node.js
+      computeEngine = pkgs.fetchzip {
+        url = "https://registry.npmjs.org/@cortex-js/compute-engine/-/compute-engine-0.194.3.tgz";
+        hash = "sha256-fHTNsGJbDBnsEGOTxOAU6dXQXZFtPBskExgV+Cb68CI=";
+      };
+      runtimeInputs = [ julia python pkgs.git pkgs.util-linux pkgs.coreutils pkgs.maxima pkgs.fricas pkgs.sage pkgs.giac pkgs.macaulay2 pkgs.nodejs_24 ];   # Maxima, FriCAS, SageMath (and the giac binary it drives), Macaulay2, Node.js for the Compute Engine
       envHook = ''
         export JULIA_PYTHONCALL_EXE=${python}/bin/python3
         export JULIA_CONDAPKG_BACKEND=Null
         export JULIA_NUM_THREADS=1
         export OPENBLAS_NUM_THREADS=1
         export JULIA_PKG_PRECOMPILE_AUTO=1
+        export COMPUTE_ENGINE_DIR=${computeEngine}
       '';
       bench = pkgs.writeShellApplication {
         name = "bench";

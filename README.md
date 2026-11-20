@@ -6,7 +6,8 @@
 Reproducible, verified and dated benchmarks of computer algebra systems:
 Julia packages (Giac.jl, Symbolics.jl, SymJ.jl, Groebner.jl, Primes.jl,
 LibPARI.jl, msolve through AlgebraicSolving.jl), Python's SymPy, and Maxima,
-FriCAS, SageMath and Macaulay2 driven as processes from the same harness.
+FriCAS, SageMath, Macaulay2 and the JavaScript Compute Engine (MathJSON)
+driven as processes from the same harness.
 Fixed inputs stored in the repository, one adapter per system, every answer
 checked by a system-neutral test, every run dated with its environment
 pinned. Eight benches: FFI overhead, CAS operations, integer factorisation,

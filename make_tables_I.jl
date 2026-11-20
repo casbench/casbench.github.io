@@ -3,8 +3,8 @@
 # For the code generation rows the warm time is the time of the thousand
 # calls and the first-call time includes the compilation.
 
-const I_SYSTEMS = ["giac", "symbolics", "symengine", "symj", "sympy"]
-const I_LABEL = Dict("giac" => "Giac.jl", "symbolics" => "Symbolics.jl", "symengine" => "SymEngine.jl", "symj" => "SymJ.jl", "sympy" => "SymPy")
+const I_SYSTEMS = ["giac", "symbolics", "symengine", "symj", "sympy", "computeengine"]
+const I_LABEL = Dict("giac" => "Giac.jl", "symbolics" => "Symbolics.jl", "symengine" => "SymEngine.jl", "symj" => "SymJ.jl", "sympy" => "SymPy", "computeengine" => "Compute Engine")
 
 function make_I()
     data = Dict(s => read_records(joinpath(RESULTS, "I_scale_$(s).tsv")) for s in I_SYSTEMS)

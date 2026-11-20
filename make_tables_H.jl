@@ -5,10 +5,10 @@
 # those where it differs, then wrong, unsolved, unverified, error + timeout,
 # and the median warm time of the verified cases.
 
-const H_SYSTEMS = ["giac", "symbolics", "sympy", "symj", "maxima", "fricas", "sage_giac", "sage_maxima", "sage_fricas", "sage_sympy"]
+const H_SYSTEMS = ["giac", "symbolics", "sympy", "symj", "maxima", "fricas", "sage_giac", "sage_maxima", "sage_fricas", "sage_sympy", "computeengine"]
 const H_LABEL = Dict("giac" => "Giac.jl", "symbolics" => "Symbolics.jl", "sympy" => "SymPy", "symj" => "SymJ.jl",
                      "maxima" => "Maxima", "fricas" => "FriCAS", "sage_giac" => "Sage/Giac", "sage_maxima" => "Sage/Maxima",
-                     "sage_fricas" => "Sage/FriCAS", "sage_sympy" => "Sage/SymPy")
+                     "sage_fricas" => "Sage/FriCAS", "sage_sympy" => "Sage/SymPy", "computeengine" => "Compute Engine")
 
 function make_H()
     data = Dict(s => read_records(joinpath(RESULTS, "H_osr_$(s).tsv")) for s in H_SYSTEMS)

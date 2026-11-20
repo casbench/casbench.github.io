@@ -31,7 +31,8 @@ envs = Dict("giac" => joinpath(ROOT, "envs", "giac"),
             "sage_giac" => joinpath(ROOT, "envs", "subprocess"), "sage_maxima" => joinpath(ROOT, "envs", "subprocess"),
             "sage_fricas" => joinpath(ROOT, "envs", "subprocess"), "sage_sympy" => joinpath(ROOT, "envs", "subprocess"),
             "sage_singular" => joinpath(ROOT, "envs", "subprocess"), "macaulay2" => joinpath(ROOT, "envs", "subprocess"),
-            "symengine" => joinpath(ROOT, "envs", "symengine"))
+            "symengine" => joinpath(ROOT, "envs", "symengine"),
+            "computeengine" => joinpath(ROOT, "envs", "subprocess"))
 
 benches = isempty(ARGS) ? ["A", "B", "C", "D", "E", "F", "G", "H", "I"] : ARGS
 tB = get(ENV, "BENCH_TIMEOUT_B", "120")
@@ -65,19 +66,19 @@ for b in benches
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), bench, sys, out, b == "B" ? tB : b == "D" ? tD : tE)
         end
     elseif b == "F"
-        for sys in ("giac", "symbolics", "sympy", "symj", "maxima", "fricas", "sage_giac", "sage_maxima", "sage_fricas", "sage_sympy")
+        for sys in ("giac", "symbolics", "sympy", "symj", "maxima", "fricas", "sage_giac", "sage_maxima", "sage_fricas", "sage_sympy", "computeengine")
             out = joinpath(RESULTS, "F_integration_$(sys).tsv")
             isfile(out) && rm(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "F_integration", sys, out, tF)
         end
     elseif b == "I"
-        for sys in ("giac", "symbolics", "symengine", "symj", "sympy")
+        for sys in ("giac", "symbolics", "symengine", "symj", "sympy", "computeengine")
             out = joinpath(RESULTS, "I_scale_$(sys).tsv")
             isfile(out) && rm(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "I_scale", sys, out, tI)
         end
     elseif b == "H"
-        for sys in ("giac", "symbolics", "sympy", "symj", "maxima", "fricas", "sage_giac", "sage_maxima", "sage_fricas", "sage_sympy")
+        for sys in ("giac", "symbolics", "sympy", "symj", "maxima", "fricas", "sage_giac", "sage_maxima", "sage_fricas", "sage_sympy", "computeengine")
             out = joinpath(RESULTS, "H_osr_$(sys).tsv")
             isfile(out) && rm(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "H_osr", sys, out, tH)
