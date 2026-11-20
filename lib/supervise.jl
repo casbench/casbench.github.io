@@ -16,7 +16,7 @@ include(joinpath(@__DIR__, "common.jl"))
 using .BenchCommon
 
 # every process below `pid` in the process tree (children, grandchildren, ...), from ps
-function descendants(pid::Int)
+function descendants(pid::Integer)
     parent = Dict{Int,Int}()
     for line in eachline(ignorestatus(`ps -e -o pid=,ppid=`))
         f = split(line)
