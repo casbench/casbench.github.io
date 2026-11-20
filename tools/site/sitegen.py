@@ -600,8 +600,35 @@ class Site:
         out += "\n## Status vocabulary\n\n| status | meaning |\n|---|---|\n"
         for s in STATUSES:
             out += f"| {badge(s)} | {STATUS_HELP[s]} |\n"
+        out += self.cite_section()
         out += (f"\n[Data](data/) · [History](history/) · [Workflow](workflow/) · [Methodology](methodology/) · [Systems and versions](systems/) · "
                 f"[Machine](environment/) · [Repository]({REPO}) · Code MIT, data and pages CC BY 4.0\n")
+        return out
+
+    def cite_section(self):
+        """'How to cite', from CITATION.cff and the date of the last run (the data are dated: the citation says which run)."""
+        c = read_citation(self.root / "CITATION.cff")
+        if not c["authors"]:
+            return ""
+        names = []
+        for a in c["authors"]:
+            n = f"{a.get('given-names', '')} {a.get('family-names', '')}".strip()
+            names.append(f"{esc(n)} ([ORCID {esc(a['orcid'].rsplit('/', 1)[-1])}]({esc(a['orcid'])}))" if a.get("orcid") else esc(n))
+        year = (self.last_date() or self.generated)[:4]
+        last = [a.get("family-names", "") for a in c["authors"]]
+        bib_authors = " and ".join(f"{a.get('family-names', '')}, {a.get('given-names', '')}" for a in c["authors"])
+        key = f"{(last[0] or 'casbench').lower()}{year}casbench"
+        run = self.last_date()[:10]
+        out = ("\n## How to cite\n\n"
+               f"{', '.join(names)}. *{esc(c['title'])}*. {esc(year)}. "
+               f"Repository: {esc(c['repository-code'] or REPO)}; site: {esc(c['url'])}. "
+               f"The numbers are dated: cite the run you used ({esc(run)} is the last one on this build). "
+               f"Licences: {esc(', '.join(c['license']))} (code MIT, data and pages CC BY 4.0). "
+               f"The same metadata are in [`CITATION.cff`]({BLOB}/CITATION.cff), which GitHub renders as APA and BibTeX.\n\n"
+               "```bibtex\n"
+               f"@misc{{{key},\n  author = {{{bib_authors}}},\n  title = {{{c['title']}}},\n  year = {{{year}}},\n"
+               f"  howpublished = {{\\url{{{c['url'] or REPO}}}}},\n  note = {{Repository {c['repository-code'] or REPO}; run of {run}}}\n}}\n"
+               "```\n")
         return out
 
     def results_index(self):
@@ -825,6 +852,39 @@ class Site:
     def llms(self):
         return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of computer algebra systems, {self.systems_sentence()}. {DISCLAIMER}\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
                 + "\n".join(f"- {t}: {d}" for k, (t, d) in BENCHES.items() if k in self.results) + f"\n- Repository: {REPO}\n")
+
+
+def read_citation(path):
+    """The fields of CITATION.cff the site shows: title, authors [(given, family, orcid)], url, repository-code,
+    licenses. A small reader of the flat layout of that file, so that the site has no second copy of its metadata."""
+    out = {"title": "", "authors": [], "url": "", "repository-code": "", "license": []}
+    if not path.exists():
+        return out
+    section, author = None, None
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.rstrip()
+        if not line or line.lstrip().startswith("#"):
+            continue
+        indent = len(line) - len(line.lstrip())
+        key, _, val = line.strip().partition(":")
+        val = val.strip().strip('"')
+        if indent == 0:
+            section, author = key, None
+            if key in ("title", "url", "repository-code") and val:
+                out[key] = val
+            elif key == "license" and val:
+                out["license"] = [val]
+        elif section == "license" and line.strip().startswith("- "):
+            out["license"].append(line.strip()[2:].strip())
+        elif section == "authors":
+            if line.strip().startswith("- "):
+                author = {}
+                out["authors"].append(author)
+                key, _, val = line.strip()[2:].partition(":")
+                val = val.strip().strip('"')
+            if author is not None and key:
+                author[key] = val
+    return out
 
 
 def write(path, text):

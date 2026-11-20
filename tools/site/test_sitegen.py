@@ -36,6 +36,10 @@ class SiteGenTests(unittest.TestCase):
         (d / "results" / "D_coverage_giac.tsv").write_text(TSV, encoding="utf-8")
         (d / "results" / "machine.txt").write_text(MACHINE, encoding="utf-8")
         (d / "README.md").write_text("# Title\n", encoding="utf-8")
+        (d / "CITATION.cff").write_text('cff-version: 1.2.0\ntitle: "A title"\ntype: software\nauthors:\n  - family-names: Doe\n'
+                                        '    given-names: Jo\n    orcid: "https://orcid.org/0000-0000-0000-0001"\n'
+                                        'repository-code: "https://example.org/repo"\nurl: "https://example.org/site"\n'
+                                        'license:\n  - MIT\n  - CC-BY-4.0\n', encoding="utf-8")
         (d / "docs").mkdir()
         (d / "docs" / "methodology.md").write_text("# Methodology\n\nSee [../lib/common.jl](../lib/common.jl).\n", encoding="utf-8")
         return d
@@ -64,6 +68,11 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("<strong>1</strong><span>Julia packages</span>", home)
         self.assertIn("<strong>1</strong><span>other systems</span>", home)
         self.assertIn("Julia packages (Giac.jl) and other systems (SymPy)", home)   # the lists come from the results
+        self.assertIn("## How to cite", home)
+        self.assertIn("Jo Doe ([ORCID 0000-0000-0000-0001](https://orcid.org/0000-0000-0000-0001))", home)
+        self.assertIn("@misc{doe2026casbench,", home)
+        self.assertIn("run of 2026-11-18", home)
+        self.assertIn("MIT, CC-BY-4.0", home)
         sysp = (out / "content" / "systems" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("| Giac.jl | `0.14.3` | 2026-11-18 |", sysp)
         meth = (out / "content" / "methodology" / "_index.md").read_text(encoding="utf-8")
@@ -116,6 +125,16 @@ class SiteGenTests(unittest.TestCase):
         wf = (out / "content" / "workflow" / "_index.md").read_text(encoding="utf-8")
         self.assertEqual(wf.count("```mermaid"), 4)
         self.assertIn("sequenceDiagram", wf)
+
+    def test_read_citation(self):
+        c = sitegen.read_citation(ROOT / "CITATION.cff")
+        self.assertEqual([a["family-names"] for a in c["authors"]], ["Celles"])
+        self.assertEqual(c["authors"][0]["orcid"], "https://orcid.org/0000-0001-9987-4338")
+        self.assertEqual(c["license"], ["MIT", "CC-BY-4.0"])
+        self.assertEqual(c["repository-code"], sitegen.REPO)
+        footer = (ROOT / "site" / "layouts" / "_partials" / "custom" / "footer.html").read_text(encoding="utf-8")
+        self.assertIn(c["authors"][0]["orcid"], footer)            # the footer names the author of CITATION.cff
+        self.assertIn(c["repository-code"], footer)
 
     def test_package(self):
         self.assertEqual(sitegen.package("Primes.jl factor"), ("julia", "Primes.jl"))
