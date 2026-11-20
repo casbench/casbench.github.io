@@ -115,5 +115,10 @@ NFACTORS(ex) = ex isa Sym && TermInterface.iscall(ex) && TermInterface.operation
     length(TermInterface.arguments(ex)) : 1
 IS_EXACT(ex) = occursin("π", string(ex)) && !occursin(r"\d\.\d", string(ex))
 CLEARCACHE() = nothing
+# warm-up (see symbolics.jl): the compilation of the integration path is paid here, not by the first case
+try
+    RischIntegrate.integrate(sym(VAR[:x]^2 + 1), VAR[:x]); expand((VAR[:x] + VAR[:y])^3)
+catch
+end
 VERSIONS() = ["SymJ" => string(pkgversion(SymJ)), "GruntzLimit" => string(pkgversion(GruntzLimit)),
               "RischIntegrate" => string(pkgversion(RischIntegrate))]

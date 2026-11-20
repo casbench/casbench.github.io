@@ -159,6 +159,12 @@ function NFACTORS(ex)
 end
 IS_EXACT(ex) = occursin("π", string(ex)) && !occursin(r"\d\.\d", string(ex))
 CLEARCACHE() = nothing
+# warm-up: compile the integration, limit and expansion paths now, so that no case pays it (a worker restarted
+# after a timeout would otherwise charge the compilation to its first case)
+try
+    RischIntegrate.integrate(unwrap(x^2 + 1), unwrap(x)); Symbolics.expand((x + y)^3); GruntzLimit.limit(unwrap(sin(x) / x), unwrap(x), 0)
+catch
+end
 VERSIONS() = ["Symbolics" => string(pkgversion(Symbolics)), "SymbolicUtils" => string(pkgversion(SymbolicUtils)),
               "Nemo" => string(pkgversion(Nemo)), "Groebner" => string(pkgversion(Groebner)),
               "GruntzLimit" => string(pkgversion(GruntzLimit)), "RischIntegrate" => string(pkgversion(RischIntegrate)),
