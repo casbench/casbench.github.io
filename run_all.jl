@@ -10,6 +10,8 @@
 #   BENCH_HOST                         name of this host in results/<host>/ (default: the hostname)
 #   BENCH_ALLOW_DIRTY=1                run from a tree with uncommitted changes (the run is then marked -dirty)
 #   BENCH_RUN_ID                       identifier of the run (default: <date>_<host>, generated here)
+#   BENCH_RESUME=1                     keep the existing results files and resume each one after its last case
+#   BENCH_MEM_LIMIT_GIB                resident memory a case's worker tree may reach before it is stopped (default 5)
 #   JULIA_CONDAPKG_BACKEND / JULIA_PYTHONCALL_EXE  forwarded to the SymPy environment
 #
 # Each bench/system pair runs in its own process under lib/supervise.jl, with
@@ -66,8 +68,10 @@ if get(ENV, "BENCH_SKIP_INSTANTIATE", "0") != "1"
     end
 end
 
+const RESUME = get(ENV, "BENCH_RESUME", "0") == "1"
 supervise(env, worker, bench, system, out, timeout) =
     run(`$JULIA --startup-file=no -t 1 $(joinpath(ROOT, "lib", "supervise.jl")) $env $worker $bench $system $out $timeout`)
+fresh(out) = RESUME || (isfile(out) && rm(out); true)
 
 for b in benches
     if b == "A"
@@ -77,37 +81,37 @@ for b in benches
         bench = b == "B" ? "B_cas" : b == "D" ? "D_coverage" : "E_suite"
         for sys in ("giac", "symbolics", "sympy", "symj", "symengine")
             out = joinpath(RESULTS, "$(bench)_$(sys).tsv")
-            isfile(out) && rm(out)
+            fresh(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), bench, sys, out, b == "B" ? tB : b == "D" ? tD : tE)
         end
     elseif b == "F"
         for sys in ("giac", "symbolics", "sympy", "symj", "maxima", "fricas", "sage_giac", "sage_maxima", "sage_fricas", "sage_sympy", "computeengine")
             out = joinpath(RESULTS, "F_integration_$(sys).tsv")
-            isfile(out) && rm(out)
+            fresh(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "F_integration", sys, out, tF)
         end
     elseif b == "I"
         for sys in ("giac", "symbolics", "symengine", "symj", "sympy", "computeengine")
             out = joinpath(RESULTS, "I_scale_$(sys).tsv")
-            isfile(out) && rm(out)
+            fresh(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "I_scale", sys, out, tI)
         end
     elseif b == "H"
         for sys in ("giac", "symbolics", "sympy", "symj", "maxima", "fricas", "sage_giac", "sage_maxima", "sage_fricas", "sage_sympy", "computeengine")
             out = joinpath(RESULTS, "H_osr_$(sys).tsv")
-            isfile(out) && rm(out)
+            fresh(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "H_osr", sys, out, tH)
         end
     elseif b == "G"
         for sys in ("giac", "groebner", "msolve", "sympy", "sage_singular", "sage_giac", "macaulay2")
             out = joinpath(RESULTS, "G_groebner_$(sys).tsv")
-            isfile(out) && rm(out)
+            fresh(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "G_groebner", sys, out, tG)
         end
     elseif b == "C"
         for sys in ("giac", "primes", "pari")
             out = joinpath(RESULTS, "C_ifactor_$(sys).tsv")
-            isfile(out) && rm(out)
+            fresh(out)
             supervise(envs["intfactor"], joinpath(ROOT, "C_ifactor", "worker.jl"), "C_ifactor", sys, out, tC)
         end
     else

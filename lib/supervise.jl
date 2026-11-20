@@ -9,6 +9,13 @@
 # started at the next case. Package loading and compilation happen before the
 # first progress write, so they are not charged against the first case.
 #
+# A case whose worker tree grows past BENCH_MEM_LIMIT_GIB (default 5) of
+# resident memory is stopped the same way and recorded as an error naming the
+# limit: on 2026-11-20 a case that reached 7 GiB inside the 8 GiB machine got
+# the whole machine killed by its host. With BENCH_RESUME=1 an existing
+# OUT_TSV is kept and the run resumes after its last case, so that a queue
+# cut by a reboot restarts where it stopped.
+#
 # This follows the scheme of SymJ.jl's bench/cas/supervise.jl (MIT), rewritten
 # for this benchmark's record format.
 
@@ -32,6 +39,17 @@ function descendants(pid::Integer)
     out
 end
 
+const MEM_LIMIT = parse(Float64, get(ENV, "BENCH_MEM_LIMIT_GIB", "5")) * 2^30
+
+# resident memory of a process (Linux), 0 elsewhere
+rss(pid) = try
+    m = match(r"VmRSS:\s+(\d+)", read("/proc/$pid/status", String))
+    m === nothing ? 0 : parse(Int, m[1]) * 1024
+catch
+    0
+end
+tree_rss(pid) = sum(rss, [pid; descendants(pid)]; init = 0)
+
 function supervise(envdir, worker, bench, system, out, timeout, extra)
     ENV["BENCH_RUN_ID"] = run_id()        # one run identifier for every worker of this supervision
     mkpath(dirname(abspath(out)))
@@ -39,9 +57,16 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
     logfile = out * ".log"
     isfile(progress) && rm(progress)
     start = 1
+    if get(ENV, "BENCH_RESUME", "0") == "1" && isfile(out)
+        done = [r.idx for r in read_records(out)]
+        start = isempty(done) ? 1 : maximum(done) + 1
+        println("[supervise] $bench/$system: resuming at case $start")
+    end
     while true
         # setsid: the worker leads a new process group, so that a timeout kills its subprocesses (Maxima, FriCAS,
         # Sage and their children) with it; the per-case limit is exported for the subprocess adapters' `timeout`
+        # a fresh progress file for every worker: the memory check must not read the previous worker's case
+        isfile(progress) && rm(progress)
         cmd = addenv(`setsid $(Base.julia_cmd()) --startup-file=no --project=$envdir $worker $bench $system $out $start $progress $extra`,
                      "BENCH_CASE_TIMEOUT" => string(round(Int, timeout)))
         proc = run(pipeline(cmd; stdout = logfile, stderr = logfile, append = true); wait = false)
@@ -57,6 +82,8 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
         last_change = time()
         killed = false
         elapsed = NaN
+        why = ""
+        last_mem = time()
         while process_running(proc)
             sleep(0.25)
             p = isfile(progress) ? read(progress, String) : ""
@@ -66,9 +93,21 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
             end
             if !isempty(p) && time() - last_change > timeout
                 elapsed = time() - last_change     # what the case had consumed when it was stopped (recorded as t_first)
+                why = "timeout"
                 killgroup("TERM")                # SIGTERM to the group; a worker blocked in a C call ignores it
                 killed = true
                 break
+            end
+            if !isempty(p) && time() - last_mem > 1
+                last_mem = time()
+                m = tree_rss(getpid(proc))
+                if m > MEM_LIMIT
+                    elapsed = time() - last_change
+                    why = "memory $(round(m / 2^30; digits = 2)) GiB over the limit $(round(MEM_LIMIT / 2^30; digits = 1)) GiB"
+                    killgroup("KILL")            # no grace: the machine itself is at risk
+                    killed = true
+                    break
+                end
             end
         end
         if killed
@@ -82,10 +121,15 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
         if killed
             idx, name = split(last_progress, '\t'; limit = 2)
             i = parse(Int, idx)
-            append_record(out, Record(bench, system, i, name, "", "timeout", round(elapsed; digits = 2), NaN, "",
-                                      "stopped after $(round(elapsed; digits = 1)) s, limit $(timeout) s (t_first is the time consumed when stopped)"))
+            if why == "timeout"
+                append_record(out, Record(bench, system, i, name, "", "timeout", round(elapsed; digits = 2), NaN, "",
+                                          "stopped after $(round(elapsed; digits = 1)) s, limit $(timeout) s (t_first is the time consumed when stopped)"))
+            else
+                append_record(out, Record(bench, system, i, name, "", "error", round(elapsed; digits = 2), NaN, "",
+                                          "stopped after $(round(elapsed; digits = 1)) s: $why (t_first is the time consumed when stopped)"))
+            end
             start = i + 1
-            println("[supervise] $bench/$system: case $i ($name) timed out; restarting at $(start)")
+            println("[supervise] $bench/$system: case $i ($name) stopped ($why); restarting at $(start)")
             continue
         end
         if proc.exitcode != 0 || proc.termsignal != 0   # a signal-terminated process keeps exitcode 0 in Julia
