@@ -146,6 +146,22 @@ class SiteGenTests(unittest.TestCase):
         self.assertEqual(wf.count("```mermaid"), 4)
         self.assertIn("sequenceDiagram", wf)
 
+    def test_brand(self):
+        """The hero banner is on the home page, and the committed copies under site/static are the generated ones."""
+        root = self.make_root()
+        out = pathlib.Path(tempfile.mkdtemp())
+        sitegen.generate(root, out)
+        home = (out / "content" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn('<p class="site-banner"><img src="brand/casbench-banner.svg"', home)
+        self.assertLess(home.index("site-stamp"), home.index("site-banner"))      # stamp, then banner, then kicker
+        self.assertLess(home.index("site-banner"), home.index("project-kicker"))
+        for name in ("casbench-banner.svg", "casbench-mark.svg"):
+            a, b = ROOT / "assets" / "brand" / name, ROOT / "site" / "static" / "brand" / name
+            self.assertTrue(a.exists() and b.exists(), name)
+            self.assertEqual(a.read_text(encoding="utf-8"), b.read_text(encoding="utf-8"), f"{name}: regenerate and copy")
+        banner = (ROOT / "assets" / "brand" / "casbench-banner.svg").read_text(encoding="utf-8")
+        self.assertNotIn("\u2014", banner)                                        # no em-dash in site text
+
     def test_read_citation(self):
         c = sitegen.read_citation(ROOT / "CITATION.cff")
         self.assertEqual([a["family-names"] for a in c["authors"]], ["Celles"])

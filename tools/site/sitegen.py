@@ -583,8 +583,10 @@ class Site:
     def home(self):
         nb, nc, pk = len(self.results), self.ncases(), self.packages_by_kind()
         out = front("Computer algebra system benchmarks", 0)
-        out += '<p class="project-kicker">reproducible · verified · dated</p>\n\n'
         out += f'<p class="site-stamp">{self.stamp()}</p>\n\n'
+        out += ('<p class="site-banner"><img src="brand/casbench-banner.svg" '
+                'alt="CAS benchmarks: computer algebra systems compared; reproducible, verified, dated"></p>\n\n')
+        out += '<p class="project-kicker">reproducible · verified · dated</p>\n\n'
         out += (f"Benchmarks of computer algebra systems, {self.systems_sentence()}: the systems named here are those "
                 "present in the committed results files. Every number comes from a script in the "
                 "repository, run on fixed inputs, with every answer checked by a system-neutral test and every run dated. "

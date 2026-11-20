@@ -1,5 +1,7 @@
 # Computer algebra system benchmarks
 
+![CAS benchmarks: computer algebra systems compared; reproducible, verified, dated](assets/brand/casbench-banner.svg)
+
 [![CI](https://github.com/s-celles/computer-algebra-system-benchmarks/actions/workflows/ci.yml/badge.svg)](https://github.com/s-celles/computer-algebra-system-benchmarks/actions/workflows/ci.yml)
 [![Site](https://github.com/s-celles/computer-algebra-system-benchmarks/actions/workflows/site.yml/badge.svg)](https://s-celles.github.io/computer-algebra-system-benchmarks/)
 

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="Computer algebra system benchmarks">
+  <style>:root { color: #1E2329; } @media (prefers-color-scheme: dark) { :root { color: #F4F1EA; } }</style>
+  <rect x="4" y="4" width="88" height="88" rx="8" fill="none" stroke="currentColor" stroke-opacity="0.6" stroke-width="3"/>
+  <circle cx="19" cy="19" r="8" fill="#2E9E5B"/><circle cx="48" cy="19" r="8" fill="#2E9E5B"/><circle cx="77" cy="19" r="8" fill="none" stroke="#F2B705" stroke-width="3"/>
+  <circle cx="19" cy="48" r="8" fill="#2E9E5B"/><circle cx="77" cy="48" r="8" fill="#2E9E5B"/>
+  <circle cx="19" cy="77" r="8" fill="none" stroke="#F2B705" stroke-width="3"/><circle cx="48" cy="77" r="8" fill="#2E9E5B"/><circle cx="77" cy="77" r="8" fill="#2E9E5B"/>
+</svg>
