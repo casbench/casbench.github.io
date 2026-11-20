@@ -33,8 +33,11 @@ OpenSymbolicRules, and throughput at scale.
 > systems compared and to the sources of the problems in
 > `docs/disclosures.tsv` (the author of these benchmarks maintains Giac.jl,
 > one of the systems compared, and wrote LibPARI.jl and OpenSymbolicRules:
-> the Julia packages, not the engines). Rendered with the relation to every
-> system: https://s-celles.github.io/computer-algebra-system-benchmarks/conflict-of-interest/
+> the Julia packages, not the engines), and their use of AI assistants (the
+> harness, adapters, task files, checks, site and documentation were written
+> with Claude Code, every change reviewed by the author; the measurements come
+> from the scripts). Rendered with the relation to every system:
+> https://s-celles.github.io/computer-algebra-system-benchmarks/conflict-of-interest/
 > See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 They are the reproduced numbers of the JuliaCon Proceedings paper on Giac.jl

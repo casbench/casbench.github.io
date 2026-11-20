@@ -776,7 +776,9 @@ class Site:
                 by_c.setdefault(r["contributor"], []).append(f"{r['role']} of {r['project']}" + (f" ({r['note']})" if r["note"] else ""))
         if not by_c:
             return "Conflict of interest: no contributor declares a relation to the systems compared or to the sources of the problems."
-        return "Conflict of interest: " + "; ".join(f"{esc(c)} is " + esc(", ".join(v[:-1]) + (" and " if len(v) > 1 else "") + v[-1]) for c, v in by_c.items()) + "."
+        ai = sorted({r["project"] for r in self.disclosures if r["kind"] == "AI assistance"})
+        tail = f" AI assistance declared: {', '.join(esc(a) for a in ai)}." if ai else ""
+        return "Conflict of interest: " + "; ".join(f"{esc(c)} is " + esc(", ".join(v[:-1]) + (" and " if len(v) > 1 else "") + v[-1]) for c, v in by_c.items()) + "." + tail
 
     def conflict_page(self):
         """The conflict of interest page, from docs/disclosures.tsv: every contributor's own declaration, the relation to
@@ -794,10 +796,22 @@ class Site:
             head = f"{esc(name)} ([ORCID {esc(orcid)}](https://orcid.org/{esc(orcid)}))" if orcid else esc(name)
             out += f"## {head}\n\n| project | kind | role | note |\n|---|---|---|---|\n"
             for r in rows:
-                out += f"| {esc(r['project'])} | {esc(r['kind'])} | {esc(r['role'])} | {esc(r['note'])} |\n"
+                if r["kind"] != "AI assistance":
+                    out += f"| {esc(r['project'])} | {esc(r['kind'])} | {esc(r['role'])} | {esc(r['note'])} |\n"
             out += "\n"
         if not by_c:
             out += "*No declaration yet.*\n\n"
+        out += ("## Use of AI assistants\n\n"
+                "Each contributor declares the AI assistants they used, for what, and how the output was reviewed. This matters "
+                "here more than elsewhere: an idiom an assistant generated for a system is a possible source of a benchmark-side "
+                "error, which is why every case page shows the exact input sent to each system. The measurements themselves "
+                "come from the scripts of the repository, never from an assistant.\n\n| contributor | assistant | used for | review and limits |\n|---|---|---|---|\n")
+        ai = [r for r in self.disclosures if r["kind"] == "AI assistance"]
+        for r in ai:
+            out += f"| {esc(r['contributor'])} | {esc(r['project'])} | {esc(r['role'])} | {esc(r['note'])} |\n"
+        if not ai:
+            out += "| | none declared | | |\n"
+        out += "\n"
         out += ("## Relation to every system of the results\n\n"
                 "The systems are those present in the committed results files; *none declared* means that no contributor "
                 "declares a relation.\n\n| system or package | kind | declared relations |\n|---|---|---|\n")

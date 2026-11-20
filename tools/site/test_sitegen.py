@@ -48,7 +48,8 @@ class SiteGenTests(unittest.TestCase):
             "# declarations\ncontributor\torcid\tproject\tkind\trole\tnote\n"
             "Jo Doe\t0000-0000-0000-0001\tGiac.jl\tcompared system\tauthor and maintainer\tthe Julia package, not the engine\n"
             "Jo Doe\t0000-0000-0000-0001\tnone\tother\tnone\t\n"
-            "Al Roe\t\tnone\tother\tnone\tno relation to any system compared\n", encoding="utf-8")
+            "Al Roe\t\tnone\tother\tnone\tno relation to any system compared\n"
+            "Jo Doe\t0000-0000-0000-0001\tSome Assistant\tAI assistance\tused to draft the adapters\treviewed by the contributor\n", encoding="utf-8")
         return d
 
     def test_pages(self):
@@ -77,11 +78,13 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("Julia packages (Giac.jl) and other systems (SymPy)", home)   # the lists come from the results
         self.assertIn("## How to cite", home)
         self.assertIn("[conflict of interest](conflict-of-interest/)", home)        # the statement has its own page
-        self.assertIn("Conflict of interest: Jo Doe is author and maintainer of Giac.jl (the Julia package, not the engine).", home)
+        self.assertIn("Conflict of interest: Jo Doe is author and maintainer of Giac.jl (the Julia package, not the engine). AI assistance declared: Some Assistant.", home)
         coi = (out / "content" / "conflict-of-interest" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("## Jo Doe ([ORCID 0000-0000-0000-0001](https://orcid.org/0000-0000-0000-0001))", coi)
         self.assertIn("## Al Roe\n", coi)                                              # a declaration of no relation
         self.assertIn("| none | other | none | no relation to any system compared |", coi)
+        self.assertIn("## Use of AI assistants", coi)
+        self.assertIn("| Jo Doe | Some Assistant | used to draft the adapters | reviewed by the contributor |", coi)
         self.assertIn("Jo Doe ([ORCID 0000-0000-0000-0001](https://orcid.org/0000-0000-0000-0001))", home)
         self.assertIn("@misc{doe2026casbench,", home)
         self.assertIn("run of 2026-11-18", home)
@@ -219,7 +222,8 @@ class SiteGenTests(unittest.TestCase):
         self.assertTrue(rows)
         for r in rows:
             self.assertEqual(set(r), {"contributor", "orcid", "project", "kind", "role", "note"})
-            self.assertTrue(r["kind"] in ("compared system", "benchmark", "other") or r["kind"].startswith("source of bench "), r)
+            self.assertTrue(r["kind"] in ("compared system", "benchmark", "AI assistance", "other") or r["kind"].startswith("source of bench "), r)
+        self.assertTrue(any(r["kind"] == "AI assistance" for r in rows), "the use of AI assistants is declared")
         footer = (ROOT / "site" / "layouts" / "_partials" / "custom" / "footer.html").read_text(encoding="utf-8")
         self.assertIn("conflict-of-interest", footer)
 
