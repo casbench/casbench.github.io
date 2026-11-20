@@ -1,6 +1,8 @@
 # worker logs and progress files (results/*.tsv are kept)
-results/*.log
-results/*.progress
+results/**/*.log
+results/**/*.progress
 # local scratch
 .scratch/
 /public/
+__pycache__/
+*.pyc

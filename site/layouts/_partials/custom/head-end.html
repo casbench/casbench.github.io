@@ -1,3 +1,13 @@
-<meta name="theme-color" content="#173f66">
+{{- /*
+  site-kit's head (its partial site-kit/head.html) without its tables.js: this site's own tables.js, a superset
+  (a filter per column, multi-key sorting with shift+click, unit-aware numeric sorting, CSV export), handles every
+  table, and two table scripts on one table would each add their controls.
+*/ -}}
+{{- with site.Params.siteKit.themeColor }}<meta name="theme-color" content="{{ . }}">{{ end }}
+{{- with site.Params.siteKit.icon }}<link rel="icon" href="{{ . | relURL }}" type="image/svg+xml">{{ end }}
+{{- $css := resources.Get "css/site-kit/site-kit.css" | minify | fingerprint }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
+{{- $viz := resources.Get "js/site-kit/viz.js" | minify | fingerprint }}
+<script src="{{ $viz.RelPermalink }}" integrity="{{ $viz.Data.Integrity }}" defer></script>
 {{- $tables := resources.Get "js/tables.js" | minify | fingerprint }}
 <script src="{{ $tables.RelPermalink }}" integrity="{{ $tables.Data.Integrity }}" defer></script>

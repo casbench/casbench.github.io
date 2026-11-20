@@ -125,8 +125,18 @@ the machine, which the calibration workload makes comparable.
 
 `tools/site/build.sh OUT` generates the pages from `results/` with
 `tools/site/sitegen.py` and builds them with the pinned Hugo
-(`tools/site/install_hugo.sh DIR`) and the Hextra theme; nothing is written
-inside the repository. `.github/workflows/site.yml` deploys it to GitHub Pages.
+(`tools/site/install_hugo.sh DIR`), the Hextra theme and the
+[site-kit](https://github.com/s-celles/site-kit) module, pinned in
+`site/go.mod`; nothing is written inside the repository. The site follows
+the site-kit SPEC named in `site-kit.json` (the four project sites share it):
+`.github/workflows/site.yml` builds it twice, runs site-kit's
+`check_site.py` and `compare_builds.py` at the pinned tag (two builds of one
+commit must be identical, so no build time is written), and deploys it to
+GitHub Pages. The tables keep this site's own `site/assets/js/tables.js`
+(per-column filters, multi-key sorting, CSV export) in place of site-kit's.
+Case pages stay out of Hextra's sidebar and search index (`llms-full.txt`
+has every case as text): listed in the sidebar of every page, three thousand
+cases made each page 3 MB and the site 4 GB.
 
 ## Planned
 

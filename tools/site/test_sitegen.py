@@ -63,8 +63,8 @@ class SiteGenTests(unittest.TestCase):
         self.assertEqual(site.packages(), ["Giac.jl", "SymPy"])
         self.assertEqual(site.packages_by_kind(), {"julia": ["Giac.jl"], "external": ["SymPy"]})
         page = (out / "content" / "results" / "d_coverage" / "_index.md").read_text(encoding="utf-8")
-        self.assertIn("verdict--verified", page)
-        self.assertIn("verdict--unavailable", page)
+        self.assertIn('<span class="sk-badge sk-tone--good" data-status="verified"', page)          # site-kit badges
+        self.assertIn('<span class="sk-badge sk-tone--neutral-dashed" data-status="unavailable"', page)
         self.assertIn("200 µs", page)                            # warm time formatted
         self.assertIn("4.0 ms", page)
         self.assertIn("[factor x^4-1](001-factor-x-4-1/)", page)  # each case links to its page
@@ -72,13 +72,22 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn('fill="none"', page)                           # a hollow mark for the wrong answer
         home = (out / "content" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("<strong>4</strong><span>cases</span>", home)
+        self.assertEqual(home.count('class="sk-stat"'), 4)                          # site-kit: at most four tiles
+        self.assertIn('<p class="data-stamp">Data from the run of 2026-11-18 on the host <code>testhost</code>', home)
+        self.assertNotIn("Site generated", home)                                    # no build time: builds are identical
+        self.assertIn('<div class="disclaimer">\n\n**Disclaimer.**', home)
+        self.assertIn("**Provenance.** An AI assistant wrote", home)
+        self.assertIn("non-commercial", home)
+        self.assertLess(home.index("data-stamp"), home.index('class="disclaimer"'))   # the order of site-kit SPEC section 3
+        self.assertLess(home.index('class="disclaimer"'), home.index('class="sk-stats"'))
+        self.assertIn("## Sources", home)
+        self.assertIn("**Not reproduced here.**", home)
         self.assertIn("| [D. Functional coverage](results/d_coverage/) | 4 | 2 |", home)   # cases and systems per bench
         self.assertIn("| E. Problem suite | no run committed yet |", home)               # a bench without results is listed
-        self.assertIn("<strong>1</strong><span>Julia packages</span>", home)
-        self.assertIn("<strong>1</strong><span>other systems</span>", home)
+        self.assertIn("<strong>2</strong><span>systems: 1 Julia package, 1 other</span>", home)
         self.assertIn("Julia packages (Giac.jl) and other systems (SymPy)", home)   # the lists come from the results
-        self.assertIn("## How to cite", home)
-        self.assertIn("[disclosures](disclosures/)", home)                           # the statement has its own page
+        self.assertIn("## Cite", home)                                               # site-kit SK-HOME-CITE
+        self.assertIn("[Disclosures](./disclosures/)", home)                        # SK-HOME-DISCLOSURE: the href ends in /disclosures/
         self.assertIn("Disclosure: Jo Doe is author and maintainer of Giac.jl (the Julia package, not the engine). AI assistance declared: Some Assistant.", home)
         coi = (out / "content" / "disclosures" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("aliases: ['/conflict-of-interest/']", coi)                   # the 0.3 address redirects
@@ -91,22 +100,32 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("@misc{doe2026casbench,", home)
         self.assertIn("run of 2026-11-18", home)
         self.assertIn("MIT, CC-BY-4.0", home)
-        sysp = (out / "content" / "systems" / "_index.md").read_text(encoding="utf-8")
+        sysp = (out / "content" / "docs" / "systems" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("| Giac.jl | `0.14.3` | 2026-11-18 |", sysp)
         self.assertIn("| system or source | kind | Jo Doe | Al Roe |", coi)                       # systems x contributors
         self.assertIn("| Giac.jl | Julia package | author and maintainer (the Julia package, not the engine) | none |", coi)
         self.assertIn("| SymPy | other system | none | none |", coi)
         self.assertIn("disclosures/", sysp)
         meth = (out / "content" / "methodology" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("## Pipeline", meth)                                            # site-kit SPEC section 8
+        self.assertIn("## What a result means", meth)
+        self.assertIn("## Checks of the expected values", meth)
+        self.assertIn("aliases: ['/workflow/']", meth)
+        stp = (out / "content" / "docs" / "statuses" / "_index.md").read_text(encoding="utf-8")
+        for st in sitegen.STATUSES:
+            self.assertIn(f'data-status="{st}"', stp)                                  # every word of a badge is defined
+        self.assertTrue((out / "static" / "llms-full.txt").exists())
+        full = (out / "static" / "llms-full.txt").read_text(encoding="utf-8")
+        self.assertIn("- 1. factor x^4-1 [factor]: Giac.jl verified 200 µs; SymPy verified 4.0 ms", full)
         self.assertIn(sitegen.BLOB + "/docs/../lib/common.jl", meth)   # relative links rewritten from docs/
         self.assertTrue((out / "static" / "llms.txt").exists())
         self.assertTrue((out / "static" / "data" / "testhost" / "D_coverage_giac.tsv").exists())   # raw data republished, per host
         self.assertTrue((out / "static" / "data" / "results.zip").exists())
-        data = (out / "content" / "data" / "_index.md").read_text(encoding="utf-8")
+        data = (out / "content" / "docs" / "data" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("testhost/D_coverage_giac.tsv", data)
         self.assertIn("data/testhost/D_coverage_giac.tsv", page)                     # linked from the bench page
         self.assertIn("come from the host `testhost`", home)
-        envp = (out / "content" / "environment" / "_index.md").read_text(encoding="utf-8")
+        envp = (out / "content" / "docs" / "environment" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("## testhost (reference)", envp)
 
     def test_case_pages(self):
@@ -116,6 +135,7 @@ class SiteGenTests(unittest.TestCase):
         case = out / "content" / "results" / "d_coverage" / "001-factor-x-4-1" / "_index.md"
         self.assertTrue(case.exists(), "one page per case")
         text = case.read_text(encoding="utf-8")
+        self.assertIn("sidebar:\n  exclude: true\nexcludeSearch: true\n---", text)   # case pages stay out of the sidebar
         self.assertIn("(x-1)*(x+1)*(x^2+1)", text)                 # every system's full answer
         self.assertIn("(x - 1)*(x + 1)*(x**2 + 1)", text)
         self.assertIn("| Giac.jl | <span", text)
@@ -136,12 +156,17 @@ class SiteGenTests(unittest.TestCase):
         site = sitegen.generate(root, out)
         self.assertEqual(len(site.history), 2)
         page = (out / "content" / "history" / "_index.md").read_text(encoding="utf-8")
-        self.assertEqual(page.count("<svg"), 2)                  # verified and median time charts
-        self.assertIn("Site generated", page)
-        home = (out / "content" / "_index.md").read_text(encoding="utf-8")
-        self.assertIn("last run recorded 2026-11-18 08:28:32", home)
-        self.assertIn('<svg class="chart"', sitegen.svg_chart({"a": [("2026-11-18", 1.0), ("2026-11-19", 2.0)]}, "t", "y"))
-        self.assertIn("no data yet", sitegen.svg_chart({"a": []}, "t", "y"))
+        self.assertEqual(page.count('<svg class="viz-chart"'), 2)                 # verified and median time charts
+        self.assertIn('<g class="viz-pt" aria-label="2026-11-18 08:28: Giac.jl 22">', page)   # the label starts with the date
+        self.assertIn('data-viz="dense"', page)
+        self.assertIn("<table", page.replace("| date | host |", "<table"))             # the values are on the page
+        one = sitegen.viz_chart({"a": [("2026-11-18", 1.0), ("2026-11-19", 2.0)]}, "t", "y")
+        self.assertIn('<svg class="viz-chart"', one)
+        self.assertIn('aria-label="t"', one)
+        many = sitegen.viz_chart({k: [("2026-11-18", 1.0), ("2026-11-19", 2.0)] for k in "abc"}, "t", "y")
+        self.assertIn('class="viz-multiples"', many)                                   # more than two series: small multiples
+        self.assertEqual(many.count('<svg class="viz-chart"'), 3)
+        self.assertIn("no data yet", sitegen.viz_chart({"a": []}, "t", "y"))
 
     def test_hosts(self):
         """A second host gets its own directory, the Hosts page compares it with the reference, the home page names it."""
@@ -154,7 +179,7 @@ class SiteGenTests(unittest.TestCase):
         self.assertEqual(sorted(site.hosts), ["other", "testhost"])
         self.assertEqual(site.reference, "testhost")
         self.assertEqual(site.ncases(), 4)                                             # the tiles count the reference host only
-        hosts = (out / "content" / "hosts" / "_index.md").read_text(encoding="utf-8")
+        hosts = (out / "content" / "docs" / "hosts" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("| bench | system | `testhost` | `other` |", hosts)
         self.assertIn("| D. Functional coverage | Giac.jl | 2/3 verified, 100.0 ms | 2/3 verified, 200.0 ms |", hosts)
         home = (out / "content" / "_index.md").read_text(encoding="utf-8")
@@ -162,12 +187,21 @@ class SiteGenTests(unittest.TestCase):
         self.assertTrue((out / "static" / "data" / "other" / "D_coverage_giac.tsv").exists())
 
     def test_workflow(self):
+        """The pipeline diagrams are on the Methodology page, with no ; < or # in their labels (site-kit SK-MERMAID)."""
         root = self.make_root()
         out = pathlib.Path(tempfile.mkdtemp())
         sitegen.generate(root, out)
-        wf = (out / "content" / "workflow" / "_index.md").read_text(encoding="utf-8")
+        wf = (out / "content" / "methodology" / "_index.md").read_text(encoding="utf-8")
         self.assertEqual(wf.count("```mermaid"), 4)
         self.assertIn("sequenceDiagram", wf)
+        for block in re.findall(r"```mermaid\n(.*?)```", wf, re.S):
+            for line in block.splitlines()[1:]:
+                labels = [next(g for g in m.groups() if g is not None)
+                          for m in re.finditer(r"\[([^\]]*)\]|\(([^)]*)\)|\{([^}]*)\}|\|([^|]*)\|", line)]
+                m = re.match(r"^\s*[^\s:]+\s*-{1,2}>>?\s*[^:]+:(.*)$", line)
+                labels += [m.group(1)] if m else []
+                for lab in labels:
+                    self.assertIsNone(re.search(r"[;<#]", lab), lab)
 
     def test_brand(self):
         """The hero banner is on the home page, and the committed copies under site/static are the generated ones."""
@@ -176,8 +210,8 @@ class SiteGenTests(unittest.TestCase):
         sitegen.generate(root, out)
         home = (out / "content" / "_index.md").read_text(encoding="utf-8")
         self.assertIn('<p class="site-banner"><img src="brand/casbench-banner.svg"', home)
-        self.assertLess(home.index("site-stamp"), home.index("site-banner"))      # stamp, then banner, then kicker
-        self.assertLess(home.index("site-banner"), home.index("project-kicker"))
+        self.assertLess(home.index("site-banner"), home.index("project-kicker"))    # banner, kicker, statement, then the stamp
+        self.assertLess(home.index("project-kicker"), home.index("data-stamp"))
         for name in ("casbench-banner.svg", "casbench-mark.svg"):
             a, b = ROOT / "assets" / "brand" / name, ROOT / "site" / "static" / "brand" / name
             self.assertTrue(a.exists() and b.exists(), name)
@@ -250,8 +284,11 @@ class SiteGenTests(unittest.TestCase):
         for label in systems:
             kind, name = sitegen.package(label)
             kinds.setdefault(kind, set()).add(name)
-        self.assertEqual(tile("Julia packages"), len(kinds.get("julia", ())))
-        self.assertEqual(tile("other systems"), len(kinds.get("external", ())))
+        m = re.search(r"<strong>(\d+)</strong><span>systems: (\d+) Julia packages?, (\d+) others?</span>", home)
+        self.assertIsNotNone(m)
+        self.assertEqual(int(m.group(2)), len(kinds.get("julia", ())))
+        self.assertEqual(int(m.group(3)), len(kinds.get("external", ())))
+        self.assertEqual(int(m.group(1)), len(kinds.get("julia", ())) + len(kinds.get("external", ())))
         for name in {n for v in kinds.values() for n in v}:
             self.assertIn(name, home, f"{name} is in the results but not named on the home page")
 
@@ -273,10 +310,13 @@ class SiteGenTests(unittest.TestCase):
         out = pathlib.Path(tempfile.mkdtemp())
         site = sitegen.generate(root, out)
         home = site.home()
+        sitegen.check_home(site, home)                                                 # the generated page passes
         with self.assertRaises(ValueError):
             sitegen.check_home(site, home.replace("<strong>4</strong><span>cases</span>", "<strong>5</strong><span>cases</span>"))
         with self.assertRaises(ValueError):
-            sitegen.check_home(site, home.replace("<strong>1</strong><span>other systems</span>", "<strong>2</strong><span>other systems</span>"))
+            sitegen.check_home(site, home.replace("systems: 1 Julia package, 1 other", "systems: 1 Julia package, 2 others"))
+        with self.assertRaises(ValueError):                                            # a fifth tile
+            sitegen.check_home(site, home.replace('</div>\n\n[Results]', '<a class="sk-stat" href="x"><strong>1</strong><span>x</span></a>\n</div>\n\n[Results]'))
 
     def test_bench_e_statements_follow_problems(self):
         """E_suite/statements.tsv has one row per problem of E_suite/problems.jl, in the same order and with the same

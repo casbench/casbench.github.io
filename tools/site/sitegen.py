@@ -3,11 +3,13 @@
 
     python3 -I tools/site/sitegen.py --root . --out DIR
 
-writes DIR/content (Markdown pages for Hugo, theme Hextra) and DIR/static
-(llms.txt). Nothing is written inside the repository: every page is derived
-from results/*.tsv, results/machine.txt, results/environment.txt and
-README.md on each build, so the site cannot drift from the results files.
-See tools/site/build.sh.
+writes DIR/content (Markdown pages for Hugo, theme Hextra, with the site-kit
+module) and DIR/static (llms.txt, llms-full.txt, the raw data). Nothing is
+written inside the repository: every page is derived from results/, docs/
+and CITATION.cff on each build, so the site cannot drift from the results
+files, and two builds of one commit are identical (no build time is
+written). The pages follow the site-kit SPEC pinned in site/go.mod
+(site-kit.json at the repository root). See tools/site/build.sh.
 """
 import argparse
 import csv
@@ -41,6 +43,26 @@ BENCHES = {
     "I_scale": ("I. Throughput at scale", "How the time grows with the size of the expression: dense expansion, a large derivative, a series, substitution, evaluation and code generation on random trees of up to a hundred thousand leaves."),
 }
 OSR = "https://opensymbolicrules.github.io/"
+# third-party material (site-kit SPEC section 3): (source, licence, how it is used)
+SOURCES = [
+    ("The comparison notebooks of a fork of Giac.jl (kahliburke/Giac.jl, ergonomics branch, commit da3d2f1a)", "GPL-3.0",
+     "bench E is derived from them: their 103 problems and statements, with four model-to-Jacobian tasks added and a task "
+     "file per system."),
+    ("The 12000.org independent integration tests (Nasser M. Abbasi, Summer 2024 edition)",
+     "no licence stated; their problems come from the Rubi test suite (MIT) and the collections it cites",
+     "bench F quotes 639 of their entries, with the file and line of each, translated to each system's syntax."),
+    ("Groebner.jl's Examples module", "GPL-2.0",
+     "bench G's polynomial systems were generated once with it; the strings are the classical systems of the literature "
+     "(Katsura, cyclic-n, eco, noon, Henrion, Chandrasekhar), not that code."),
+    (f"[OpenSymbolicRules]({OSR}) v1 integration rules", "MIT",
+     "bench H is derived from them: every rule's integrand and conditions, its Lean verdict and certified antiderivative, "
+     "pinned as the git submodule osr/Integration (also written by the author: see Disclosures)."),
+    ("SymJ.jl's bench/cas comparison", "MIT", "the structure of the adapters and of the supervisor follows it."),
+]
+NOT_REPRODUCED = ("Third-party numbers quoted on the Methodology page (the 12000.org scores of the Summer 2024 edition) "
+                  "come with their caveats and are not rerun here. Systems not run: Reduce (not in nixpkgs), Rubi (it needs "
+                  "Mathematica), Mathematica and Maple (proprietary); Singular.jl does not precompile on Julia 1.13 at the "
+                  "pinned versions, so Singular runs through SageMath.")
 STATUSES = ("verified", "wrong", "unverified", "unsolved", "unavailable", "error", "timeout")
 STATUS_HELP = {
     "verified": "returned and checked by a system-neutral test",
@@ -86,44 +108,53 @@ def read_disclosures(path):
         if r.get("contributor") and r.get("project"):
             rows.append({k: (v or "").strip() for k, v in r.items()})
     return rows
-DISCLAIMER = ("An individual, non-commercial project. The numbers are dated: they were measured on a shared virtual "
-              "machine with the package versions recorded in the results files, and the systems compared are moving "
-              "quickly. A status is a claim to check against the results files, not a verdict on a system: an unsolved "
-              "or wrong case may hide an error of the benchmark itself, a command generated wrongly for that system, "
-              "which is why every case page shows the exact input sent to each system next to its output. Corrections "
-              "are welcome.")
+DISCLAIMER = ("These benchmarks are an individual, non-commercial project. They are not produced, endorsed or certified by "
+              "the authors of the systems they compare or of the problem collections they use. Their aim is dated, reproducible "
+              "and checkable numbers, and better systems through the failures they show. The numbers were measured on a shared "
+              "virtual machine with the versions recorded in the results files, and the systems move quickly: a status is a "
+              "claim to check against the results files, not a verdict on a system, and an unsolved or wrong case may hide an "
+              "error of the benchmark itself, a command generated wrongly for that system, which is why every case page shows "
+              "the exact input sent next to the output. Corrections are welcome.")
+PROVENANCE = ("An AI assistant wrote the harness, the adapters, the task files of benches B, D and F to I, the checks, the site "
+              "generator and the documentation, and ran the benches on the measuring machine. The task files of bench E come "
+              "from a fork of Giac.jl by an external contributor, and the problems of benches F, G and H from third parties "
+              "(Sources, below). The author reviewed every change; the statuses and the times are produced by the scripts, "
+              "not by the assistant. A person decides what is reported upstream.")
+# status word -> site-kit tone (SPEC 0.4, section 5): one tone per word across the site
+BADGE_TONES = {"verified": "good", "wrong": "bad", "unverified": "info", "unsolved": "alt-dashed",
+               "unavailable": "neutral-dashed", "error": "warn-dashed", "timeout": "warn"}
 
 WORKFLOW = """
 Every bench follows the same path from fixed inputs to the pages of this site. The diagrams are the
 contract of the repository: a number that is not produced this way is not reported.
 
-## From inputs to results
+### From inputs to results
 
 ```mermaid
 flowchart LR
-    I["inputs<br/>fixed in the repository<br/>(problems.jl, inputs.jl, tasks_&lt;system&gt;.jl)"] --> S
-    S["lib/supervise.jl<br/>one Julia process per bench and system<br/>per-case time limit, restart after a crash"] --> W
-    W["lib/worker.jl<br/>loads the adapter and the problem file"] --> A
-    A["lib/adapters/&lt;system&gt;.jl<br/>OPS, EVAL, UNSOLVED, VERSIONS"] --> C
-    C{"check<br/>plain Julia, system-neutral"} -->|verified / wrong / unverified| R
+    I["fixed inputs: problems.jl, inputs.jl, tasks_SYSTEM.jl"] --> S
+    S["lib/supervise.jl: one Julia process per bench and system, time and memory limits, restart after a crash"] --> W
+    W["lib/worker.jl: loads the adapter and the problem file"] --> A
+    A["lib/adapters/SYSTEM.jl: OPS, EVAL, UNSOLVED, VERSIONS"] --> C
+    C{"check in plain Julia, system-neutral"} -->|verified, wrong, unverified| R
     A -->|missing operation| U[unavailable] --> R
-    A -->|declined, unevaluated| N[unsolved] --> R
-    S -->|limit, signal| T[timeout / error] --> R
-    R[("results/&lt;host&gt;/&lt;bench&gt;_&lt;system&gt;.tsv<br/>status, first call, warm time, wall time, repeats, load, run id, answer, note, input<br/>+ machine.txt (run id, harness commit, calibration), environment.txt")]
+    A -->|declined or unevaluated| N[unsolved] --> R
+    S -->|time or memory limit, signal| T[timeout or error] --> R
+    R[("results/HOST/BENCH_SYSTEM.tsv with machine.txt and environment.txt")]
 ```
 
-## From results to tables, figures and pages
+### From results to tables, figures and pages
 
 ```mermaid
 flowchart LR
-    R[("results/&lt;reference host&gt;/*.tsv")] --> M["make_tables.jl<br/>make_tables_E.jl"]
-    M --> T["tables/*.tex"] & F["figures/E_times.tex"] & S["results/summary.md"]
-    R --> G["tools/site/sitegen.py"] --> H["Hugo + Hextra<br/>.github/workflows/site.yml"] --> P["this site"]
-    T & F -->|copied, submodule bumped| J["paper repository<br/>paper/tables, paper/figures"]
-    CI["CI: make_tables.jl on the committed results<br/>must reproduce tables/, figures/ and summary.md"] -.-> T
+    R[("results/REFERENCE-HOST/*.tsv")] --> M["make_tables.jl"]
+    M --> T["tables/*.tex"] & F["figures/E_times.tex"] & S["results/summary.md and history.tsv"]
+    R --> G["tools/site/sitegen.py"] --> H["Hugo, Hextra and site-kit"] --> P["this site"]
+    T & F -->|copied, submodule bumped| J["the paper repository"]
+    CI["CI: make_tables.jl on the committed results must reproduce tables, figures and summary"] -.-> T
 ```
 
-## How a status is decided
+### How a status is decided
 
 ```mermaid
 flowchart TD
@@ -136,22 +167,22 @@ flowchart TD
     K -->|passes| V[verified]
     K -->|fails| WR[wrong]
     K -->|cannot evaluate| UV[unverified]
-    Q -.->|over the limit| TO[timeout]
+    Q -.->|over the time limit| TO[timeout]
 ```
 
-## Reproducing
+### Reproducing
 
 ```mermaid
 sequenceDiagram
     participant U as you
     participant N as nix run (the bench app)
     participant J as julia (one process per bench and system)
-    U->>N: git clone --recurse-submodules, then nix run the bench app
-    N->>N: pin julia 1.13.3 and python3+sympy, record environment.txt
-    N->>J: run_all.jl calls supervise(env, worker, bench, system, out, timeout)
+    U->>N: git clone with submodules, then nix run the bench app of the flake
+    N->>N: pin julia, python with sympy and the other systems, record environment.txt
+    N->>J: lib/supervise.jl for every bench and system
     J-->>N: results/HOST/BENCH_SYSTEM.tsv
     N->>N: make_tables.jl
-    N-->>U: tables/, figures/, results/summary.md
+    N-->>U: tables, figures, results/summary.md
 ```
 """
 
@@ -167,8 +198,10 @@ def slug(idx, name):
 
 
 def badge(status):
-    cls = status if status in STATUSES else "other"
-    return f'<span class="verdict verdict--{cls}" title="{esc(STATUS_HELP.get(status, status))}">{esc(status)}</span>'
+    """A status word in the site-kit badge markup: its tone from BADGE_TONES, the word always shown."""
+    tone = BADGE_TONES.get(status, "neutral")
+    return (f'<span class="sk-badge sk-tone--{tone}" data-status="{esc(status)}" '
+            f'title="{esc(STATUS_HELP.get(status, status))}">{esc(status)}</span>')
 
 
 def fmt_time(s):
@@ -181,12 +214,15 @@ def fmt_time(s):
     return f"{s:.2f} s"
 
 
-def front(title, weight=None, **extra):
+def front(title, weight=None, yaml="", **extra):
+    """YAML front matter: title, weight, the extra keys (Python reprs of strings and lists), then raw YAML lines."""
     lines = ["---", f"title: {title!r}"]
     if weight is not None:
         lines.append(f"weight: {weight}")
     for k, v in extra.items():
         lines.append(f"{k}: {v!r}")
+    if yaml:
+        lines.append(yaml.rstrip("\n"))
     lines.append("---")
     return "\n".join(lines) + "\n\n"
 
@@ -215,7 +251,16 @@ def fence(text):
     return "```text\n" + text.replace("```", "'''") + "\n```\n"
 
 
+# colours of the dot plot of the bench pages (one per system); the history charts use site-kit's validated pair
 PALETTE = ["#1f77b4", "#d62728", "#2ca02c", "#9467bd", "#ff7f0e", "#8c564b", "#e377c2", "#17becf", "#7f7f7f", "#bcbd22"]
+
+
+def tnum(d):
+    """Seconds since the epoch of an ISO date string, 0 when it does not parse."""
+    try:
+        return datetime.datetime.fromisoformat(d.replace(" ", "T")).timestamp()
+    except ValueError:
+        return 0.0
 
 
 def read_history(path):
@@ -238,59 +283,70 @@ def read_history(path):
     return rows
 
 
-def svg_chart(series, title, ylabel, log=False, width=720, height=260):
-    """A line chart as inline SVG: series = {label: [(date, value), ...]}; dates are ISO strings, placed by time."""
-    pts = [(d, v) for ps in series.values() for d, v in ps if v == v and (not log or v > 0)]
-    if not pts:
+def viz_chart(series, title, ylabel, log=False):
+    """History charts in the site-kit markup (SPEC 0.4, sections 7 and 11): series = {label: [(date, value), ...]}.
+
+    Time on the x axis, one y axis starting at 0 (or logarithmic, base 10, named in the axis label). A chart has
+    at most two series, in site-kit's two validated colours; beyond that the series become small multiples on one
+    scale. Each chart is svg.viz-chart with an aria-label, one tab stop (data-viz="dense": the arrow keys step
+    through the dates, site-kit's viz.js shows every series at a date), and its points are g.viz-pt whose
+    aria-label starts with their date. The table of the values is on the page (the runs table)."""
+    clean = {}
+    for lab, ps in series.items():
+        ps = sorted(((d, v) for d, v in ps if v == v and (not log or v > 0)), key=lambda q: tnum(q[0]))
+        if ps:
+            clean[lab] = ps
+    if not clean:
         return f"<p><em>{esc(title)}: no data yet.</em></p>\n"
-    def tnum(d):
-        try:
-            return datetime.datetime.fromisoformat(d.replace(" ", "T")).timestamp()
-        except ValueError:
-            return 0.0
+    pts = [(d, v) for ps in clean.values() for d, v in ps]
     xs = [tnum(d) for d, _ in pts]
     x0, x1 = min(xs), max(xs)
-    x1 = x1 if x1 > x0 else x0 + 86400
-    vals = [math.log10(v) if log else v for _, v in pts]
-    y0, y1 = min(vals), max(vals)
-    if y1 <= y0:
-        y0, y1 = (y0 - 1, y1 + 1) if log else (0, max(1, y1 * 1.1))
-    if not log:
-        y0 = 0
-    ml, mr, mt, mb = 56, 16, 30, 46
-    pw, ph = width - ml - mr, height - mt - mb
-    X = lambda t: ml + (t - x0) / (x1 - x0) * pw
-    Y = lambda v: mt + ph - ((math.log10(v) if log else v) - y0) / (y1 - y0) * ph
-    out = [f'<svg class="chart" viewBox="0 0 {width} {height}" width="100%" role="img" aria-label="{esc(title)}">',
-           f'<text x="{ml}" y="18" font-size="13" font-weight="600">{esc(title)}</text>']
-    # y grid: 4 ticks
-    for i in range(5):
-        v = y0 + (y1 - y0) * i / 4
-        y = mt + ph - ph * i / 4
-        label = f"{10 ** v:.3g}" if log else f"{v:.0f}"
-        out.append(f'<line x1="{ml}" y1="{y:.1f}" x2="{ml + pw}" y2="{y:.1f}" stroke="#ddd"/>'
-                   f'<text x="{ml - 6}" y="{y + 4:.1f}" font-size="10" text-anchor="end">{label}</text>')
-    out.append(f'<text x="12" y="{mt + ph / 2:.0f}" font-size="10" transform="rotate(-90 12 {mt + ph / 2:.0f})" text-anchor="middle">{esc(ylabel)}</text>')
-    # x ticks: first, last and up to 3 between
+    if x1 <= x0:
+        x0, x1 = x0 - 43200, x1 + 43200
+    if log:
+        lv = [math.log10(v) for _, v in pts]
+        y0, y1 = math.floor(min(lv)), math.ceil(max(lv))
+        y1 = y1 if y1 > y0 else y0 + 1
+    else:
+        y0, y1 = 0.0, max(1.0, max(v for _, v in pts) * 1.1)
     dates = sorted({d for d, _ in pts}, key=tnum)
-    step = max(1, len(dates) // 4)
-    for d in dates[::step] + ([dates[-1]] if dates[-1] not in dates[::step] else []):
-        x = X(tnum(d))
-        out.append(f'<line x1="{x:.1f}" y1="{mt + ph}" x2="{x:.1f}" y2="{mt + ph + 4}" stroke="#888"/>'
-                   f'<text x="{x:.1f}" y="{mt + ph + 16}" font-size="10" text-anchor="middle">{esc(d[:10])}</text>')
-    for i, (label, ps) in enumerate(series.items()):
-        color = PALETTE[i % len(PALETTE)]
-        ps = [(d, v) for d, v in sorted(ps, key=lambda q: tnum(q[0])) if v == v and (not log or v > 0)]
-        if not ps:
-            continue
-        path = " ".join(f"{'M' if j == 0 else 'L'}{X(tnum(d)):.1f},{Y(v):.1f}" for j, (d, v) in enumerate(ps))
-        out.append(f'<path d="{path}" fill="none" stroke="{color}" stroke-width="2"/>')
-        for d, v in ps:
-            out.append(f'<circle cx="{X(tnum(d)):.1f}" cy="{Y(v):.1f}" r="3" fill="{color}"><title>{esc(label)} {esc(d)}: {v:.4g}</title></circle>')
-        lx = ml + (i % 4) * (pw / 4)
-        ly = height - 8 - (i // 4) * 12
-        out.append(f'<rect x="{lx:.0f}" y="{ly - 8}" width="10" height="10" fill="{color}"/><text x="{lx + 14:.0f}" y="{ly}" font-size="10">{esc(label)}</text>')
-    out.append("</svg>")
+
+    def panel(items, label, width, height):
+        ml, mr, mt, mb = 56, 14, 12, 40
+        pw, ph = width - ml - mr, height - mt - mb
+        X = lambda t: ml + (t - x0) / (x1 - x0) * pw
+        Y = lambda v: mt + ph - ((math.log10(v) if log else v) - y0) / (y1 - y0) * ph
+        out = [f'<svg class="viz-chart" viewBox="0 0 {width} {height}" aria-label="{esc(label)}" tabindex="0" data-viz="dense">']
+        n = (y1 - y0) if log and (y1 - y0) <= 6 else 4
+        for k in range(int(n) + 1):                           # grid from the bottom up (viz.js reads the first and last)
+            v = y0 + (y1 - y0) * k / n
+            y = mt + ph - ph * k / n
+            tick = f"{10 ** v:.3g}" if log else f"{v:.0f}"
+            out.append(f'<line class="viz-grid" x1="{ml}" y1="{y:.1f}" x2="{ml + pw}" y2="{y:.1f}"/>'
+                       f'<text class="viz-tick" x="{ml - 6}" y="{y + 4:.1f}" text-anchor="end">{tick}</text>')
+        out.append(f'<line class="viz-axis" x1="{ml}" y1="{mt + ph}" x2="{ml + pw}" y2="{mt + ph}"/>')
+        out.append(f'<text class="viz-label" x="12" y="{mt + ph / 2:.0f}" transform="rotate(-90 12 {mt + ph / 2:.0f})" '
+                   f'text-anchor="middle">{esc(ylabel)}{" (log10)" if log else ""}</text>')
+        step = max(1, len(dates) // 4)
+        for d in dates[::step] + ([dates[-1]] if dates[-1] not in dates[::step] else []):
+            out.append(f'<text class="viz-tick" x="{X(tnum(d)):.1f}" y="{mt + ph + 16}" text-anchor="middle">{esc(d[:10])}</text>')
+        for c, (lab, ps) in enumerate(items, 1):
+            path = " ".join(f"{'M' if j == 0 else 'L'}{X(tnum(d)):.1f},{Y(v):.1f}" for j, (d, v) in enumerate(ps))
+            out.append(f'<path class="viz-line" d="{path}" style="stroke:var(--viz-{c})"/>')
+            for d, v in ps:
+                out.append(f'<g class="viz-pt" aria-label="{esc(d[:16])}: {esc(lab)} {v:.4g}">'
+                           f'<circle class="viz-dot" cx="{X(tnum(d)):.1f}" cy="{Y(v):.1f}" r="4" style="fill:var(--viz-{c})"/></g>')
+        out.append("</svg>")
+        return "\n".join(out)
+
+    if len(clean) <= 2:
+        legend = " · ".join(f'<span style="color:var(--viz-{c})">●</span> {esc(lab)}' for c, lab in enumerate(clean, 1))
+        return (f'<figure class="viz"><figcaption>{esc(title)}</figcaption>\n{panel(list(clean.items()), title, 720, 240)}\n'
+                f"<p>{legend}</p></figure>\n")
+    out = [f'<p><strong>{esc(title)}</strong>, one panel per series on one scale:</p>', '<div class="viz-multiples">']
+    for lab, ps in clean.items():
+        out.append(f'<figure class="viz viz-panel"><figcaption>{esc(lab)}</figcaption>\n{panel([(lab, ps)], f"{title}: {lab}", 360, 170)}</figure>')
+    out.append("</div>")
     return "\n".join(out) + "\n"
 
 
@@ -375,7 +431,6 @@ class Site:
         self._task_cache = {}
         self.history = read_history(self.root / "results" / "history.tsv")
         self.disclosures = read_disclosures(self.root / "docs" / "disclosures.tsv")
-        self.generated = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
         self.results_commit = self.git_results_commit()
 
     def git_results_commit(self):
@@ -387,13 +442,17 @@ class Site:
         except (OSError, subprocess.CalledProcessError):
             return None
 
-    def stamp(self):
-        s = f"Site generated {self.generated}"
-        if self.last_date():
-            s += f" · last run recorded {esc(self.last_date())}"
+    def data_stamp(self):
+        """The site-kit data stamp: the run the numbers come from and the commit of the results (no build time, so
+        that two builds of one commit are identical)."""
+        run = self.last_date()[:10]
+        s = f"Data from the run of {esc(run)}" if run else "Data"
+        if self.reference:
+            s += f" on the host <code>{esc(self.reference)}</code>"
         if self.results_commit:
-            s += f" · results commit {esc(self.results_commit[0])} ({esc(self.results_commit[1][:16].replace('T', ' '))})"
-        return s
+            h, d = self.results_commit
+            s += f', results commit <a href="{REPO}/commit/{esc(h)}"><code>{esc(h)}</code></a> ({esc(d[:10])})'
+        return f'<p class="data-stamp">{s}.</p>'
 
     # -- inputs -------------------------------------------------------------
     def read_machine(self, p):
@@ -595,29 +654,31 @@ class Site:
     # -- pages --------------------------------------------------------------
     def home(self):
         nb, nc, pk = len(self.results), self.ncases(), self.packages_by_kind()
+        nj, ne = len(pk["julia"]), len(pk["external"])
         out = front("Computer algebra system benchmarks", 0)
-        out += f'<p class="site-stamp">{self.stamp()}</p>\n\n'
         out += ('<p class="site-banner"><img src="brand/casbench-banner.svg" '
                 'alt="CAS benchmarks: computer algebra systems compared; reproducible, verified, dated"></p>\n\n')
         out += '<p class="project-kicker">reproducible · verified · dated</p>\n\n'
-        out += (f"Benchmarks of computer algebra systems, {self.systems_sentence()}: the systems named here are those "
-                "present in the committed results files. Every number comes from a script in the "
-                "repository, run on fixed inputs, with every answer checked by a system-neutral test and every run dated. "
-                f"They are the reproduced numbers of the {PAPER}.\n\n")
-        out += '<div class="suite-stats">\n'
-        for n, label, href in ((nb, "benches", "results/"), (len(pk["julia"]), "Julia packages", "systems/"),
-                               (len(pk["external"]), "other systems", "systems/"),
-                               (nc, "cases", "results/"), (self.last_date()[:10] or "n/a", "last run", "environment/")):
-            out += f'<a class="suite-stat" href="{href}"><strong>{esc(n)}</strong><span>{label}</span></a>\n'
+        out += (f"Reproducible, verified and dated benchmarks of computer algebra systems, {self.systems_sentence()}: "
+                f"the reproduced numbers of the {PAPER}.\n\n")
+        out += self.data_stamp() + "\n\n"
+        out += (f'<div class="disclaimer">\n\n**Disclaimer.** {esc(DISCLAIMER)}\n\n**Provenance.** {esc(PROVENANCE)}\n\n</div>\n\n')
+        out += f"{self.coi_summary()} Every contributor's declaration and the relation to every system: [Disclosures](./disclosures/).\n\n"
+        out += '<div class="sk-stats">\n'
+        systems_label = f"systems: {nj} Julia package{'s' if nj != 1 else ''}, {ne} other{'s' if ne != 1 else ''}"
+        for n, label, href in ((nb, "benches", "results/"), (nj + ne, systems_label, "docs/systems/"),
+                               (nc, "cases", "results/"), (self.last_date()[:10] or "n/a", "last run", "docs/environment/")):
+            out += f'<a class="sk-stat" href="{href}"><strong>{esc(n)}</strong><span>{label}</span></a>\n'
         out += "</div>\n\n"
-        out += f'<div class="disclaimer">{esc(DISCLAIMER)}</div>\n\n'
+        out += ("[Results](results/) · [Methodology](methodology/) · [Statuses](docs/statuses/) · [History](history/) · "
+                "[Data](docs/data/) · [Systems](docs/systems/) · [Hosts](docs/hosts/)\n\n")
         others = [h for h in self.hosts if h != self.reference]
-        out += (f"Host: the numbers of this page and of the bench pages come from the host `{esc(self.reference)}` "
+        out += (f"Every number comes from a script in the repository, run on fixed inputs, with every answer checked by a "
+                f"system-neutral test. The numbers of this page and of the bench pages come from the host `{esc(self.reference)}` "
                 f"(`results/REFERENCE`); " + (f"{len(others)} other host{'s' if len(others) > 1 else ''} "
-                f"({', '.join('`' + esc(h) + '`' for h in others)}) ran the same benches: [Hosts](hosts/) compares them."
+                f"({', '.join('`' + esc(h) + '`' for h in others)}) ran the same benches: [Hosts](docs/hosts/) compares them."
                 if others else "a run on another machine lands in its own directory under `results/` and is compared on the "
-                "[Hosts](hosts/) page.") + "\n\n")
-        out += f"{self.coi_summary()} Every contributor's declaration and the relation to every system are on the [disclosures](disclosures/) page.\n\n"
+                "[Hosts](docs/hosts/) page.") + "\n\n")
         ncb = self.ncases_by_bench()
         out += (f"## Benches\n\nThe {nc} cases are the sum of the cases column: a case is counted once per bench, "
                 "whatever the number of systems that ran it. A bench without a committed results file is listed without a count.\n\n"
@@ -627,23 +688,15 @@ class Site:
                 out += f"| [{title}](results/{key.lower()}/) | {ncb[key]} | {len(self.results[key])} | {desc} |\n"
             else:
                 out += f"| {title} | no run committed yet | | {desc} |\n"
-        out += ("\n## Sources\n\n"
-                "- Bench E follows the notebook of a fork of Giac.jl; bench F samples the 12000.org independent integration tests "
-                "(Nasser M. Abbasi; the problems come from the Rubi test suite and other collections); bench G uses the classical "
-                "systems of Groebner.jl's examples.\n"
-                f"- Bench H consumes [OpenSymbolicRules]({OSR}) (OSR): the v1 integration rules, with their Lean verdicts and "
-                "conditions, pinned as the git submodule `osr/Integration`. These benchmarks are a consumer of OSR; the "
-                "conformance suites of OSR are the next source.\n")
-        out += "\n## Status vocabulary\n\n| status | meaning |\n|---|---|\n"
-        for s in STATUSES:
-            out += f"| {badge(s)} | {STATUS_HELP[s]} |\n"
+        out += "\n## Sources\n\n" + "".join(f"- **{src}**, {lic}: {use}\n" for src, lic, use in SOURCES)
+        out += ("\nThe site's own licences: code MIT, data and pages CC BY 4.0.\n\n"
+                f"**Not reproduced here.** {esc(NOT_REPRODUCED)}\n")
         out += self.cite_section()
-        out += (f"\n[Data](data/) · [History](history/) · [Workflow](workflow/) · [Methodology](methodology/) · [Systems and versions](systems/) · "
-                f"[Machine](environment/) · [Hosts](hosts/) · [Repository]({REPO}) · Code MIT, data and pages CC BY 4.0\n")
+        out += f"\n[Repository]({REPO}) · Code MIT, data and pages CC BY 4.0\n"
         return out
 
     def cite_section(self):
-        """'How to cite', from CITATION.cff and the date of the last run (the data are dated: the citation says which run)."""
+        """'Cite' (site-kit SK-HOME-CITE), from CITATION.cff and the date of the last run (the data are dated: the citation says which run)."""
         c = read_citation(self.root / "CITATION.cff")
         if not c["authors"]:
             return ""
@@ -651,12 +704,12 @@ class Site:
         for a in c["authors"]:
             n = f"{a.get('given-names', '')} {a.get('family-names', '')}".strip()
             names.append(f"{esc(n)} ([ORCID {esc(a['orcid'].rsplit('/', 1)[-1])}]({esc(a['orcid'])}))" if a.get("orcid") else esc(n))
-        year = (self.last_date() or self.generated)[:4]
+        year = (self.last_date() or (self.results_commit[1] if self.results_commit else ""))[:4] or "n.d."
         last = [a.get("family-names", "") for a in c["authors"]]
         bib_authors = " and ".join(f"{a.get('family-names', '')}, {a.get('given-names', '')}" for a in c["authors"])
         key = f"{(last[0] or 'casbench').lower()}{year}casbench"
         run = self.last_date()[:10]
-        out = ("\n## How to cite\n\n"
+        out = ("\n## Cite\n\n"
                f"{', '.join(names)}. *{esc(c['title'])}*. {esc(year)}. "
                f"Repository: {esc(c['repository-code'] or REPO)}; site: {esc(c['url'])}. "
                f"The numbers are dated: cite the run you used ({esc(run)} is the last one on this build). "
@@ -728,7 +781,10 @@ class Site:
         for i, e in sorted(self.by_case(key).items()):
             name = e["case"]
             systems = [s for s in sorted(self.results[key]) if s in e]
-            out = front(f"{i}. {name}", i, linkTitle=f"{i}. {name}"[:60])
+            # out of the sidebar (Hextra lists every page of the section in it, on every page: with three thousand
+            # cases that made each page 3 MB and the site 4 GB) and out of the search index (llms-full.txt has every
+            # case as text); the bench page links every case
+            out = front(f"{i}. {name}", i, yaml="sidebar:\n  exclude: true\nexcludeSearch: true", linkTitle=f"{i}. {name}"[:60])
             out += f"[{title}](../) · operation `{esc(e['op'])}`"
             if key == "E_suite" and i in self.categories:
                 out += f" · category *{esc(self.categories[i])}*"
@@ -775,14 +831,42 @@ class Site:
             pages.append((slug(i, name), out))
         return pages
 
+    def statuses_page(self):
+        """Every word a badge can carry on this site, with its meaning and its tone (site-kit SPEC section 5)."""
+        out = front("Statuses", 1, aliases=["/statuses/"])
+        out += ("Every status a case can have, the same in every bench. A badge always shows its word; the colour and the "
+                "border style only repeat it, one tone per word across the site.\n\n"
+                "| badge | word | meaning | tone |\n|---|---|---|---|\n")
+        for st in STATUSES:
+            out += f"| {badge(st)} | `{st}` | {esc(STATUS_HELP[st])} | {BADGE_TONES[st]} |\n"
+        out += ("\nA timeout row records, as its first-call time, the time the case had consumed when it was stopped; a case "
+                "stopped because its process tree passed the memory limit of the supervisor is an *error* whose note names "
+                "the limit. *unavailable* is a property of the adapter as wired, not necessarily of the system: corrections "
+                "are welcome.\n")
+        return out
+
+    def docs_index(self):
+        out = front("Docs", 9)
+        out += ("Reference pages of the site, outside the registry of results.\n\n"
+                "- [Statuses](statuses/): the words of the badges.\n"
+                "- [Data](data/): every raw file of the site, and how to read them.\n"
+                "- [Systems](systems/): the versions measured and the adapters.\n"
+                "- [Environment](environment/): the machine of every host and its run identity.\n"
+                "- [Hosts](hosts/): the same benches on every host.\n\n"
+                f"In the repository: [CONTRIBUTING.md]({BLOB}/CONTRIBUTING.md), [AGENTS.md]({BLOB}/AGENTS.md) (the policy for "
+                f"agents and contributors, including the declarations of [`docs/disclosures.tsv`]({BLOB}/docs/disclosures.tsv)), "
+                f"[`docs/methodology.md`]({BLOB}/docs/methodology.md), [`docs/benches.md`]({BLOB}/docs/benches.md) and the "
+                f"site's generator [`tools/site/sitegen.py`]({BLOB}/tools/site/sitegen.py).\n")
+        return out
+
     def systems_page(self):
-        out = front("Systems", 2)
+        out = front("Systems", 3, aliases=["/systems/"])
         out += ("The systems, as pinned by the `Project.toml` and `Manifest.toml` of each environment under "
                 f"[`envs/`]({BLOB}/envs). Versions below are those recorded in `results/machine.txt` at run time.\n\n")
         out += "| package | version | recorded |\n|---|---|---|\n"
         for k, (v, d) in sorted(self.versions().items(), key=lambda kv: kv[0].lower()):
             out += f"| {esc(k)} | `{esc(v[:90])}` | {esc(d[:10])} |\n"
-        out += "\nThe relation of every contributor to each system is stated on the [disclosures](../disclosures/) page.\n"
+        out += "\nThe relation of every contributor to each system is stated on the [Disclosures](../../disclosures/) page.\n"
         out += ("\n## Adapters\n\n`lib/adapters/<system>.jl` give the systems the same small interface "
                 "(`OPS`, `EVAL`, `NTERMS`, `NFACTORS`, `UNSOLVED`, `VERSIONS`). Bench E has one task file per system, "
                 "`E_suite/tasks_<system>.jl`, written the way that system's user would write it. An operation an adapter "
@@ -881,7 +965,7 @@ class Site:
         return out
 
     def environment_page(self):
-        out = front("Environment", 3)
+        out = front("Environment", 4, aliases=["/environment/"])
         out += ("One section per host (one directory per host under `results/`, the reference host first); the machine comes "
                 "from the first block of its `machine.txt`, the run identity (harness commit, submodule commits, calibration) "
                 "from the last. [Hosts](../hosts/) compares the results across hosts.\n\n")
@@ -901,7 +985,7 @@ class Site:
 
     def hosts_page(self):
         """The same benches on every host: verified counts and median warm times side by side."""
-        out = front("Hosts", 4)
+        out = front("Hosts", 5, aliases=["/hosts/"])
         hosts = [self.reference] + [h for h in self.hosts if h != self.reference]
         out += (f"One directory per host under `results/`; the published numbers are those of `{esc(self.reference)}` "
                 "(`results/REFERENCE`). A run on another machine goes to its own directory and appears here: statuses should "
@@ -931,11 +1015,12 @@ class Site:
         return out
 
     def history_page(self):
-        out = front("History", 5)
-        out += (f'<p class="site-stamp">{self.stamp()}</p>\n\n'
+        out = front("History", 2)
+        out += (self.data_stamp() + "\n\n"
                 "Every run of every bench and system on every host, from `results/history.tsv` (one row per host, bench, system and run date; "
                 "appended by `make_tables.jl`, backfilled from the git history by `tools/history_backfill.py`). "
-                "Verified counts and median warm times over the verified cases; hover a point for its value.\n\n")
+                "Verified counts and median warm times over the verified cases. Hover a chart, or focus it and use the arrow "
+                "keys, for the values at a date; every value is also in the runs table under the charts.\n\n")
         if not self.history:
             return out + "*No history yet.*\n"
         benches = [b for b in BENCHES if any(r["bench"] == b for r in self.history)] + \
@@ -947,11 +1032,11 @@ class Site:
             series = sorted({(r["system"], r["host"]) for r in rows})
             lab = lambda s, h: SYSTEM_LABELS.get(s, s) + (f" @{h}" if multi and h else "")
             out += f"## {esc(title)}\n\n"
-            out += svg_chart({lab(s, h): [(r["date"], r["verified"]) for r in rows if r["system"] == s and r["host"] == h] for s, h in series},
+            out += viz_chart({lab(s, h): [(r["date"], r["verified"]) for r in rows if r["system"] == s and r["host"] == h] for s, h in series},
                              f"{title}: verified cases per run", "verified")
-            out += svg_chart({lab(s, h): [(r["date"], r["t_warm_median"]) for r in rows if r["system"] == s and r["host"] == h] for s, h in series},
-                             f"{title}: median warm time of the verified cases (s, log)", "seconds", log=True)
-            out += "<details><summary>runs</summary>\n\n| date | host | system | n | verified | wrong | unverified | unsolved | unavailable | error | timeout | median warm | source |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|\n"
+            out += viz_chart({lab(s, h): [(r["date"], r["t_warm_median"]) for r in rows if r["system"] == s and r["host"] == h] for s, h in series},
+                             f"{title}: median warm time of the verified cases", "seconds", log=True)
+            out += "<details><summary>runs (the values of the charts)</summary>\n\n| date | host | system | n | verified | wrong | unverified | unsolved | unavailable | error | timeout | median warm | source |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|\n"
             for r in rows:
                 out += (f"| {esc(r['date'][:16].replace('T', ' '))} | {esc(r['host'])} | {esc(SYSTEM_LABELS.get(r['system'], r['system']))} | {r['n']} | {r['verified']} | {r['wrong']} | {r['unverified']} | "
                         f"{r['unsolved']} | {r['unavailable']} | {r['error']} | {r['timeout']} | {fmt_time(r['t_warm_median'])} | `{esc(r['source'])}` |\n")
@@ -982,13 +1067,16 @@ class Site:
             shutil.copyfile(src, d / name)
             out.append((name, src.stat().st_size))
         with zipfile.ZipFile(d / "results.zip", "w", zipfile.ZIP_DEFLATED) as z:
-            for name, src in self.data_files():
-                z.write(src, arcname=name)
+            for name, src in self.data_files():            # fixed dates: two builds of one commit give the same archive
+                info = zipfile.ZipInfo(name, date_time=(2026, 1, 1, 0, 0, 0))
+                info.compress_type = zipfile.ZIP_DEFLATED
+                info.external_attr = 0o644 << 16
+                z.writestr(info, src.read_bytes())
         return out
 
     def data_page(self, files):
-        out = front("Data", 3)
-        out += (f'<p class="site-stamp">{self.stamp()}</p>\n\n'
+        out = front("Data", 2, aliases=["/data/"])
+        out += (self.data_stamp() + "\n\n"
                 "Every number of this site comes from these files, republished as they are in the repository: one directory "
                 "per host with one TSV per bench and system (columns `bench, system, idx, case, op, status, t_first_s, "
                 "t_warm_s, result, note`, then `input` in the runs from 2026-11-20, then `t_wall_s, t_repeats_s, load_avg, run` "
@@ -996,9 +1084,9 @@ class Site:
                 "the case, the run id; times in seconds, `result`, `note` and `input` truncated to 200, 300 and 2 000 "
                 "characters), its machine and environment records, plus the history of the runs on every host, the summary "
                 "and the fixed inputs. Each bench page also offers its table as CSV, filtered and sorted as shown.\n\n"
-                "- [results.zip](../data/results.zip): everything below in one archive.\n")
+                "- [results.zip](../../data/results.zip): everything below in one archive.\n")
         for name, size in files:
-            out += f"- [{esc(name)}](../data/{name}) ({size // 1024 + 1} kB)\n"
+            out += f"- [{esc(name)}](../../data/{name}) ({size // 1024 + 1} kB)\n"
         out += ("\n## Reading them\n\n```python\nimport pandas as pd\n"
                 f"df = pd.read_csv('https://s-celles.github.io/computer-algebra-system-benchmarks/data/{self.reference}/E_suite_giac.tsv', sep='\\t')\n"
                 "df[df.status == 'verified'].t_warm_s.describe()\n```\n\n"
@@ -1007,10 +1095,42 @@ class Site:
         out += f"\nLicence of the data: CC BY 4.0 (cite the repository and the run date). Source files: [`results/`]({BLOB}/results).\n"
         return out
 
-    def workflow(self):
-        return front("Workflow", 6) + WORKFLOW.strip() + "\n"
+    def site_kit_tag(self):
+        """The site-kit tag the site pins (site/go.mod), or ''."""
+        p = self.root / "site" / "go.mod"
+        m = re.search(r"github\.com/s-celles/site-kit (v[0-9][^\s]*)", p.read_text(encoding="utf-8")) if p.exists() else None
+        return m.group(1) if m else ""
 
     def methodology(self):
+        out = front("Methodology", 3, aliases=["/workflow/"])
+        out += "## Pipeline\n\n" + WORKFLOW.strip() + "\n\n"
+        out += ("## What a result means\n\n"
+                "*verified* means that the answer passed a system-neutral check written in plain Julia: at fixed points, or on "
+                "a canonical form; it is evidence, not a proof that the answer is right for every input. *wrong* means that the "
+                "check failed on the answer the system returned. *unsolved*, *error* and *timeout* say what happened to the "
+                "call, and may come from the benchmark (an input generated wrongly for that system) rather than from the system: "
+                "every case page shows the input next to the output so that this can be checked. A time is the minimum over "
+                "repeated calls on one machine on one date, with the versions recorded; it is not a ranking of the systems in "
+                "general. See the [Statuses](../docs/statuses/) page for every word.\n\n"
+                "## Checks of the expected values\n\n"
+                "- A: every dispatch level of Giac.jl returns the same answer as `giac_eval` before it is timed.\n"
+                "- B, D, E: the answer is evaluated numerically at fixed points and compared with the input or a reference "
+                "value (an antiderivative by its derivative, a solution by substitution, a factorisation by its product), and "
+                "some problems also check a form (a number of terms or factors, no unevaluated function left).\n"
+                "- C: the product of the factors is the input and every factor is prime for Primes.jl and for Giac.\n"
+                "- F and H: a finite difference of the system's own numeric evaluation of its antiderivative against the "
+                "integrand at three real points; for an OpenSymbolicRules rule proved over the reals in Lean, the answer is also "
+                "compared with the certified antiderivative up to a constant.\n"
+                "- G: the printed basis is parsed, put in canonical form, checked to be reduced and to reduce every input to "
+                "zero, and its digest is compared across systems.\n"
+                "- I: the number of terms of an expansion and the value of every answer at a point, computed from the input in "
+                "plain Julia.\n\n"
+                "## This site\n\n"
+                f"Generated from the results files on every build by `tools/site/sitegen.py`, built with Hugo, Hextra and the "
+                f"site-kit module, which this site pins at `{esc(self.site_kit_tag() or 'unknown')}` (`site/go.mod`, "
+                f"`site-kit.json`); CI checks the build against site-kit's SPEC and builds it twice to check that two builds "
+                f"of one commit are identical. The tables use this site's own script (per-column filters, multi-key sorting, "
+                f"CSV export) in place of site-kit's.\n\n---\n\n")
         parts = []
         for rel in ("docs/methodology.md", "docs/benches.md"):
             p = self.root / rel
@@ -1019,11 +1139,39 @@ class Site:
             body = re.sub(r"^# .*\n", "", p.read_text(encoding="utf-8"), count=1)
             body = re.sub(r"\]\((?!https?://|#)([^)]+)\)", lambda m: f"]({BLOB}/docs/{m.group(1)})", body)
             parts.append(f"From [`{rel}`]({BLOB}/{rel}).\n\n" + body)
-        return front("Methodology", 7) + "\n\n---\n\n".join(parts)
+        return out + "\n\n---\n\n".join(parts)
 
     def llms(self):
-        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of computer algebra systems, {self.systems_sentence()}. {DISCLAIMER} {self.coi_summary()} Every contributor's declaration: {REPO.replace("github.com/s-celles/", "s-celles.github.io/")}/disclosures/\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
-                + "\n".join(f"- {t}: {d}" for k, (t, d) in BENCHES.items() if k in self.results) + f"\n- Repository: {REPO}\n")
+        base = REPO.replace("github.com/s-celles/", "s-celles.github.io/") + "/"
+        pages = [("Results", "results/"), ("History", "history/"), ("Methodology", "methodology/"), ("Disclosures", "disclosures/"),
+                 ("Statuses", "docs/statuses/"), ("Data", "docs/data/"), ("Systems", "docs/systems/"),
+                 ("Environment", "docs/environment/"), ("Hosts", "docs/hosts/")]
+        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified and dated benchmarks of computer algebra "
+                f"systems, {self.systems_sentence()}.\n\nDisclaimer. {DISCLAIMER}\n\nProvenance. {PROVENANCE}\n\n"
+                f"{self.coi_summary()} Every contributor's declaration: {base}disclosures/\n\n"
+                f"Data from the run of {self.last_date()[:10] or 'n/a'} on the host {self.reference}.\n\n## Benches\n\n"
+                + "\n".join(f"- [{t}]({base}results/{k.lower()}/): {d}" for k, (t, d) in BENCHES.items() if k in self.results)
+                + "\n\n## Pages\n\n" + "\n".join(f"- [{t}]({base}{u})" for t, u in pages)
+                + f"\n\n## Elsewhere\n\n- [Every case, every system, as text]({base}llms-full.txt)\n- [Raw data]({base}data/results.zip)"
+                f"\n- Consumes OpenSymbolicRules (OSR): {OSR}\n- Repository: {REPO}\n")
+
+    def llms_full(self):
+        """llms.txt, then the registry as text: one line per case with every system's status and time."""
+        out = [self.llms(), "\n# Every case\n"]
+        for key in self.results:
+            title, desc = BENCHES.get(key, (key, ""))
+            names = sorted(self.results[key])
+            out.append(f"\n## {title}\n\n{desc}\nSystems: {', '.join(names)}.\n")
+            for i, e in sorted(self.by_case(key).items()):
+                cells = []
+                for sname in names:
+                    r = e.get(sname)
+                    if r is None:
+                        continue
+                    t = fmt_time(etime(r)) if r["status"] in ("verified", "wrong", "unverified", "unsolved") else ""
+                    cells.append(f"{sname} {r['status']}" + (f" {t}" if t else ""))
+                out.append(f"- {i}. {e['case']} [{e['op']}]: " + "; ".join(cells))
+        return "\n".join(out) + "\n"
 
 
 def read_citation(path):
@@ -1065,17 +1213,21 @@ def write(path, text):
 
 
 def check_home(site, home):
-    """Every number displayed on the home page against the data it claims to summarise; raises ValueError."""
-    stat = lambda label: int(re.search(rf"<strong>(\d+)</strong><span>{re.escape(label)}</span>", home).group(1))
+    """Every number displayed on the home page against the data it claims to summarise, and the site-kit limit of
+    four tiles; raises ValueError."""
+    tiles = re.findall(r'<a class="sk-stat" href="[^"]*"><strong>([^<]*)</strong><span>([^<]*)</span></a>', home)
+    stat = lambda label: int(next(v for v, l in tiles if l == label))
+    m = re.search(r"<strong>(\d+)</strong><span>systems: (\d+) Julia packages?, (\d+) others?</span>", home)
     ncb = site.ncases_by_bench()
-    shown = {m.group(1): int(m.group(2)) for m in re.finditer(r"^\| \[([^\]]+)\]\(results/[^)]+\) \| (\d+) \|", home, re.M)}
+    shown = {m2.group(1): int(m2.group(2)) for m2 in re.finditer(r"^\| \[([^\]]+)\]\(results/[^)]+\) \| (\d+) \|", home, re.M)}
     pk = site.packages_by_kind()
     problems = [
+        (len(tiles) <= 4, f"{len(tiles)} stat tiles, site-kit allows four"),
         (stat("cases") == sum(ncb.values()), f"cases tile {stat('cases')} != sum of benches {sum(ncb.values())}"),
         (sum(shown.values()) == stat("cases"), f"cases column sums to {sum(shown.values())}, tile says {stat('cases')}"),
         (len(shown) == len(site.results) == stat("benches"), "benches tile and table disagree with the results loaded"),
-        (stat("Julia packages") == len(pk["julia"]) and stat("other systems") == len(pk["external"]),
-         "package tiles disagree with the systems of the results"),
+        (m is not None and int(m.group(2)) == len(pk["julia"]) and int(m.group(3)) == len(pk["external"])
+         and int(m.group(1)) == len(pk["julia"]) + len(pk["external"]), "the systems tile disagrees with the systems of the results"),
         (len(pk["julia"]) + len(pk["external"]) == len(site.packages()), "a system is counted in two kinds"),
         (all(n in home for n in pk["julia"] + pk["external"] if n != "SageMath"), "a system of the results is not named"),
     ]
@@ -1095,16 +1247,18 @@ def generate(root, out):
         write(c / "results" / key.lower() / "_index.md", site.bench_page(key, w))
         for d, text in site.case_pages(key):
             write(c / "results" / key.lower() / d / "_index.md", text)
-    write(c / "systems" / "_index.md", site.systems_page())
-    write(c / "disclosures" / "_index.md", site.conflict_page())
-    write(c / "environment" / "_index.md", site.environment_page())
-    write(c / "hosts" / "_index.md", site.hosts_page())
-    files = site.write_data(s)
-    write(c / "data" / "_index.md", site.data_page(files))
     write(c / "history" / "_index.md", site.history_page())
-    write(c / "workflow" / "_index.md", site.workflow())
     write(c / "methodology" / "_index.md", site.methodology())
+    write(c / "disclosures" / "_index.md", site.conflict_page())
+    write(c / "docs" / "_index.md", site.docs_index())
+    write(c / "docs" / "statuses" / "_index.md", site.statuses_page())
+    files = site.write_data(s)
+    write(c / "docs" / "data" / "_index.md", site.data_page(files))
+    write(c / "docs" / "systems" / "_index.md", site.systems_page())
+    write(c / "docs" / "environment" / "_index.md", site.environment_page())
+    write(c / "docs" / "hosts" / "_index.md", site.hosts_page())
     write(s / "llms.txt", site.llms())
+    write(s / "llms-full.txt", site.llms_full())
     return site
 
 

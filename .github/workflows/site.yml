@@ -37,7 +37,15 @@ jobs:
         env:
           HUGO_ENVIRONMENT: production
           HUGO_BASEURL: ${{ steps.pages.outputs.base_url && format('{0}/', steps.pages.outputs.base_url) || '' }}
-        run: tools/site/build.sh "$RUNNER_TEMP/site" "$RUNNER_TEMP/hugo/hugo"
+        run: |
+          tools/site/build.sh "$RUNNER_TEMP/site" "$RUNNER_TEMP/hugo/hugo"
+          tools/site/build.sh "$RUNNER_TEMP/site-again" "$RUNNER_TEMP/hugo/hugo"
+      - name: site-kit checks (the tag pinned in site/go.mod)
+        run: |
+          tag=$(sed -n 's|.*github.com/s-celles/site-kit \(v[0-9][^ ]*\).*|\1|p' site/go.mod)
+          git clone --quiet --depth 1 --branch "$tag" https://github.com/s-celles/site-kit "$RUNNER_TEMP/site-kit"
+          python3 -I "$RUNNER_TEMP/site-kit/tools/check_site.py" --site "$RUNNER_TEMP/site/public" --config site-kit.json --hugo site/hugo.yaml --repo .
+          python3 -I "$RUNNER_TEMP/site-kit/tools/compare_builds.py" "$RUNNER_TEMP/site/public" "$RUNNER_TEMP/site-again/public" --config site-kit.json
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'
         with:

@@ -1,0 +1,8 @@
+{
+  "spec": "0.4",
+  "menu": ["Results", "History", "Methodology", "Disclosures", "Docs", "GitHub", "Search"],
+  "omit": {
+    "upstream": "the benches report no upstream issues of their own; the one they found again (SymbolicUtils.jl issue 1195, Int64 overflow in expand) is cited on the Methodology page and in the paper"
+  },
+  "volatile": []
+}
