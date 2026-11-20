@@ -3,14 +3,14 @@ expand (x+y+z+w)\^{}8 & 2.6\,ms & 9.1\,ms & 208\,\textmu s & 2.4\,ms & 35.4\,ms 
 expand (x+y+z+w)\^{}16 & 41.0\,ms & 84.7\,ms & 1.5\,ms & 2.7\,ms & 272.1\,ms \\
 expand (x+y+z+w)\^{}24 & 122.3\,ms & 498.7\,ms & 4.7\,ms & 3.1\,ms & 860.8\,ms \\
 expand (x+y+z+w)\^{}32 & 228.6\,ms & 3.18\,s & 11.0\,ms & 4.4\,ms & 1.98\,s \\
-d/dx expand((x\^{}y+y\^{}z+z\^{}x)\^{}50) & 188.7\,ms & \wrong & 8.3\,ms & 18.77\,s & 5.13\,s \\
-series sin(cos(1+x)), order 15 & 15.7\,ms & 13.4\,ms & 1.8\,ms & \unsolved & 1.18\,s \\
-substitute a -> 2 sin b, tree of 1000 leaves & 6.4\,ms & 49.4\,ms & 2.8\,ms & 270.7\,ms & 430.2\,ms \\
-substitute a -> 2 sin b, tree of 10000 leaves & 63.7\,ms & 466.7\,ms & 26.3\,ms & 5.13\,s & 3.90\,s \\
-substitute a -> 2 sin b, tree of 100000 leaves & \wrong & E & 495.7\,ms & 18.86\,s & -- \\
-evaluate tree of 1000 leaves at a point & 3.6\,ms & \unv & 3.5\,ms & 44.2\,ms & -- \\
-evaluate tree of 10000 leaves at a point & 36.5\,ms & \unv & 24.9\,ms & 2.48\,s & -- \\
-evaluate tree of 100000 leaves at a point & 417.1\,ms & E & 268.8\,ms & 11.13\,s & -- \\
-compile tree of 1000 leaves, 1000 calls & E & 220.9\,ms & 84.5\,ms & 137.0\,ms & -- \\
-compile tree of 10000 leaves, 1000 calls & E & 3.30\,s & 744.6\,ms & 1.00\,s & -- \\
+d/dx expand (x\^{}y+y\^{}z+z\^{}x)\^{}50 & 188.7\,ms & \wrong & 8.3\,ms & 18.77\,s & 5.13\,s \\
+series sin(cos(1+x)), 15 & 15.7\,ms & 13.4\,ms & 1.8\,ms & \unsolved & 1.18\,s \\
+subs, 1000 leaves & 6.4\,ms & 49.4\,ms & 2.8\,ms & 270.7\,ms & 430.2\,ms \\
+subs, 10000 leaves & 63.7\,ms & 466.7\,ms & 26.3\,ms & 5.13\,s & 3.90\,s \\
+subs, 100000 leaves & \wrong & E & 495.7\,ms & 18.86\,s & -- \\
+eval, 1000 leaves & 3.6\,ms & \unv & 3.5\,ms & 44.2\,ms & -- \\
+eval, 10000 leaves & 36.5\,ms & \unv & 24.9\,ms & 2.48\,s & -- \\
+eval, 100000 leaves & 417.1\,ms & E & 268.8\,ms & 11.13\,s & -- \\
+compile, 1000 leaves & E & 220.9\,ms & 84.5\,ms & 137.0\,ms & -- \\
+compile, 10000 leaves & E & 3.30\,s & 744.6\,ms & 1.00\,s & -- \\
 \bottomrule
