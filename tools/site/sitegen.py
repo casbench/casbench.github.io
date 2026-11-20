@@ -812,14 +812,21 @@ class Site:
         if not ai:
             out += "| | none declared | | |\n"
         out += "\n"
-        out += ("## Relation to every system of the results\n\n"
-                "The systems are those present in the committed results files; *none declared* means that no contributor "
-                "declares a relation.\n\n| system or package | kind | declared relations |\n|---|---|---|\n")
-        for kind, names in self.packages_by_kind().items():
-            for n in names:
-                rel = [f"{r['contributor']}: {r['role']}" + (f" ({r['note']})" if r["note"] else "")
-                       for r in self.disclosures if r["project"] == n and r["role"].lower() != "none"]
-                out += f"| {esc(n)} | {'Julia package' if kind == 'julia' else 'other system'} | {esc('; '.join(rel)) if rel else 'none declared'} |\n"
+        contributors = list(dict.fromkeys(r["contributor"] for r in self.disclosures))
+        out += ("## Relation of every contributor to every system\n\n"
+                "One row per system present in the committed results files and per declared source of problems, one column "
+                "per contributor to the benchmarks; a cell is the declared role, or *none*.\n\n"
+                "| system or source | kind | " + " | ".join(esc(c) for c in contributors) + " |\n|---|---|" + "---|" * len(contributors) + "\n")
+        rows = [(n, "Julia package" if kind == "julia" else "other system") for kind, names in self.packages_by_kind().items() for n in names]
+        rows += [(r["project"], r["kind"]) for r in self.disclosures
+                 if r["kind"].startswith("source") and r["project"] not in {n for n, _ in rows}]
+        for n, kind in dict.fromkeys(rows):
+            cells = []
+            for c in contributors:
+                rel = [r["role"] + (f" ({r['note']})" if r["note"] else "")
+                       for r in self.disclosures if r["contributor"] == c and r["project"] == n and r["role"].lower() != "none"]
+                cells.append(esc("; ".join(rel)) if rel else "none")
+            out += f"| {esc(n)} | {esc(kind)} | " + " | ".join(cells) + " |\n"
         out += ("\n## What limits the bias\n\n"
                 "- The inputs are fixed in the repository and every case page shows the exact text sent to each system "
                 "next to its answer, so that a task that does not ask a system the way its users would can be seen.\n"

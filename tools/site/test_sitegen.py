@@ -91,8 +91,9 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("MIT, CC-BY-4.0", home)
         sysp = (out / "content" / "systems" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("| Giac.jl | `0.14.3` | 2026-11-18 |", sysp)
-        self.assertIn("| Giac.jl | Julia package | Jo Doe: author and maintainer (the Julia package, not the engine) |", coi)   # per system
-        self.assertIn("| SymPy | other system | none declared |", coi)
+        self.assertIn("| system or source | kind | Jo Doe | Al Roe |", coi)                       # systems x contributors
+        self.assertIn("| Giac.jl | Julia package | author and maintainer (the Julia package, not the engine) | none |", coi)
+        self.assertIn("| SymPy | other system | none | none |", coi)
         self.assertIn("conflict-of-interest/", sysp)
         meth = (out / "content" / "methodology" / "_index.md").read_text(encoding="utf-8")
         self.assertIn(sitegen.BLOB + "/docs/../lib/common.jl", meth)   # relative links rewritten from docs/
