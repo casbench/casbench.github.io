@@ -617,7 +617,7 @@ class Site:
                 f"({', '.join('`' + esc(h) + '`' for h in others)}) ran the same benches: [Hosts](hosts/) compares them."
                 if others else "a run on another machine lands in its own directory under `results/` and is compared on the "
                 "[Hosts](hosts/) page.") + "\n\n")
-        out += f"{self.coi_summary()} Every contributor's declaration and the relation to every system are on the [conflict of interest](conflict-of-interest/) page.\n\n"
+        out += f"{self.coi_summary()} Every contributor's declaration and the relation to every system are on the [disclosures](disclosures/) page.\n\n"
         ncb = self.ncases_by_bench()
         out += (f"## Benches\n\nThe {nc} cases are the sum of the cases column: a case is counted once per bench, "
                 "whatever the number of systems that ran it. A bench without a committed results file is listed without a count.\n\n"
@@ -782,7 +782,7 @@ class Site:
         out += "| package | version | recorded |\n|---|---|---|\n"
         for k, (v, d) in sorted(self.versions().items(), key=lambda kv: kv[0].lower()):
             out += f"| {esc(k)} | `{esc(v[:90])}` | {esc(d[:10])} |\n"
-        out += "\nThe relation of the author to each system is stated on the [conflict of interest](../conflict-of-interest/) page.\n"
+        out += "\nThe relation of every contributor to each system is stated on the [disclosures](../disclosures/) page.\n"
         out += ("\n## Adapters\n\n`lib/adapters/<system>.jl` give the systems the same small interface "
                 "(`OPS`, `EVAL`, `NTERMS`, `NFACTORS`, `UNSOLVED`, `VERSIONS`). Bench E has one task file per system, "
                 "`E_suite/tasks_<system>.jl`, written the way that system's user would write it. An operation an adapter "
@@ -796,15 +796,15 @@ class Site:
             if r["role"].lower() != "none" and (r["kind"] == "compared system" or r["kind"].startswith("source")):
                 by_c.setdefault(r["contributor"], []).append(f"{r['role']} of {r['project']}" + (f" ({r['note']})" if r["note"] else ""))
         if not by_c:
-            return "Conflict of interest: no contributor declares a relation to the systems compared or to the sources of the problems."
+            return "Disclosure: no contributor declares a relation to the systems compared or to the sources of the problems."
         ai = sorted({r["project"] for r in self.disclosures if r["kind"] == "AI assistance"})
         tail = f" AI assistance declared: {', '.join(esc(a) for a in ai)}." if ai else ""
-        return "Conflict of interest: " + "; ".join(f"{esc(c)} is " + esc(", ".join(v[:-1]) + (" and " if len(v) > 1 else "") + v[-1]) for c, v in by_c.items()) + "." + tail
+        return "Disclosure: " + "; ".join(f"{esc(c)} is " + esc(", ".join(v[:-1]) + (" and " if len(v) > 1 else "") + v[-1]) for c, v in by_c.items()) + "." + tail
 
     def conflict_page(self):
         """The conflict of interest page, from docs/disclosures.tsv: every contributor's own declaration, the relation to
         every system present in the results, what limits the bias, how to add a declaration."""
-        out = front("Conflict of interest", 4)
+        out = front("Disclosures", 4, aliases=["/conflict-of-interest/"])   # the 0.3 address of the page redirects
         out += (f"{self.coi_summary()}\n\n"
                 "Every contributor to these benchmarks declares below their relation to the systems compared and to the "
                 f"sources of the problems, in their own rows of [`docs/disclosures.tsv`]({BLOB}/docs/disclosures.tsv) "
@@ -1022,7 +1022,7 @@ class Site:
         return front("Methodology", 7) + "\n\n---\n\n".join(parts)
 
     def llms(self):
-        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of computer algebra systems, {self.systems_sentence()}. {DISCLAIMER} {self.coi_summary()} Every contributor's declaration: {REPO.replace("github.com/s-celles/", "s-celles.github.io/")}/conflict-of-interest/\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
+        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of computer algebra systems, {self.systems_sentence()}. {DISCLAIMER} {self.coi_summary()} Every contributor's declaration: {REPO.replace("github.com/s-celles/", "s-celles.github.io/")}/disclosures/\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
                 + "\n".join(f"- {t}: {d}" for k, (t, d) in BENCHES.items() if k in self.results) + f"\n- Repository: {REPO}\n")
 
 
@@ -1096,7 +1096,7 @@ def generate(root, out):
         for d, text in site.case_pages(key):
             write(c / "results" / key.lower() / d / "_index.md", text)
     write(c / "systems" / "_index.md", site.systems_page())
-    write(c / "conflict-of-interest" / "_index.md", site.conflict_page())
+    write(c / "disclosures" / "_index.md", site.conflict_page())
     write(c / "environment" / "_index.md", site.environment_page())
     write(c / "hosts" / "_index.md", site.hosts_page())
     files = site.write_data(s)

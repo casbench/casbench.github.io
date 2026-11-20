@@ -78,9 +78,10 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("<strong>1</strong><span>other systems</span>", home)
         self.assertIn("Julia packages (Giac.jl) and other systems (SymPy)", home)   # the lists come from the results
         self.assertIn("## How to cite", home)
-        self.assertIn("[conflict of interest](conflict-of-interest/)", home)        # the statement has its own page
-        self.assertIn("Conflict of interest: Jo Doe is author and maintainer of Giac.jl (the Julia package, not the engine). AI assistance declared: Some Assistant.", home)
-        coi = (out / "content" / "conflict-of-interest" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("[disclosures](disclosures/)", home)                           # the statement has its own page
+        self.assertIn("Disclosure: Jo Doe is author and maintainer of Giac.jl (the Julia package, not the engine). AI assistance declared: Some Assistant.", home)
+        coi = (out / "content" / "disclosures" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("aliases: ['/conflict-of-interest/']", coi)                   # the 0.3 address redirects
         self.assertIn("## Jo Doe ([ORCID 0000-0000-0000-0001](https://orcid.org/0000-0000-0000-0001))", coi)
         self.assertIn("## Al Roe\n", coi)                                              # a declaration of no relation
         self.assertIn("| none | other | none | no relation to any system compared |", coi)
@@ -95,7 +96,7 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("| system or source | kind | Jo Doe | Al Roe |", coi)                       # systems x contributors
         self.assertIn("| Giac.jl | Julia package | author and maintainer (the Julia package, not the engine) | none |", coi)
         self.assertIn("| SymPy | other system | none | none |", coi)
-        self.assertIn("conflict-of-interest/", sysp)
+        self.assertIn("disclosures/", sysp)
         meth = (out / "content" / "methodology" / "_index.md").read_text(encoding="utf-8")
         self.assertIn(sitegen.BLOB + "/docs/../lib/common.jl", meth)   # relative links rewritten from docs/
         self.assertTrue((out / "static" / "llms.txt").exists())
@@ -265,7 +266,7 @@ class SiteGenTests(unittest.TestCase):
         agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
         self.assertIn("docs/disclosures.tsv", agents)                 # the instructions for agents ask for the declaration
         footer = (ROOT / "site" / "layouts" / "_partials" / "custom" / "footer.html").read_text(encoding="utf-8")
-        self.assertIn("conflict-of-interest", footer)
+        self.assertIn("/disclosures/", footer)
 
     def test_check_home_rejects_wrong_numbers(self):
         root = self.make_root()

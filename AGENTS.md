@@ -15,7 +15,7 @@ A change that touches a task file (`E_suite/tasks_<system>.jl`), an adapter
 (`lib/adapters/`), a check, a problem list or an input file is not complete
 without the rows of the person it is made for. An agent making such a change
 adds or updates the rows of the person it works for, including their
-`AI assistance` row. The site renders the file on its conflict of interest
+`AI assistance` row. The site renders the file on its disclosures
 page; `tools/site/test_sitegen.py` checks that the file parses and that an
 AI assistance row exists. See `CONTRIBUTING.md`.
 

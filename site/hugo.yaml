@@ -42,8 +42,8 @@ menu:
     - name: Methodology
       pageRef: /methodology
       weight: 6
-    - name: Disclosure
-      pageRef: /conflict-of-interest
+    - name: Disclosures
+      pageRef: /disclosures
       weight: 7
     - name: GitHub
       url: https://github.com/s-celles/computer-algebra-system-benchmarks

@@ -31,7 +31,7 @@ OpenSymbolicRules, and throughput at scale.
 > 2026-11-20). Corrections of a task that does not ask a system the way its
 > users would are welcome: open an issue or a pull request with the idiom.
 >
-> Conflict of interest: every contributor declares their relation to the
+> Disclosure: every contributor declares their relation to the
 > systems compared and to the sources of the problems in
 > `docs/disclosures.tsv` (the author of these benchmarks maintains Giac.jl,
 > one of the systems compared, and wrote LibPARI.jl and OpenSymbolicRules:
@@ -39,7 +39,7 @@ OpenSymbolicRules, and throughput at scale.
 > harness, adapters, task files, checks, site and documentation were written
 > with an AI assistant, every change reviewed by the author; the measurements come
 > from the scripts). Rendered with the relation to every system:
-> https://s-celles.github.io/computer-algebra-system-benchmarks/conflict-of-interest/
+> https://s-celles.github.io/computer-algebra-system-benchmarks/disclosures/
 > See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 They are the reproduced numbers of the JuliaCon Proceedings paper on Giac.jl

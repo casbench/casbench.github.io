@@ -13,7 +13,7 @@ employee, funded by, none), and their use of AI assistants (kind
 not required), since an
 idiom an assistant generated for a system is a possible source of a
 benchmark-side error. A row whose project is `none` is also a declaration.
-The site renders the file on its conflict of interest page.
+The site renders the file on its disclosures page.
 
 Results files under `results/` are produced by the harness only; a pull
 request does not edit them by hand. CI checks that `tables/`, `figures/` and
