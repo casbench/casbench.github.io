@@ -71,15 +71,18 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("<strong>1</strong><span>other systems</span>", home)
         self.assertIn("Julia packages (Giac.jl) and other systems (SymPy)", home)   # the lists come from the results
         self.assertIn("## How to cite", home)
-        self.assertIn("Who runs this: the author of these benchmarks maintains Giac.jl", home)   # conflict of interest stated
+        self.assertIn("[conflict of interest](conflict-of-interest/)", home)        # the statement has its own page
+        coi = (out / "content" / "conflict-of-interest" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("Who runs this: the author of these benchmarks maintains Giac.jl", coi)
         self.assertIn("Jo Doe ([ORCID 0000-0000-0000-0001](https://orcid.org/0000-0000-0000-0001))", home)
         self.assertIn("@misc{doe2026casbench,", home)
         self.assertIn("run of 2026-11-18", home)
         self.assertIn("MIT, CC-BY-4.0", home)
         sysp = (out / "content" / "systems" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("| Giac.jl | `0.14.3` | 2026-11-18 |", sysp)
-        self.assertIn("| Giac.jl | Julia package | author and maintainer of the Julia package (not of the Giac engine) |", sysp)   # relation to the author, per system
-        self.assertIn("| SymPy | other system | none |", sysp)
+        self.assertIn("| Giac.jl | Julia package | author and maintainer of the Julia package (not of the Giac engine) |", coi)   # relation per system
+        self.assertIn("| SymPy | other system | none |", coi)
+        self.assertIn("conflict-of-interest/", sysp)
         meth = (out / "content" / "methodology" / "_index.md").read_text(encoding="utf-8")
         self.assertIn(sitegen.BLOB + "/docs/../lib/common.jl", meth)   # relative links rewritten from docs/
         self.assertTrue((out / "static" / "llms.txt").exists())

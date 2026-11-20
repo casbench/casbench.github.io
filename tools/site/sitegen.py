@@ -591,7 +591,9 @@ class Site:
             out += f'<a class="suite-stat" href="{href}"><strong>{esc(n)}</strong><span>{label}</span></a>\n'
         out += "</div>\n\n"
         out += f'<div class="disclaimer">{esc(DISCLAIMER)}</div>\n\n'
-        out += f'<div class="disclaimer disclosure">{esc(DISCLOSURE)} Per system: [Systems](systems/).</div>\n\n'
+        out += ("Conflict of interest: the author of these benchmarks maintains Giac.jl, one of the systems compared, and "
+                "wrote LibPARI.jl and OpenSymbolicRules (the Julia packages, not the engines). The full statement and the "
+                "relation to every system are on the [conflict of interest](conflict-of-interest/) page.\n\n")
         ncb = self.ncases_by_bench()
         out += (f"## Benches\n\nThe {nc} cases are the sum of the cases column: a case is counted once per bench, "
                 "whatever the number of systems that ran it. A bench without a committed results file is listed without a count.\n\n"
@@ -756,15 +758,40 @@ class Site:
         out += "| package | version | recorded |\n|---|---|---|\n"
         for k, (v, d) in sorted(self.versions().items(), key=lambda kv: kv[0].lower()):
             out += f"| {esc(k)} | `{esc(v[:90])}` | {esc(d[:10])} |\n"
-        out += (f"\n## Relation to the author\n\n{esc(DISCLOSURE)}\n\n| system or package | kind | relation to the author |\n|---|---|---|\n")
-        for kind, names in self.packages_by_kind().items():
-            for n in names:
-                out += f"| {esc(n)} | {'Julia package' if kind == 'julia' else 'other system'} | {esc(AUTHOR_RELATION.get(n, 'none'))} |\n"
-        out += f"| OpenSymbolicRules | source of bench H | {esc(AUTHOR_RELATION['OpenSymbolicRules'])} |\n"
+        out += "\nThe relation of the author to each system is stated on the [conflict of interest](../conflict-of-interest/) page.\n"
         out += ("\n## Adapters\n\n`lib/adapters/<system>.jl` give the systems the same small interface "
                 "(`OPS`, `EVAL`, `NTERMS`, `NFACTORS`, `UNSOLVED`, `VERSIONS`). Bench E has one task file per system, "
                 "`E_suite/tasks_<system>.jl`, written the way that system's user would write it. An operation an adapter "
                 "maps to `missing` is reported as *unavailable*.\n")
+        return out
+
+    def conflict_page(self):
+        """The conflict of interest statement: who writes the benchmarks, what they also write, what mitigates it,
+        and the relation to every system present in the results."""
+        out = front("Conflict of interest", 4)
+        out += (f"{esc(DISCLOSURE)}\n\n"
+                "## Relation to every system\n\n"
+                "The systems are those present in the committed results files; the relation is declared in the site "
+                f"generator (`AUTHOR_RELATION` in [`tools/site/sitegen.py`]({BLOB}/tools/site/sitegen.py)) and is "
+                "*none* unless declared.\n\n| system or package | kind | relation to the author |\n|---|---|---|\n")
+        for kind, names in self.packages_by_kind().items():
+            for n in names:
+                out += f"| {esc(n)} | {'Julia package' if kind == 'julia' else 'other system'} | {esc(AUTHOR_RELATION.get(n, 'none'))} |\n"
+        out += f"| OpenSymbolicRules | source of bench H | {esc(AUTHOR_RELATION['OpenSymbolicRules'])} |\n"
+        out += ("\n## What limits the bias\n\n"
+                "- The inputs are fixed in the repository and every case page shows the exact text sent to each system "
+                "next to its answer, so that a task that does not ask a system the way its users would can be seen.\n"
+                "- Every answer is checked by a system-neutral test written in plain Julia (numeric evaluation at fixed "
+                "points, canonical forms, reduction to zero), never by the system under test.\n"
+                "- The task files of bench E were written by an external contributor (a fork of Giac.jl), and benches F, G "
+                "and H take their problems from third parties (the 12000.org tests, the classical Gröbner systems, the "
+                "OpenSymbolicRules rules, the last one also by the author).\n"
+                "- The raw data, the history of every run and the machine records are published under CC BY 4.0, and CI "
+                "checks that the tables are what the scripts produce from the committed results.\n"
+                "- No funding, employment or other interest is attached to any of the systems compared. The project is "
+                "individual and non-commercial.\n\n"
+                f"## Reporting\n\nAn idiom unfair to a system, or a check that favours one, is a bug: open an issue or a pull "
+                f"request on the [repository]({REPO}) with the idiom that system's users would write.\n")
         return out
 
     def environment_page(self):
@@ -868,7 +895,7 @@ class Site:
         return front("Methodology", 7) + "\n\n---\n\n".join(parts)
 
     def llms(self):
-        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of computer algebra systems, {self.systems_sentence()}. {DISCLAIMER} {DISCLOSURE}\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
+        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of computer algebra systems, {self.systems_sentence()}. {DISCLAIMER} {DISCLOSURE} Full statement: {REPO.replace("github.com/s-celles/", "s-celles.github.io/")}/conflict-of-interest/\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
                 + "\n".join(f"- {t}: {d}" for k, (t, d) in BENCHES.items() if k in self.results) + f"\n- Repository: {REPO}\n")
 
 
@@ -942,6 +969,7 @@ def generate(root, out):
         for d, text in site.case_pages(key):
             write(c / "results" / key.lower() / d / "_index.md", text)
     write(c / "systems" / "_index.md", site.systems_page())
+    write(c / "conflict-of-interest" / "_index.md", site.conflict_page())
     write(c / "environment" / "_index.md", site.environment_page())
     files = site.write_data(s)
     write(c / "data" / "_index.md", site.data_page(files))

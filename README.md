@@ -29,13 +29,10 @@ OpenSymbolicRules, and throughput at scale.
 > 2026-11-20). Corrections of a task that does not ask a system the way its
 > users would are welcome: open an issue or a pull request with the idiom.
 >
-> Who runs this: the author of these benchmarks maintains Giac.jl, one of
-> the systems compared (the Julia package, not the Giac engine), wrote
-> LibPARI.jl (bench C; the Julia wrapper, not PARI/GP) and OpenSymbolicRules
-> (the source of bench H), and wrote or chose the task files of every
-> system (those of bench E come from a fork of Giac.jl by an external
-> contributor). The published inputs, the system-neutral checks and the raw
-> data are there so that this can be checked.
+> Conflict of interest: the author of these benchmarks maintains Giac.jl,
+> one of the systems compared, and wrote LibPARI.jl and OpenSymbolicRules
+> (the Julia packages, not the engines). Full statement and the relation to
+> every system: https://s-celles.github.io/computer-algebra-system-benchmarks/conflict-of-interest/
 
 They are the reproduced numbers of the JuliaCon Proceedings paper on Giac.jl
 (in preparation for 2027), whose repository includes this one as a git
