@@ -9,6 +9,10 @@
 contributor	orcid	project	kind	role	note
 Sébastien Celles	0000-0001-9987-4338	Giac.jl	compared system	author and maintainer	the Julia package, not the Giac engine
 Sébastien Celles	0000-0001-9987-4338	LibPARI.jl	compared system	author	the Julia wrapper, not PARI/GP
+Sébastien Celles	0000-0001-9987-4338	Primes.jl	compared system	contributor	four issues and three pull requests (none merged, one open) as of 2026-11-20
+Sébastien Celles	0000-0001-9987-4338	Symbolics.jl	compared system	contributor	five issues and four open pull requests (none merged) as of 2026-11-20
+Sébastien Celles	0000-0001-9987-4338	SymbolicUtils.jl	compared system	contributor	the rewriting core of Symbolics.jl: ten issues and three merged pull requests as of 2026-11-20; not the author of issue 1195 found again by bench I
+Sébastien Celles	0000-0001-9987-4338	SymbolicIntegration.jl	other	contributor	three issues and three merged pull requests; not used by the benches
 Sébastien Celles	0000-0001-9987-4338	OpenSymbolicRules	source of bench H	author	the rules are both the problems and the certified reference of bench H
 Sébastien Celles	0000-0001-9987-4338	task files and adapters of every system	benchmark	author, or chooser of the idiom	the task files of bench E come from a fork of Giac.jl by an external contributor
 Sébastien Celles	0000-0001-9987-4338	funding, employment or other interest in a system compared	other	none	individual, non-commercial project

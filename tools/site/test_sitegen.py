@@ -225,6 +225,8 @@ class SiteGenTests(unittest.TestCase):
             self.assertEqual(set(r), {"contributor", "orcid", "project", "kind", "role", "note"})
             self.assertTrue(r["kind"] in ("compared system", "benchmark", "AI assistance", "other") or r["kind"].startswith("source of bench "), r)
         self.assertTrue(any(r["kind"] == "AI assistance" for r in rows), "the use of AI assistants is declared")
+        agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        self.assertIn("docs/disclosures.tsv", agents)                 # the instructions for agents ask for the declaration
         footer = (ROOT / "site" / "layouts" / "_partials" / "custom" / "footer.html").read_text(encoding="utf-8")
         self.assertIn("conflict-of-interest", footer)
 

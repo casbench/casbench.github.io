@@ -814,12 +814,14 @@ class Site:
         out += "\n"
         contributors = list(dict.fromkeys(r["contributor"] for r in self.disclosures))
         out += ("## Relation of every contributor to every system\n\n"
-                "One row per system present in the committed results files and per declared source of problems, one column "
+                "One row per system present in the committed results files, per declared source of problems and per declared "
+                "system outside the results (a dependency of a system compared), one column "
                 "per contributor to the benchmarks; a cell is the declared role, or *none*.\n\n"
                 "| system or source | kind | " + " | ".join(esc(c) for c in contributors) + " |\n|---|---|" + "---|" * len(contributors) + "\n")
         rows = [(n, "Julia package" if kind == "julia" else "other system") for kind, names in self.packages_by_kind().items() for n in names]
-        rows += [(r["project"], r["kind"]) for r in self.disclosures
-                 if r["kind"].startswith("source") and r["project"] not in {n for n, _ in rows}]
+        rows += [(r["project"], r["kind"] if r["kind"].startswith("source") else "compared system, not in the results")
+                 for r in self.disclosures
+                 if (r["kind"].startswith("source") or r["kind"] == "compared system") and r["project"] not in {n for n, _ in rows}]
         for n, kind in dict.fromkeys(rows):
             cells = []
             for c in contributors:
