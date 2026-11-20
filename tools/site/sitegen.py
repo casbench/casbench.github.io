@@ -72,16 +72,20 @@ def package(label):
     return ("external", label.split(" (")[0].strip())
 
 
-# the projects compared or consumed here that the author of the benchmarks also writes (conflict of interest)
-AUTHOR_RELATION = {"Giac.jl": "author and maintainer of the Julia package (not of the Giac engine)",
-                   "LibPARI.jl": "author of the Julia wrapper (not of PARI/GP)",
-                   "OpenSymbolicRules": "author (the source of bench H: its rules are both the problems and the certified reference)"}
-DISCLOSURE = ("Who runs this: the author of these benchmarks maintains Giac.jl, one of the systems compared (the Julia package, "
-              "not the Giac engine), wrote LibPARI.jl (bench C; the Julia wrapper, not PARI/GP) and OpenSymbolicRules (the source "
-              "of bench H), and wrote or chose the task files of every system. "
-              "The task files of bench E come from a fork of Giac.jl by an external contributor. This is why every case page "
-              "shows the exact input sent to each system, why every answer is checked by a system-neutral test and why the raw "
-              "data are published: an idiom unfair to a system can be found and corrected. Corrections are welcome.")
+
+
+def read_disclosures(path):
+    """Rows of docs/disclosures.tsv, the conflict of interest declarations of the contributors
+    (contributor, orcid, project, kind, role, note); every contributor writes their own rows."""
+    rows = []
+    if not path.exists():
+        return rows
+    with open(path, newline="", encoding="utf-8") as f:
+        lines = [l for l in f if not l.startswith("#")]
+    for r in csv.DictReader(lines, delimiter="\t", quoting=csv.QUOTE_NONE):
+        if r.get("contributor") and r.get("project"):
+            rows.append({k: (v or "").strip() for k, v in r.items()})
+    return rows
 DISCLAIMER = ("An individual, non-commercial project. The numbers are dated: they were measured on a shared virtual "
               "machine with the package versions recorded in the results files, and the systems compared are moving "
               "quickly. A status is a claim to check against the results files, not a verdict on a system: an unsolved "
@@ -357,6 +361,7 @@ class Site:
         self.categories = self.read_categories()
         self._task_cache = {}
         self.history = read_history(self.root / "results" / "history.tsv")
+        self.disclosures = read_disclosures(self.root / "docs" / "disclosures.tsv")
         self.generated = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
         self.results_commit = self.git_results_commit()
 
@@ -591,9 +596,7 @@ class Site:
             out += f'<a class="suite-stat" href="{href}"><strong>{esc(n)}</strong><span>{label}</span></a>\n'
         out += "</div>\n\n"
         out += f'<div class="disclaimer">{esc(DISCLAIMER)}</div>\n\n'
-        out += ("Conflict of interest: the author of these benchmarks maintains Giac.jl, one of the systems compared, and "
-                "wrote LibPARI.jl and OpenSymbolicRules (the Julia packages, not the engines). The full statement and the "
-                "relation to every system are on the [conflict of interest](conflict-of-interest/) page.\n\n")
+        out += f"{self.coi_summary()} Every contributor's declaration and the relation to every system are on the [conflict of interest](conflict-of-interest/) page.\n\n"
         ncb = self.ncases_by_bench()
         out += (f"## Benches\n\nThe {nc} cases are the sum of the cases column: a case is counted once per bench, "
                 "whatever the number of systems that ran it. A bench without a committed results file is listed without a count.\n\n"
@@ -765,19 +768,44 @@ class Site:
                 "maps to `missing` is reported as *unavailable*.\n")
         return out
 
+    def coi_summary(self):
+        """One sentence from docs/disclosures.tsv: who declares a role in a system compared or in a source of problems."""
+        by_c = {}
+        for r in self.disclosures:
+            if r["role"].lower() != "none" and (r["kind"] == "compared system" or r["kind"].startswith("source")):
+                by_c.setdefault(r["contributor"], []).append(f"{r['role']} of {r['project']}" + (f" ({r['note']})" if r["note"] else ""))
+        if not by_c:
+            return "Conflict of interest: no contributor declares a relation to the systems compared or to the sources of the problems."
+        return "Conflict of interest: " + "; ".join(f"{esc(c)} is " + esc(", ".join(v[:-1]) + (" and " if len(v) > 1 else "") + v[-1]) for c, v in by_c.items()) + "."
+
     def conflict_page(self):
-        """The conflict of interest statement: who writes the benchmarks, what they also write, what mitigates it,
-        and the relation to every system present in the results."""
+        """The conflict of interest page, from docs/disclosures.tsv: every contributor's own declaration, the relation to
+        every system present in the results, what limits the bias, how to add a declaration."""
         out = front("Conflict of interest", 4)
-        out += (f"{esc(DISCLOSURE)}\n\n"
-                "## Relation to every system\n\n"
-                "The systems are those present in the committed results files; the relation is declared in the site "
-                f"generator (`AUTHOR_RELATION` in [`tools/site/sitegen.py`]({BLOB}/tools/site/sitegen.py)) and is "
-                "*none* unless declared.\n\n| system or package | kind | relation to the author |\n|---|---|---|\n")
+        out += (f"{self.coi_summary()}\n\n"
+                "Every contributor to these benchmarks declares below their relation to the systems compared and to the "
+                f"sources of the problems, in their own rows of [`docs/disclosures.tsv`]({BLOB}/docs/disclosures.tsv) "
+                "(a row with no relation is also a declaration); a pull request that touches a task file, an adapter, a "
+                f"check or a problem list comes with them ([CONTRIBUTING.md]({BLOB}/CONTRIBUTING.md)).\n\n")
+        by_c = {}
+        for r in self.disclosures:
+            by_c.setdefault((r["contributor"], r["orcid"]), []).append(r)
+        for (name, orcid), rows in by_c.items():
+            head = f"{esc(name)} ([ORCID {esc(orcid)}](https://orcid.org/{esc(orcid)}))" if orcid else esc(name)
+            out += f"## {head}\n\n| project | kind | role | note |\n|---|---|---|---|\n"
+            for r in rows:
+                out += f"| {esc(r['project'])} | {esc(r['kind'])} | {esc(r['role'])} | {esc(r['note'])} |\n"
+            out += "\n"
+        if not by_c:
+            out += "*No declaration yet.*\n\n"
+        out += ("## Relation to every system of the results\n\n"
+                "The systems are those present in the committed results files; *none declared* means that no contributor "
+                "declares a relation.\n\n| system or package | kind | declared relations |\n|---|---|---|\n")
         for kind, names in self.packages_by_kind().items():
             for n in names:
-                out += f"| {esc(n)} | {'Julia package' if kind == 'julia' else 'other system'} | {esc(AUTHOR_RELATION.get(n, 'none'))} |\n"
-        out += f"| OpenSymbolicRules | source of bench H | {esc(AUTHOR_RELATION['OpenSymbolicRules'])} |\n"
+                rel = [f"{r['contributor']}: {r['role']}" + (f" ({r['note']})" if r["note"] else "")
+                       for r in self.disclosures if r["project"] == n and r["role"].lower() != "none"]
+                out += f"| {esc(n)} | {'Julia package' if kind == 'julia' else 'other system'} | {esc('; '.join(rel)) if rel else 'none declared'} |\n"
         out += ("\n## What limits the bias\n\n"
                 "- The inputs are fixed in the repository and every case page shows the exact text sent to each system "
                 "next to its answer, so that a task that does not ask a system the way its users would can be seen.\n"
@@ -785,11 +813,11 @@ class Site:
                 "points, canonical forms, reduction to zero), never by the system under test.\n"
                 "- The task files of bench E were written by an external contributor (a fork of Giac.jl), and benches F, G "
                 "and H take their problems from third parties (the 12000.org tests, the classical Gröbner systems, the "
-                "OpenSymbolicRules rules, the last one also by the author).\n"
+                "OpenSymbolicRules rules; see the declarations above for who wrote them).\n"
                 "- The raw data, the history of every run and the machine records are published under CC BY 4.0, and CI "
                 "checks that the tables are what the scripts produce from the committed results.\n"
-                "- No funding, employment or other interest is attached to any of the systems compared. The project is "
-                "individual and non-commercial.\n\n"
+                "- Funding, employment or any other interest in a system compared is declared in the same file. The "
+                "project is individual and non-commercial.\n\n"
                 f"## Reporting\n\nAn idiom unfair to a system, or a check that favours one, is a bug: open an issue or a pull "
                 f"request on the [repository]({REPO}) with the idiom that system's users would write.\n")
         return out
@@ -895,7 +923,7 @@ class Site:
         return front("Methodology", 7) + "\n\n---\n\n".join(parts)
 
     def llms(self):
-        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of computer algebra systems, {self.systems_sentence()}. {DISCLAIMER} {DISCLOSURE} Full statement: {REPO.replace("github.com/s-celles/", "s-celles.github.io/")}/conflict-of-interest/\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
+        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of computer algebra systems, {self.systems_sentence()}. {DISCLAIMER} {self.coi_summary()} Every contributor's declaration: {REPO.replace("github.com/s-celles/", "s-celles.github.io/")}/conflict-of-interest/\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
                 + "\n".join(f"- {t}: {d}" for k, (t, d) in BENCHES.items() if k in self.results) + f"\n- Repository: {REPO}\n")
 
 

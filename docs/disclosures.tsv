@@ -1,0 +1,11 @@
+# Conflict of interest declarations: one row per contributor and project, rendered on the site's
+# conflict of interest page. Every contributor to the benchmarks adds their own rows (a pull request that
+# touches a task file, an adapter, a check or a problem list comes with them). A row whose project is
+# "none" declares that the contributor has no relation to the systems compared or to the sources of the
+# problems; kind is one of: compared system, source of bench <X>, benchmark, other.
+contributor	orcid	project	kind	role	note
+Sébastien Celles	0000-0001-9987-4338	Giac.jl	compared system	author and maintainer	the Julia package, not the Giac engine
+Sébastien Celles	0000-0001-9987-4338	LibPARI.jl	compared system	author	the Julia wrapper, not PARI/GP
+Sébastien Celles	0000-0001-9987-4338	OpenSymbolicRules	source of bench H	author	the rules are both the problems and the certified reference of bench H
+Sébastien Celles	0000-0001-9987-4338	task files and adapters of every system	benchmark	author, or chooser of the idiom	the task files of bench E come from a fork of Giac.jl by an external contributor
+Sébastien Celles	0000-0001-9987-4338	funding, employment or other interest in a system compared	other	none	individual, non-commercial project

@@ -44,6 +44,11 @@ class SiteGenTests(unittest.TestCase):
                                         'license:\n  - MIT\n  - CC-BY-4.0\n', encoding="utf-8")
         (d / "docs").mkdir()
         (d / "docs" / "methodology.md").write_text("# Methodology\n\nSee [../lib/common.jl](../lib/common.jl).\n", encoding="utf-8")
+        (d / "docs" / "disclosures.tsv").write_text(
+            "# declarations\ncontributor\torcid\tproject\tkind\trole\tnote\n"
+            "Jo Doe\t0000-0000-0000-0001\tGiac.jl\tcompared system\tauthor and maintainer\tthe Julia package, not the engine\n"
+            "Jo Doe\t0000-0000-0000-0001\tnone\tother\tnone\t\n"
+            "Al Roe\t\tnone\tother\tnone\tno relation to any system compared\n", encoding="utf-8")
         return d
 
     def test_pages(self):
@@ -72,16 +77,19 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("Julia packages (Giac.jl) and other systems (SymPy)", home)   # the lists come from the results
         self.assertIn("## How to cite", home)
         self.assertIn("[conflict of interest](conflict-of-interest/)", home)        # the statement has its own page
+        self.assertIn("Conflict of interest: Jo Doe is author and maintainer of Giac.jl (the Julia package, not the engine).", home)
         coi = (out / "content" / "conflict-of-interest" / "_index.md").read_text(encoding="utf-8")
-        self.assertIn("Who runs this: the author of these benchmarks maintains Giac.jl", coi)
+        self.assertIn("## Jo Doe ([ORCID 0000-0000-0000-0001](https://orcid.org/0000-0000-0000-0001))", coi)
+        self.assertIn("## Al Roe\n", coi)                                              # a declaration of no relation
+        self.assertIn("| none | other | none | no relation to any system compared |", coi)
         self.assertIn("Jo Doe ([ORCID 0000-0000-0000-0001](https://orcid.org/0000-0000-0000-0001))", home)
         self.assertIn("@misc{doe2026casbench,", home)
         self.assertIn("run of 2026-11-18", home)
         self.assertIn("MIT, CC-BY-4.0", home)
         sysp = (out / "content" / "systems" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("| Giac.jl | `0.14.3` | 2026-11-18 |", sysp)
-        self.assertIn("| Giac.jl | Julia package | author and maintainer of the Julia package (not of the Giac engine) |", coi)   # relation per system
-        self.assertIn("| SymPy | other system | none |", coi)
+        self.assertIn("| Giac.jl | Julia package | Jo Doe: author and maintainer (the Julia package, not the engine) |", coi)   # per system
+        self.assertIn("| SymPy | other system | none declared |", coi)
         self.assertIn("conflict-of-interest/", sysp)
         meth = (out / "content" / "methodology" / "_index.md").read_text(encoding="utf-8")
         self.assertIn(sitegen.BLOB + "/docs/../lib/common.jl", meth)   # relative links rewritten from docs/
@@ -204,6 +212,16 @@ class SiteGenTests(unittest.TestCase):
         self.assertEqual(tile("other systems"), len(kinds.get("external", ())))
         for name in {n for v in kinds.values() for n in v}:
             self.assertIn(name, home, f"{name} is in the results but not named on the home page")
+
+    def test_disclosures_file(self):
+        """docs/disclosures.tsv parses, has the expected columns and every row a kind of the documented vocabulary."""
+        rows = sitegen.read_disclosures(ROOT / "docs" / "disclosures.tsv")
+        self.assertTrue(rows)
+        for r in rows:
+            self.assertEqual(set(r), {"contributor", "orcid", "project", "kind", "role", "note"})
+            self.assertTrue(r["kind"] in ("compared system", "benchmark", "other") or r["kind"].startswith("source of bench "), r)
+        footer = (ROOT / "site" / "layouts" / "_partials" / "custom" / "footer.html").read_text(encoding="utf-8")
+        self.assertIn("conflict-of-interest", footer)
 
     def test_check_home_rejects_wrong_numbers(self):
         root = self.make_root()
