@@ -30,7 +30,8 @@ function make_I()
     println(md, "## I: throughput at scale (warm seconds when verified; status otherwise)\n")
     println(md, "| workload | ", join((I_LABEL[s] for s in systems), " | "), " |\n|---|", "---|"^length(systems))
     for c in cases
-        println(md, "| ", c, " | ", join((r = rec(s, c); r === nothing ? "--" : r.status == "verified" ? @sprintf("%.4g s", isfinite(r.t_warm) ? r.t_warm : r.t_first) : r.status for s in systems), " | "), " |")
+        cells = [(r = rec(s, c); r === nothing ? "--" : r.status == "verified" ? @sprintf("%.4g s", isfinite(r.t_warm) ? r.t_warm : r.t_first) : r.status) for s in systems]
+        println(md, "| ", c, " | ", join(cells, " | "), " |")
     end
     println(md)
 end
