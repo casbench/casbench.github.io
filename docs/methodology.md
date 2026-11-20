@@ -9,7 +9,7 @@ Clone with `git clone --recurse-submodules` (or run `git submodule update
 (`../../Giac.jl`), so that the exact commit measured is part of the pin.
 
 ```sh
-nix run .#bench            # all five benches, then the tables
+nix run .#bench            # every bench, then the tables
 nix run .#bench -- A C     # a subset
 ```
 
@@ -20,8 +20,8 @@ network access for `Pkg.instantiate`.
 
 Every bench/system pair runs in its own Julia process with one thread, from
 its own environment under `envs/`, under `lib/supervise.jl`, which enforces a
-per-case time limit (`BENCH_TIMEOUT_B`, `BENCH_TIMEOUT_C`, `BENCH_TIMEOUT_D`,
-`BENCH_TIMEOUT_E`, `BENCH_TIMEOUT_F`, `BENCH_TIMEOUT_G`; defaults 120 s, 600 s, 120 s, 60 s, 30 s, 300 s) and restarts the
+per-case time limit (`BENCH_TIMEOUT_<bench>`, read by `run_all.jl`; defaults B 120 s, C 600 s, D 120 s, E 60 s,
+F 30 s, G 300 s, H 30 s, I 300 s) and restarts the
 worker at the next case after a timeout or a crash. Results are appended to
 `results/<bench>_<system>.tsv` (one line per case: status, first-call time,
 warm time, textual result, note); `make_tables.jl` turns them into
@@ -49,10 +49,10 @@ in the system, as wired in `lib/adapters/<system>.jl`), `error`, `timeout`.
 
 ## Adapters
 
-`lib/adapters/{giac,symbolics,sympy,symj,groebner,msolve}.jl` define the same
+`lib/adapters/{giac,symbolics,sympy,symj,symengine,groebner,msolve}.jl` define the same
 small interface (`OPS`, `EVAL`, `NTERMS`, `NFACTORS`, `UNSOLVED`, `VERSIONS`).
-The subprocess adapters (`maxima`, `fricas`, `sage_<engine>`, `macaulay2`)
-start one process per case, with a script that prints the answer, the
+The subprocess adapters (`maxima`, `fricas`, `sage_<engine>`, `macaulay2`;
+`computeengine` keeps one Node.js process per worker) start one process per case, with a script that prints the answer, the
 system's own wall time of the call (reported as the warm time; the first-call
 time includes the start-up) and, for bench F, the numeric values of the
 answer at the check points, so that the generic check applies unchanged.

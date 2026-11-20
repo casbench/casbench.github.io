@@ -652,7 +652,8 @@ class Site:
         names = sorted(systems)
         out = front(title, weight, linkTitle=title.split(". ", 1)[-1])
         out += f"{desc} Source: [`{key}/`]({BLOB}/{key}), results: [`results/`]({BLOB}/results).\n\n"
-        out += "Time shown: the minimum over repeated calls (warm), else the first call. Type to filter, click a heading to sort, click a case for every answer.\n\n"
+        out += ("Time shown: the minimum over repeated calls (warm; for a system run as a process, its own in-process time of "
+                "the single call), else the first call. Type to filter, click a heading to sort, click a case for every answer.\n\n")
         raw = ", ".join(f"[{esc(s)}](../../data/{key}_{self.system_key(key, s)}.tsv)" for s in names)
         out += f"Raw data (TSV, one file per system): {raw}; [all benches](../../data/results.zip); [every file](../../data/).\n\n"
         by_idx = self.by_case(key)
@@ -820,8 +821,9 @@ class Site:
         out = front("Data", 3)
         out += (f'<p class="site-stamp">{self.stamp()}</p>\n\n'
                 "Every number of this site comes from these files, republished as they are in the repository: one TSV per "
-                "bench and system (columns `bench, system, idx, case, op, status, t_first_s, t_warm_s, result, note`; "
-                "times in seconds, `result` and `note` truncated to 200 and 300 characters), the history of the runs, the "
+                "bench and system (columns `bench, system, idx, case, op, status, t_first_s, t_warm_s, result, note` and, in "
+                "the runs from 2026-11-20, `input`; times in seconds, `result`, `note` and `input` truncated to 200, 300 and "
+                "2 000 characters), the history of the runs, the "
                 "machine and environment records, and the fixed inputs. Each bench page also offers its table as CSV, "
                 "filtered and sorted as shown.\n\n"
                 "- [results.zip](../data/results.zip): everything below in one archive.\n")

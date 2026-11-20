@@ -20,11 +20,11 @@ keywords:
   - benchmark
 abstract: >-
   Benches of computer algebra systems: Julia packages (Giac.jl, Symbolics.jl,
-  SymJ.jl, Groebner.jl, Primes.jl, LibPARI.jl, msolve through
-  AlgebraicSolving.jl), SymPy, and Maxima, FriCAS, SageMath and Macaulay2
-  driven as processes: FFI overhead, CAS operations, integer factorisation,
-  functional coverage, a 107-problem suite, a sample of the 12000.org
-  integration tests, Gröbner bases and the OpenSymbolicRules integration
-  rules. Fixed inputs, one adapter per system, every answer checked by a
+  SymJ.jl, SymEngine.jl, Groebner.jl, Primes.jl, LibPARI.jl, msolve through
+  AlgebraicSolving.jl), SymPy, and Maxima, FriCAS, SageMath, Macaulay2 and
+  the Compute Engine driven as processes: FFI overhead, CAS operations,
+  integer factorisation, functional coverage, a problem suite, a sample of
+  the 12000.org integration tests, Gröbner bases, the OpenSymbolicRules
+  integration rules and throughput at scale. Fixed inputs, one adapter per system, every answer checked by a
   system-neutral test, every run dated and its environment pinned. The
   reproduced numbers of the JuliaCon Proceedings paper on Giac.jl.

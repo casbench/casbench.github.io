@@ -10,10 +10,10 @@ FriCAS, SageMath, Macaulay2 and the JavaScript Compute Engine (MathJSON)
 driven as processes from the same harness.
 Fixed inputs stored in the repository, one adapter per system, every answer
 checked by a system-neutral test, every run dated with its environment
-pinned. Eight benches: FFI overhead, CAS operations, integer factorisation,
-functional coverage, a 107-problem suite, a sample of the 12000.org
-integration tests, Gröbner bases, and the integration rules of
-OpenSymbolicRules.
+pinned. Nine benches: FFI overhead, CAS operations, integer factorisation,
+functional coverage, a problem suite, a sample of the 12000.org
+integration tests, Gröbner bases, the integration rules of
+OpenSymbolicRules, and throughput at scale.
 
 **Results, per case and per system: https://s-celles.github.io/computer-algebra-system-benchmarks/**
 

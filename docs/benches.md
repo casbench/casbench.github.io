@@ -13,7 +13,7 @@ calls, inputs rotating through a pool of 8 expressions so that Giac's
 memoisation of an identical repeated call does not dominate. Every level is
 checked to return the same printed result.
 
-**B, CAS operations** (`B_cas/problems.jl`; Giac.jl, Symbolics.jl, SymPy,
+**B, CAS operations** (`B_cas/problems.jl`; Giac.jl, Symbolics.jl, SymPy, SymEngine.jl,
 SymJ.jl). `expand`, `factor`, `integrate` and `simplify` on 34 fixed inputs.
 Each answer is verified, not only timed: expansion by numeric equality with
 the input at three fixed points and the expected number of terms;
@@ -37,7 +37,7 @@ rho, then its multiple-polynomial quadratic sieve) and PARI's `ifactor` is
 only called at 10^71 and above. All inputs here are below 10^71, so the Giac
 column is Giac's own sieve, not PARI through Giac.
 
-**D, functional coverage** (`D_coverage/problems.jl`; same four systems). One
+**D, functional coverage** (`D_coverage/problems.jl`; same five systems). One
 problem per capability, starting with the three headline problems of the
 JuliaCon 2026 talk (`factor(x^4-1)`, `solve(cos(x)=1/2)` exactly,
 `21u+28v=7` over the integers), then Laplace and Z transforms, partial
@@ -47,7 +47,7 @@ basis, factorisation over the complex numbers (checked at complex points), a
 symbolic determinant and eigenvalues, a 60-digit factorisation, and
 simplification under an assumption.
 
-**E, a problem suite** (`E_suite/`; same four systems). The 103 problems of
+**E, a problem suite** (`E_suite/`; Giac.jl, Symbolics.jl, SymPy and SymJ.jl). The 103 problems of
 "Giac.jl against Mathematica", the notebook `notebooks/giac_vs_wolfram.jl` of
 the `ergonomics` branch of Kahli Burke's fork of Giac.jl
 (github.com/kahliburke/Giac.jl, commit da3d2f1a, 2026-11-12), with the problem
