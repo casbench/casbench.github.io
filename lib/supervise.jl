@@ -33,6 +33,8 @@ function descendants(pid::Integer)
 end
 
 function supervise(envdir, worker, bench, system, out, timeout, extra)
+    ENV["BENCH_RUN_ID"] = run_id()        # one run identifier for every worker of this supervision
+    mkpath(dirname(abspath(out)))
     progress = out * ".progress"
     logfile = out * ".log"
     isfile(progress) && rm(progress)

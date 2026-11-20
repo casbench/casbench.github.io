@@ -7,17 +7,32 @@
 #   BENCH_TIMEOUT_C                    per-case limit for integer factorisation (default 600)
 #   BENCH_TIMEOUT_E                    per-case limit for the problem suite (default 60)
 #   BENCH_SKIP_INSTANTIATE=1           do not call Pkg.instantiate on the environments
+#   BENCH_HOST                         name of this host in results/<host>/ (default: the hostname)
+#   BENCH_ALLOW_DIRTY=1                run from a tree with uncommitted changes (the run is then marked -dirty)
+#   BENCH_RUN_ID                       identifier of the run (default: <date>_<host>, generated here)
 #   JULIA_CONDAPKG_BACKEND / JULIA_PYTHONCALL_EXE  forwarded to the SymPy environment
 #
 # Each bench/system pair runs in its own process under lib/supervise.jl, with
-# one Julia thread, from the environment benchmark/envs/<system>.
+# one Julia thread, from the environment benchmark/envs/<system>. The results
+# go to results/<host>/<bench>_<system>.tsv with machine.txt next to them.
 
 import Pkg
 
 const ROOT = @__DIR__
-const RESULTS = joinpath(ROOT, "results")
-mkpath(RESULTS)
+include(joinpath(ROOT, "lib", "common.jl"))
+using .BenchCommon
 const JULIA = Base.julia_cmd()
+
+# a run must be identifiable: the harness commit goes into machine.txt and every record carries the run id
+let gi = git_info()
+    if gi.dirty && get(ENV, "BENCH_ALLOW_DIRTY", "0") != "1"
+        error("the working tree has uncommitted changes outside results/, so the run could not be identified by a commit; " *
+              "commit them, or set BENCH_ALLOW_DIRTY=1 to run anyway (the run id is then marked -dirty):\n" * gi.dirty_files)
+    end
+end
+ENV["BENCH_RUN_ID"] = run_id()
+const RESULTS = results_dir()
+println("[run_all] run ", ENV["BENCH_RUN_ID"], " -> ", RESULTS)
 
 envs = Dict("giac" => joinpath(ROOT, "envs", "giac"),
             "symbolics" => joinpath(ROOT, "envs", "symbolics"),

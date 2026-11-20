@@ -48,8 +48,7 @@ else
     error("unknown system $SYSTEM_KEY")
 end
 
-START == 1 && write_machine_info(joinpath(@__DIR__, "..", "results", "machine.txt"),
-                                 [("bench", BENCH), ("system", SYSTEM), VERSIONS()...])
+START == 1 && write_machine_info(joinpath(dirname(abspath(OUT)), "machine.txt"), [("bench", BENCH), ("system", SYSTEM), VERSIONS()...])
 const T_LOAD = time() - T_LOAD0
 START == 1 && append_record(OUT, Record(BENCH, SYSTEM, 0, "_load", "using", "verified", T_LOAD, NaN, "", "package load time"))
 
@@ -63,15 +62,18 @@ for i in START:length(INPUTS)
     (name, n, nf) = INPUTS[i]
     n = parse(BigInt, n)
     write(PROGRESS, string(i, '\t', name))
+    load = loadavg()
+    reps = Float64[]
     rec = try
         arg = n <= typemax(Int64) ? Int64(n) : n
-        out, tf, tw = time_call(() -> FACT(arg); repeats = 3, warm_budget = 5.0)
+        out, tf, tw = time_call(() -> FACT(arg); repeats = 3, warm_budget = 5.0, times = reps)
         st = verify(out, n)
         st === :verified && nf > 0 && length(out) != nf && (st = :wrong)
         Record(BENCH, SYSTEM, i, name, "ifactor", string(st), tf, tw,
-               join(["$p^$e" for (p, e) in out], "*"), "$(ndigits(n)) digits")
+               join(["$p^$e" for (p, e) in out], "*"), "$(ndigits(n)) digits", "",
+               isempty(reps) ? tf : minimum(reps), join((string(round(t; sigdigits = 6)) for t in reps), ";"), load, run_id())
     catch e
-        Record(BENCH, SYSTEM, i, name, "ifactor", "error", NaN, NaN, "", sprint(showerror, e))
+        Record(BENCH, SYSTEM, i, name, "ifactor", "error", NaN, NaN, "", sprint(showerror, e), "", NaN, "", load, run_id())
     end
     append_record(OUT, rec)
     GC.gc()

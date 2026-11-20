@@ -22,7 +22,7 @@ using .BenchCommon
 using Giac
 using Giac.GiacCxxBindings
 
-const OUT = length(ARGS) >= 1 ? ARGS[1] : joinpath(@__DIR__, "..", "results", "A_ffi_giac.tsv")
+const OUT = length(ARGS) >= 1 ? ARGS[1] : joinpath(results_dir(), "A_ffi_giac.tsv")
 const ROUNDS = 7
 const N = 2000
 
@@ -85,7 +85,7 @@ cases = [
     Case("expand(poly)", :expand, expand_pool, nothing, nothing, nothing),
 ]
 
-write_machine_info(joinpath(@__DIR__, "..", "results", "machine.txt"),
+write_machine_info(joinpath(dirname(abspath(OUT)), "machine.txt"),
                    ["bench" => "A_ffi", "Giac.jl" => string(pkgversion(Giac)),
                     "GIAC_jll" => string(pkgversion(Giac.GIAC_jll)),
                     "libgiac_julia_jll" => string(pkgversion(Giac.libgiac_julia_jll)),
