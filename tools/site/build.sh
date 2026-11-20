@@ -8,6 +8,7 @@ out=$(mkdir -p "$1" && cd "$1" && pwd)
 hugo=${2:-hugo}
 root=$(cd "$(dirname "$0")/../.." && pwd)
 case "$out/" in "$root"/*) echo "OUT must be outside the repository" >&2; exit 1 ;; esac
+python3 -I "$root/tools/site/test_sitegen.py" 2>&1 | tail -1      # the displayed numbers must match the results files
 python3 -I "$root/tools/site/sitegen.py" --root "$root" --out "$out"
 rm -rf "$out/public"
 HUGO_RESOURCEDIR="$out/resources" "$hugo" --source "$root/site" --contentDir "$out/content" \

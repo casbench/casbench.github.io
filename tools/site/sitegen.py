@@ -892,10 +892,32 @@ def write(path, text):
     path.write_text(text, encoding="utf-8")
 
 
+def check_home(site, home):
+    """Every number displayed on the home page against the data it claims to summarise; raises ValueError."""
+    stat = lambda label: int(re.search(rf"<strong>(\d+)</strong><span>{re.escape(label)}</span>", home).group(1))
+    ncb = site.ncases_by_bench()
+    shown = {m.group(1): int(m.group(2)) for m in re.finditer(r"^\| \[([^\]]+)\]\(results/[^)]+\) \| (\d+) \|", home, re.M)}
+    pk = site.packages_by_kind()
+    problems = [
+        (stat("cases") == sum(ncb.values()), f"cases tile {stat('cases')} != sum of benches {sum(ncb.values())}"),
+        (sum(shown.values()) == stat("cases"), f"cases column sums to {sum(shown.values())}, tile says {stat('cases')}"),
+        (len(shown) == len(site.results) == stat("benches"), "benches tile and table disagree with the results loaded"),
+        (stat("Julia packages") == len(pk["julia"]) and stat("other systems") == len(pk["external"]),
+         "package tiles disagree with the systems of the results"),
+        (len(pk["julia"]) + len(pk["external"]) == len(site.packages()), "a system is counted in two kinds"),
+        (all(n in home for n in pk["julia"] + pk["external"] if n != "SageMath"), "a system of the results is not named"),
+    ]
+    bad = [msg for ok, msg in problems if not ok]
+    if bad:
+        raise ValueError("home page inconsistent with the results: " + "; ".join(bad))
+
+
 def generate(root, out):
     site = Site(root)
     c, s = pathlib.Path(out) / "content", pathlib.Path(out) / "static"
-    write(c / "_index.md", site.home())
+    home = site.home()
+    check_home(site, home)
+    write(c / "_index.md", home)
     write(c / "results" / "_index.md", site.results_index())
     for w, key in enumerate(site.results, 1):
         write(c / "results" / key.lower() / "_index.md", site.bench_page(key, w))

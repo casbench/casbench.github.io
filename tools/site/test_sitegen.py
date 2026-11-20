@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Checks for the site generator. Run with python3 -I tools/site/test_sitegen.py."""
+import csv
 import pathlib
+import re
 import sys
 import tempfile
 import unittest
@@ -162,6 +164,61 @@ class SiteGenTests(unittest.TestCase):
         self.assertGreaterEqual(len(site.results), 1)
         if "E_suite" in site.results:
             self.assertGreaterEqual(len(site.categories), 100)
+
+    def test_home_numbers_match_results(self):
+        """Every number displayed on the home page, recomputed here from results/*.tsv without the generator's
+        own counting: total of cases = sum of cases per bench (an index of a bench is one case), the systems are
+        the distinct system columns of the results files."""
+        if not (ROOT / "results").exists():
+            self.skipTest("no results directory")
+        cases, systems = {}, set()
+        for p in sorted((ROOT / "results").glob("*_*.tsv")):
+            if p.name == "history.tsv":
+                continue
+            with open(p, newline="", encoding="utf-8") as f:
+                for r in csv.DictReader(f, delimiter="\t", quoting=csv.QUOTE_NONE):
+                    if r.get("case") == "_load" or not r.get("idx", "").isdigit():
+                        continue
+                    cases.setdefault(r["bench"], set()).add(int(r["idx"]))
+                    systems.add(sitegen.SYSTEM_LABELS.get(r["system"], r["system"]))
+        out = pathlib.Path(tempfile.mkdtemp())
+        site = sitegen.generate(ROOT, out)
+        home = (out / "content" / "_index.md").read_text(encoding="utf-8")
+        tile = lambda label: int(re.search(rf"<strong>(\d+)</strong><span>{label}</span>", home).group(1))
+        self.assertEqual(tile("cases"), sum(len(v) for v in cases.values()))
+        self.assertEqual(tile("benches"), len(cases))
+        column = {m.group(1): int(m.group(2)) for m in re.finditer(r"^\| \[[A-Z]\. [^\]]+\]\(results/([a-z_]+)/\) \| (\d+) \|", home, re.M)}
+        self.assertEqual(column, {b.lower(): len(v) for b, v in cases.items()})
+        self.assertEqual(sorted(systems), site.systems())
+        kinds = {}
+        for label in systems:
+            kind, name = sitegen.package(label)
+            kinds.setdefault(kind, set()).add(name)
+        self.assertEqual(tile("Julia packages"), len(kinds.get("julia", ())))
+        self.assertEqual(tile("other systems"), len(kinds.get("external", ())))
+        for name in {n for v in kinds.values() for n in v}:
+            self.assertIn(name, home, f"{name} is in the results but not named on the home page")
+
+    def test_check_home_rejects_wrong_numbers(self):
+        root = self.make_root()
+        out = pathlib.Path(tempfile.mkdtemp())
+        site = sitegen.generate(root, out)
+        home = site.home()
+        with self.assertRaises(ValueError):
+            sitegen.check_home(site, home.replace("<strong>4</strong><span>cases</span>", "<strong>5</strong><span>cases</span>"))
+        with self.assertRaises(ValueError):
+            sitegen.check_home(site, home.replace("<strong>1</strong><span>other systems</span>", "<strong>2</strong><span>other systems</span>"))
+
+    def test_bench_e_statements_follow_problems(self):
+        """E_suite/statements.tsv has one row per problem of E_suite/problems.jl, in the same order and with the same
+        name, since the pages look a statement up by position (two problems share a name)."""
+        probs, stm = ROOT / "E_suite" / "problems.jl", ROOT / "E_suite" / "statements.tsv"
+        if not (probs.exists() and stm.exists()):
+            self.skipTest("no bench E")
+        names = re.findall(r'^\s+P\(CAT\[\d+\], "((?:[^"\\]|\\.)*)"', probs.read_text(encoding="utf-8"), re.M)
+        rows = [l.split("\t")[0] for l in stm.read_text(encoding="utf-8").splitlines()
+                if l and not l.startswith("#") and not l.startswith("name\t")]
+        self.assertEqual(rows, names)
 
 
 if __name__ == "__main__":
