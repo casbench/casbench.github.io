@@ -30,7 +30,8 @@ OpenSymbolicRules, and throughput at scale.
 > users would are welcome: open an issue or a pull request with the idiom.
 >
 > Who runs this: the author of these benchmarks maintains Giac.jl, one of
-> the systems compared, wrote LibPARI.jl (bench C) and OpenSymbolicRules
+> the systems compared (the Julia package, not the Giac engine), wrote
+> LibPARI.jl (bench C; the Julia wrapper, not PARI/GP) and OpenSymbolicRules
 > (the source of bench H), and wrote or chose the task files of every
 > system (those of bench E come from a fork of Giac.jl by an external
 > contributor). The published inputs, the system-neutral checks and the raw

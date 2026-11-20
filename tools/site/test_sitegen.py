@@ -78,7 +78,7 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("MIT, CC-BY-4.0", home)
         sysp = (out / "content" / "systems" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("| Giac.jl | `0.14.3` | 2026-11-18 |", sysp)
-        self.assertIn("| Giac.jl | Julia package | author and maintainer |", sysp)   # relation to the author, per system
+        self.assertIn("| Giac.jl | Julia package | author and maintainer of the Julia package (not of the Giac engine) |", sysp)   # relation to the author, per system
         self.assertIn("| SymPy | other system | none |", sysp)
         meth = (out / "content" / "methodology" / "_index.md").read_text(encoding="utf-8")
         self.assertIn(sitegen.BLOB + "/docs/../lib/common.jl", meth)   # relative links rewritten from docs/

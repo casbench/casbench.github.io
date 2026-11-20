@@ -73,10 +73,12 @@ def package(label):
 
 
 # the projects compared or consumed here that the author of the benchmarks also writes (conflict of interest)
-AUTHOR_RELATION = {"Giac.jl": "author and maintainer", "LibPARI.jl": "author",
+AUTHOR_RELATION = {"Giac.jl": "author and maintainer of the Julia package (not of the Giac engine)",
+                   "LibPARI.jl": "author of the Julia wrapper (not of PARI/GP)",
                    "OpenSymbolicRules": "author (the source of bench H: its rules are both the problems and the certified reference)"}
-DISCLOSURE = ("Who runs this: the author of these benchmarks maintains Giac.jl, one of the systems compared, wrote LibPARI.jl "
-              "(bench C) and OpenSymbolicRules (the source of bench H), and wrote or chose the task files of every system. "
+DISCLOSURE = ("Who runs this: the author of these benchmarks maintains Giac.jl, one of the systems compared (the Julia package, "
+              "not the Giac engine), wrote LibPARI.jl (bench C; the Julia wrapper, not PARI/GP) and OpenSymbolicRules (the source "
+              "of bench H), and wrote or chose the task files of every system. "
               "The task files of bench E come from a fork of Giac.jl by an external contributor. This is why every case page "
               "shows the exact input sent to each system, why every answer is checked by a system-neutral test and why the raw "
               "data are published: an idiom unfair to a system can be found and corrected. Corrections are welcome.")
