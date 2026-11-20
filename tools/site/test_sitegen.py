@@ -46,6 +46,7 @@ class SiteGenTests(unittest.TestCase):
         self.assertEqual(site.ncases(), 3)                      # _load rows are dropped
         self.assertEqual(site.systems(), ["Giac.jl", "SymPy"])   # the supervisor key sympy is relabelled
         self.assertEqual(site.packages(), ["Giac.jl", "SymPy"])
+        self.assertEqual(site.packages_by_kind(), {"julia": ["Giac.jl"], "external": ["SymPy"]})
         page = (out / "content" / "results" / "d_coverage" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("verdict--verified", page)
         self.assertIn("verdict--unavailable", page)
@@ -56,7 +57,9 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn('fill="none"', page)                           # a hollow mark for the wrong answer
         home = (out / "content" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("<strong>3</strong><span>cases</span>", home)
-        self.assertIn("<strong>2</strong><span>packages</span>", home)
+        self.assertIn("<strong>1</strong><span>Julia packages</span>", home)
+        self.assertIn("<strong>1</strong><span>other systems</span>", home)
+        self.assertIn("Julia packages (Giac.jl) and other systems (SymPy)", home)   # the lists come from the results
         sysp = (out / "content" / "systems" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("| Giac.jl | `0.14.3` | 2026-11-18 |", sysp)
         meth = (out / "content" / "methodology" / "_index.md").read_text(encoding="utf-8")
@@ -108,6 +111,14 @@ class SiteGenTests(unittest.TestCase):
         wf = (out / "content" / "workflow" / "_index.md").read_text(encoding="utf-8")
         self.assertEqual(wf.count("```mermaid"), 4)
         self.assertIn("sequenceDiagram", wf)
+
+    def test_package(self):
+        self.assertEqual(sitegen.package("Primes.jl factor"), ("julia", "Primes.jl"))
+        self.assertEqual(sitegen.package("Giac.jl ifactor"), ("julia", "Giac.jl"))
+        self.assertEqual(sitegen.package("msolve (AlgebraicSolving.jl)"), ("external", "msolve"))
+        self.assertEqual(sitegen.package("Sage/Maxima"), ("external", "SageMath"))
+        self.assertEqual(sitegen.package("Compute Engine"), ("external", "Compute Engine"))
+        self.assertEqual(sitegen.package("SymPy"), ("external", "SymPy"))
 
     def test_fmt_time(self):
         self.assertEqual(sitegen.fmt_time(2.5e-6), "2 µs")

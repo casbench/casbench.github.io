@@ -58,6 +58,20 @@ SYSTEM_LABELS = {"giac": "Giac.jl", "symbolics": "Symbolics.jl", "sympy": "SymPy
                  "msolve": "msolve (AlgebraicSolving.jl)", "maxima": "Maxima", "fricas": "FriCAS",
                  "sage_giac": "Sage/Giac", "sage_maxima": "Sage/Maxima", "sage_fricas": "Sage/FriCAS", "sage_sympy": "Sage/SymPy",
                  "sage_singular": "Sage/Singular", "macaulay2": "Macaulay2", "symengine": "SymEngine.jl", "computeengine": "Compute Engine"}
+
+
+def package(label):
+    """(kind, name) of what a system column measures: the Julia package (the first word, when it ends in .jl:
+    "Primes.jl factor" is Primes.jl) or the other system ("msolve (AlgebraicSolving.jl)" is msolve, every
+    Sage/<engine> column is SageMath driving that engine)."""
+    w = label.split()[0]
+    if w.endswith(".jl"):
+        return ("julia", w)
+    if label.startswith("Sage/"):
+        return ("external", "SageMath")
+    return ("external", label.split(" (")[0].strip())
+
+
 DISCLAIMER = ("An individual, non-commercial project. The numbers are dated: they were measured on a shared virtual "
               "machine with the package versions recorded in the results files, and the systems compared are moving "
               "quickly. A status is a claim to check against the results files, not a verdict on a system: an unsolved "
@@ -500,8 +514,28 @@ class Site:
         return sorted({s for systems in self.results.values() for s in systems})
 
     def packages(self):
-        """Distinct packages behind the system columns (first word of the label)."""
-        return sorted({s.split()[0] for s in self.systems()})
+        """Distinct packages and systems behind the system columns."""
+        return sorted({package(s)[1] for s in self.systems()})
+
+    def packages_by_kind(self):
+        """{"julia": [Julia packages], "external": [other systems]} behind the system columns of the results."""
+        out = {"julia": set(), "external": set()}
+        for s in self.systems():
+            kind, name = package(s)
+            out[kind].add(name)
+        return {k: sorted(v) for k, v in out.items()}
+
+    def systems_sentence(self):
+        """The systems of the results in words: 'Julia packages (A, B) and other systems (C, SageMath driving D and E)'."""
+        pk = self.packages_by_kind()
+        engines = sorted({s.split("/", 1)[1] for s in self.systems() if s.startswith("Sage/")})
+        ext = [f"SageMath driving {', '.join(engines)}" if n == "SageMath" and engines else n for n in pk["external"]]
+        parts = []
+        if pk["julia"]:
+            parts.append(f"Julia packages ({', '.join(pk['julia'])})")
+        if ext:
+            parts.append(f"other systems ({'; '.join(ext)}) driven as processes from the same harness")
+        return " and ".join(parts) if parts else "no system yet"
 
     def system_key(self, key, label):
         """The file key of a system label: results/<bench>_<key>.tsv (the inverse of SYSTEM_LABELS, else the label itself)."""
@@ -524,17 +558,17 @@ class Site:
 
     # -- pages --------------------------------------------------------------
     def home(self):
-        nb, ns, nc = len(self.results), len(self.packages()), self.ncases()
+        nb, nc, pk = len(self.results), self.ncases(), self.packages_by_kind()
         out = front("Computer algebra system benchmarks", 0)
         out += '<p class="project-kicker">reproducible · verified · dated</p>\n\n'
         out += f'<p class="site-stamp">{self.stamp()}</p>\n\n'
-        out += ("Benchmarks of computer algebra systems: Julia packages (Giac.jl, Symbolics.jl, SymJ.jl, Groebner.jl, Primes.jl, "
-                "LibPARI.jl, msolve through AlgebraicSolving.jl), Python's SymPy, and Maxima, FriCAS, SageMath and Macaulay2 driven "
-                "as processes from the same harness. Every number comes from a script in the "
+        out += (f"Benchmarks of computer algebra systems, {self.systems_sentence()}: the systems named here are those "
+                "present in the committed results files. Every number comes from a script in the "
                 "repository, run on fixed inputs, with every answer checked by a system-neutral test and every run dated. "
                 f"They are the reproduced numbers of the {PAPER}.\n\n")
         out += '<div class="suite-stats">\n'
-        for n, label, href in ((nb, "benches", "results/"), (ns, "packages", "systems/"),
+        for n, label, href in ((nb, "benches", "results/"), (len(pk["julia"]), "Julia packages", "systems/"),
+                               (len(pk["external"]), "other systems", "systems/"),
                                (nc, "cases", "results/"), (self.last_date()[:10] or "n/a", "last run", "environment/")):
             out += f'<a class="suite-stat" href="{href}"><strong>{esc(n)}</strong><span>{label}</span></a>\n'
         out += "</div>\n\n"
@@ -776,7 +810,7 @@ class Site:
         return front("Methodology", 7) + "\n\n---\n\n".join(parts)
 
     def llms(self):
-        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of computer algebra systems (Julia packages, SymPy, Maxima, FriCAS, SageMath, Macaulay2). {DISCLAIMER}\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
+        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of computer algebra systems, {self.systems_sentence()}. {DISCLAIMER}\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
                 + "\n".join(f"- {t}: {d}" for k, (t, d) in BENCHES.items() if k in self.results) + f"\n- Repository: {REPO}\n")
 
 
