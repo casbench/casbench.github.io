@@ -55,7 +55,10 @@ Sage and Macaulay2; for the Julia-side task files, the arguments), truncated
 to 2 000 characters. It is there so that a status can be checked against the
 exact input: an unsolved or wrong case may be a command the benchmark
 generated wrongly, not a limit of the system.
-`results/history.tsv` keeps one summary row per bench, system and run date
+A case index can appear twice in a file when the supervisor restarted a
+worker on it (its timeout record, then the restarted worker's record);
+`tools/dedupe_results.py` keeps the last row and CI would show the
+difference. `results/history.tsv` keeps one summary row per bench, system and run date
 (appended by `make_tables.jl`; `tools/history_backfill.py` rebuilds the past
 rows from the git history), from which the site draws its time series.
 `results/machine.txt` and `results/environment.txt` record the host, the
