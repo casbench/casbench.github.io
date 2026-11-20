@@ -49,7 +49,7 @@ submodule.
 ```
 A_ffi/ ... H_osr/   the benches (inputs, problems, task files)      docs/benches.md      what each measures
 lib/                harness, adapters, checks                          docs/methodology.md  how a run is made
-envs/               one pinned Julia environment per system            results/             runs, history, machine
+envs/               one pinned Julia environment per system            results/<host>/      runs, machine; history and REFERENCE
 tables/ figures/    generated for the paper                            site/ tools/site/    the project site
 Giac.jl/ osr/       git submodules pinned to the commits measured
 ```

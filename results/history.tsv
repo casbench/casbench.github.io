@@ -1,21 +1,21 @@
-date	bench	system	n	verified	wrong	unverified	unsolved	unavailable	error	timeout	t_warm_sum	t_warm_median	versions	source
-2026-11-18 09:10:19	A_ffi	giac	23	23	0	0	0	0	0	0	0.000897885	8.4012e-06	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	c726c4a13bdd
-2026-11-18 19:09:28	C_ifactor	giac	13	13	0	0	0	0	0	0	2.13027	0.000186913	Giac.jl 0.14.3; GIAC_jll 2.0.3+0	c726c4a13bdd
-2026-11-18 19:09:41	C_ifactor	primes	13	10	0	0	0	0	3	0	0.0218518	2.829e-06	Primes 0.5.7	c726c4a13bdd
-2026-11-18 19:37:51	C_ifactor	pari	13	13	0	0	0	0	0	0	2.2284	0.000150017	LibPARI 0.18.2; PARI_jll 2.17.3+0	c726c4a13bdd
-2026-11-18 19:38:22	B_cas	symbolics	34	32	0	0	2	0	0	0	0.00799316	0.000213096	Symbolics 7.49.0; SymbolicUtils 4.56.1; Nemo 0.56.2; Groebner 0.10.11; GruntzLimit 1.7.0; RischIntegrate 1.4.0; Primes 0.5.7	c726c4a13bdd
-2026-11-18 19:39:19	B_cas	sympy	34	34	0	0	0	0	0	0	0.397383	0.0058118	SymPy 1.14.0; SymPyPythonCall 0.5.3	c726c4a13bdd
-2026-11-18 19:39:32	B_cas	symj	34	34	0	0	0	0	0	0	0.0103034	0.000213736	SymJ 0.1.0; GruntzLimit 1.7.0; RischIntegrate 1.4.0	c726c4a13bdd
-2026-11-18 19:39:48	D_coverage	giac	23	22	0	1	0	0	0	0	1.80513	7.51375e-05	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	c726c4a13bdd
-2026-11-18 19:40:10	D_coverage	symbolics	23	10	0	1	0	9	2	1	0.0110071	0.000308214	Symbolics 7.49.0; SymbolicUtils 4.56.1; Nemo 0.56.2; Groebner 0.10.11; GruntzLimit 1.7.0; RischIntegrate 1.4.0; Primes 0.5.7	c726c4a13bdd
-2026-11-18 19:46:09	D_coverage	symj	23	14	0	0	0	9	0	0	0.00573831	8.8955e-05	SymJ 0.1.0; GruntzLimit 1.7.0; RischIntegrate 1.4.0	c726c4a13bdd
-2026-11-18 19:47:02	B_cas	giac	34	33	0	0	1	0	0	0	0.00562676	9.33613e-05	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	c726c4a13bdd
-2026-11-18 19:51:45	D_coverage	sympy	23	20	0	1	0	1	0	1	0.290136	0.00399651	SymPy 1.14.0; SymPyPythonCall 0.5.3	c726c4a13bdd
-2026-11-19 00:13:07	E_suite	giac	107	60	3	0	34	9	1	0	3.65176	0.000715781	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	4abbb9b6ee46
-2026-11-19 00:54:58	E_suite	sympy	107	68	0	0	23	3	7	6	6.80689	0.0179394	SymPy 1.14.0; SymPyPythonCall 0.5.3	4abbb9b6ee46
-2026-11-19 01:04:44	E_suite	symbolics	107	21	0	0	32	49	4	1	3.67361	0.00320955	Symbolics 7.49.0; SymbolicUtils 4.56.1; Nemo 0.56.2; Groebner 0.10.11; GruntzLimit 1.7.0; RischIntegrate 1.4.0; Primes 0.5.7	4abbb9b6ee46
-2026-11-19 01:10:25	E_suite	symj	107	48	0	0	19	37	3	0	0.358879	0.00259912	SymJ 0.1.0; GruntzLimit 1.7.0; RischIntegrate 1.4.0	4abbb9b6ee46
-2026-11-19 07:58:19	D_coverage	giac	23	23	0	0	0	0	0	0	1.8344	0.000126525	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	dadfded3b2c3
-2026-11-19 07:58:41	D_coverage	sympy	23	21	0	0	0	1	0	1	0.313256	0.00435352	SymPy 1.14.0; SymPyPythonCall 0.5.3	dadfded3b2c3
-2026-11-19 08:29:17	E_suite	giac	107	64	3	0	30	9	1	0	3.61393	0.000752015	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	9bd0e3e49362
-2026-11-19 08:31:03	E_suite	sympy	107	71	0	0	20	3	7	6	10.3912	0.026026	SymPy 1.14.0; SymPyPythonCall 0.5.3	9bd0e3e49362
+date	host	bench	system	n	verified	wrong	unverified	unsolved	unavailable	error	timeout	t_warm_sum	t_warm_median	versions	source
+2026-11-18 09:10:19	giac-bench	A_ffi	giac	23	23	0	0	0	0	0	0	0.000897885	8.4012e-06	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	c726c4a13bdd
+2026-11-18 19:09:28	giac-bench	C_ifactor	giac	13	13	0	0	0	0	0	0	2.13027	0.000186913	Giac.jl 0.14.3; GIAC_jll 2.0.3+0	c726c4a13bdd
+2026-11-18 19:09:41	giac-bench	C_ifactor	primes	13	10	0	0	0	0	3	0	0.0218518	2.829e-06	Primes 0.5.7	c726c4a13bdd
+2026-11-18 19:37:51	giac-bench	C_ifactor	pari	13	13	0	0	0	0	0	0	2.2284	0.000150017	LibPARI 0.18.2; PARI_jll 2.17.3+0	c726c4a13bdd
+2026-11-18 19:38:22	giac-bench	B_cas	symbolics	34	32	0	0	2	0	0	0	0.00799316	0.000213096	Symbolics 7.49.0; SymbolicUtils 4.56.1; Nemo 0.56.2; Groebner 0.10.11; GruntzLimit 1.7.0; RischIntegrate 1.4.0; Primes 0.5.7	c726c4a13bdd
+2026-11-18 19:39:19	giac-bench	B_cas	sympy	34	34	0	0	0	0	0	0	0.397383	0.0058118	SymPy 1.14.0; SymPyPythonCall 0.5.3	c726c4a13bdd
+2026-11-18 19:39:32	giac-bench	B_cas	symj	34	34	0	0	0	0	0	0	0.0103034	0.000213736	SymJ 0.1.0; GruntzLimit 1.7.0; RischIntegrate 1.4.0	c726c4a13bdd
+2026-11-18 19:39:48	giac-bench	D_coverage	giac	23	22	0	1	0	0	0	0	1.80513	7.51375e-05	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	c726c4a13bdd
+2026-11-18 19:40:10	giac-bench	D_coverage	symbolics	23	10	0	1	0	9	2	1	0.0110071	0.000308214	Symbolics 7.49.0; SymbolicUtils 4.56.1; Nemo 0.56.2; Groebner 0.10.11; GruntzLimit 1.7.0; RischIntegrate 1.4.0; Primes 0.5.7	c726c4a13bdd
+2026-11-18 19:46:09	giac-bench	D_coverage	symj	23	14	0	0	0	9	0	0	0.00573831	8.8955e-05	SymJ 0.1.0; GruntzLimit 1.7.0; RischIntegrate 1.4.0	c726c4a13bdd
+2026-11-18 19:47:02	giac-bench	B_cas	giac	34	33	0	0	1	0	0	0	0.00562676	9.33613e-05	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	c726c4a13bdd
+2026-11-18 19:51:45	giac-bench	D_coverage	sympy	23	20	0	1	0	1	0	1	0.290136	0.00399651	SymPy 1.14.0; SymPyPythonCall 0.5.3	c726c4a13bdd
+2026-11-19 00:13:07	giac-bench	E_suite	giac	107	60	3	0	34	9	1	0	3.65176	0.000715781	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	4abbb9b6ee46
+2026-11-19 00:54:58	giac-bench	E_suite	sympy	107	68	0	0	23	3	7	6	6.80689	0.0179394	SymPy 1.14.0; SymPyPythonCall 0.5.3	4abbb9b6ee46
+2026-11-19 01:04:44	giac-bench	E_suite	symbolics	107	21	0	0	32	49	4	1	3.67361	0.00320955	Symbolics 7.49.0; SymbolicUtils 4.56.1; Nemo 0.56.2; Groebner 0.10.11; GruntzLimit 1.7.0; RischIntegrate 1.4.0; Primes 0.5.7	4abbb9b6ee46
+2026-11-19 01:10:25	giac-bench	E_suite	symj	107	48	0	0	19	37	3	0	0.358879	0.00259912	SymJ 0.1.0; GruntzLimit 1.7.0; RischIntegrate 1.4.0	4abbb9b6ee46
+2026-11-19 07:58:19	giac-bench	D_coverage	giac	23	23	0	0	0	0	0	0	1.8344	0.000126525	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	dadfded3b2c3
+2026-11-19 07:58:41	giac-bench	D_coverage	sympy	23	21	0	0	0	1	0	1	0.313256	0.00435352	SymPy 1.14.0; SymPyPythonCall 0.5.3	dadfded3b2c3
+2026-11-19 08:29:17	giac-bench	E_suite	giac	107	64	3	0	30	9	1	0	3.61393	0.000752015	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	9bd0e3e49362
+2026-11-19 08:31:03	giac-bench	E_suite	sympy	107	71	0	0	20	3	7	6	10.3912	0.026026	SymPy 1.14.0; SymPyPythonCall 0.5.3	9bd0e3e49362

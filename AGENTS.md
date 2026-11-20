@@ -21,9 +21,11 @@ AI assistance row exists. See `CONTRIBUTING.md`.
 
 ## Measurements
 
-- Files under `results/` are written by the harness only (`run_all.jl`,
-  `lib/supervise.jl`, `lib/worker.jl`); never edit them by hand, never
-  generate a number outside the scripts.
+- Files under `results/<host>/` are written by the harness only
+  (`run_all.jl`, `lib/supervise.jl`, `lib/worker.jl`); never edit them by
+  hand, never generate a number outside the scripts. A run starts from a
+  committed tree (`run_all.jl` refuses a dirty one) so that every record's
+  run id and the harness commit in `machine.txt` identify the code.
 - `tables/`, `figures/` and `results/summary.md` are what `make_tables.jl`
   produces from the committed results; CI rejects a drift.
 - Every number the site displays is computed from `results/*.tsv` at build

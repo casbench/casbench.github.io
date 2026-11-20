@@ -5,9 +5,11 @@
 
 For every commit that changed results/ (oldest first) and every results file
 whose content changed in that commit, one row is added, dated like
-make_tables_history.jl dates a run: by the last block of results/machine.txt
-(at that commit) that names the bench and the system; the commit hash is the
-source. Rows already present (same date, bench, system) are kept.
+make_tables_history.jl dates a run: by the last block of the host's
+machine.txt (at that commit) that names the bench and the system; the commit
+hash is the source. Rows already present (same date, host, bench, system) are
+kept. Files of the flat layout (results/<bench>_<system>.tsv, before
+2026-11-20) belong to the host OLD_HOST.
 """
 import csv
 import io
@@ -18,10 +20,12 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 HISTORY = ROOT / "results" / "history.tsv"
-HEADER = ["date", "bench", "system", "n", "verified", "wrong", "unverified", "unsolved", "unavailable", "error",
+OLD_HOST = "giac-bench"      # the host of the flat layout, before results/<host>/
+HEADER = ["date", "host", "bench", "system", "n", "verified", "wrong", "unverified", "unsolved", "unavailable", "error",
           "timeout", "t_warm_sum", "t_warm_median", "versions", "source"]
 STATUSES = ("verified", "wrong", "unverified", "unsolved", "unavailable", "error", "timeout")
-FIXED = {"host", "kernel", "cpu", "memory_GiB", "julia", "julia_threads", "bench", "system", "giac_version"}
+FIXED = {"host", "host_slug", "kernel", "cpu", "memory_GiB", "julia", "julia_threads", "bench", "system", "giac_version",
+         "run_id", "harness_commit", "harness_dirty", "giac_jl_commit", "osr_commit", "load_avg", "calibration_s"}
 
 
 def git(*args):
@@ -66,44 +70,48 @@ def main():
     existing = []
     if HISTORY.exists():
         existing = list(csv.DictReader(open(HISTORY, newline="", encoding="utf-8"), delimiter="\t", quoting=csv.QUOTE_NONE))
-    seen = {(r["date"], r["bench"], r["system"]) for r in existing}
+    seen = {(r["date"], r.get("host", OLD_HOST), r["bench"], r["system"]) for r in existing}
     commits = git("log", "--reverse", "--format=%H", "--", "results").split()
     last_blob = {}
     added = []
     for h in commits:
+        # (host, file name) -> blob, for the flat layout (host OLD_HOST) and for results/<host>/
         tree = {}
-        for line in git("ls-tree", h, "results/").splitlines():
+        for line in git("ls-tree", "-r", h, "results/").splitlines():
             meta, path = line.split("\t", 1)
-            tree[pathlib.Path(path).name] = meta.split()[2]
-        if "machine.txt" not in tree:
-            continue
-        dates = run_dates(git("show", f"{h}:results/machine.txt"))
-        for name, blob in sorted(tree.items()):
-            if not name.endswith(".tsv") or name == "history.tsv" or last_blob.get(name) == blob:
+            rel = pathlib.Path(path).relative_to("results")
+            host = rel.parts[0] if len(rel.parts) == 2 else OLD_HOST
+            tree[(host, rel.name)] = (meta.split()[2], path)
+        for host in sorted({hst for hst, _ in tree}):
+            if (host, "machine.txt") not in tree:
                 continue
-            last_blob[name] = blob
-            parts = name[:-4].split("_", 2)
-            if len(parts) < 3:
-                continue
-            bench, system = parts[0] + "_" + parts[1], parts[2]
-            label, n, counts, tsum, tmed = summarize(git("show", f"{h}:results/{name}"))
-            d = dates.get((bench, label)) or dates.get((bench, system)) or dates.get((bench, ""))
-            if d is None:
-                continue
-            date, vers = d
-            key = (date, bench, system)
-            if key in seen:
-                continue
-            added.append({"date": date, "bench": bench, "system": system, "n": n, **counts,
-                          "t_warm_sum": f"{tsum:.6g}", "t_warm_median": f"{tmed:.6g}", "versions": vers, "source": h[:12]})
-            seen.add(key)
+            dates = run_dates(git("show", f"{h}:{tree[(host, 'machine.txt')][1]}"))
+            for (hst, name), (blob, path) in sorted(tree.items()):
+                if hst != host or not name.endswith(".tsv") or name == "history.tsv" or last_blob.get((host, name)) == blob:
+                    continue
+                last_blob[(host, name)] = blob
+                parts = name[:-4].split("_", 2)
+                if len(parts) < 3:
+                    continue
+                bench, system = parts[0] + "_" + parts[1], parts[2]
+                label, n, counts, tsum, tmed = summarize(git("show", f"{h}:{path}"))
+                d = dates.get((bench, label)) or dates.get((bench, system)) or dates.get((bench, ""))
+                if d is None:
+                    continue
+                date, vers = d
+                key = (date, host, bench, system)
+                if key in seen:
+                    continue
+                added.append({"date": date, "host": host, "bench": bench, "system": system, "n": n, **counts,
+                              "t_warm_sum": f"{tsum:.6g}", "t_warm_median": f"{tmed:.6g}", "versions": vers, "source": h[:12]})
+                seen.add(key)
     rows = existing + added
-    rows.sort(key=lambda r: (r["date"], r["bench"], r["system"]))
+    rows.sort(key=lambda r: (r["date"], r.get("host", OLD_HOST), r["bench"], r["system"]))
     with open(HISTORY, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=HEADER, delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_NONE, escapechar="\\")
         w.writeheader()
         for r in rows:
-            w.writerow({k: r.get(k, "") for k in HEADER})
+            w.writerow({**{k: r.get(k, "") for k in HEADER}, "host": r.get("host", OLD_HOST)})
     print(f"history: {len(added)} rows added, {len(rows)} total")
 
 

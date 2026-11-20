@@ -23,9 +23,31 @@ its own environment under `envs/`, under `lib/supervise.jl`, which enforces a
 per-case time limit (`BENCH_TIMEOUT_<bench>`, read by `run_all.jl`; defaults B 120 s, C 600 s, D 120 s, E 60 s,
 F 30 s, G 300 s, H 30 s, I 300 s) and restarts the
 worker at the next case after a timeout or a crash. Results are appended to
-`results/<bench>_<system>.tsv` (one line per case: status, first-call time,
-warm time, textual result, note); `make_tables.jl` turns them into
-`tables/*.tex`, `figures/E_times.tex` and `results/summary.md`.
+`results/<host>/<bench>_<system>.tsv` (one line per case: status, first-call
+time, warm time, textual result, note, input, wall time, repeated times, load
+average, run id), one directory per host (`BENCH_HOST`, else the hostname);
+`results/REFERENCE` names the host whose numbers are published, and
+`make_tables.jl` turns that host's files into `tables/*.tex`,
+`figures/E_times.tex` and `results/summary.md`. A run on another machine
+lands in its own directory and the site compares the hosts.
+
+## Run identity and noise
+
+A run must be identifiable. `run_all.jl` refuses to start from a working
+tree with uncommitted changes outside `results/` (set `BENCH_ALLOW_DIRTY=1`
+to run anyway: the run id then ends in `-dirty`). Every block of
+`results/<host>/machine.txt` records the run id (`<date>_<host>`), the
+commit of the harness, whether the tree was dirty, the commits of the
+`Giac.jl` and `osr/Integration` submodules, the load average and the time of
+a calibration workload (two hundred million square roots in plain Julia, the
+minimum of three runs, `calibration_s`): a scale to compare machines and a
+detector of a perturbed run. Every record carries the run id (`run`), the
+harness's own wall time of the fastest measured call (`t_wall_s`, the same
+meaning for every system, process start-up included for a system run as one
+process per case; `t_warm_s` is the system's own time for those), every
+repeated time behind the minimum (`t_repeats_s`), and the 1-minute load
+average just before the case (`load_avg`). Files written before 2026-11-20
+have ten or eleven columns and no run identity.
 Since 2026-11-20 every row also carries an `input` column: what the adapter
 sent to the system during the case, in that system's syntax (the strings
 evaluated by Giac, the text given to SymPy, the scripts of Maxima, FriCAS,
@@ -71,6 +93,14 @@ limits of its own. Symbolics.jl's polynomial factorisation goes through its
 Nemo extension (`factor_use_nemo`); an operation an adapter maps to `missing`
 is reported as `unavailable`. SymJ.jl is not in the General registry at the
 time of writing and is pinned by URL and tree hash in `envs/symj`.
+
+## Reproducing on another machine
+
+`BENCH_HOST=<name> nix run .#bench` writes under `results/<name>/`, with that
+machine's `machine.txt` and `environment.txt`; commit the directory and the
+site's Hosts page compares every host. Statuses should agree across hosts (a
+difference is a bug of the benchmark or an unstable case); times scale with
+the machine, which the calibration workload makes comparable.
 
 ## Reproducibility notes
 

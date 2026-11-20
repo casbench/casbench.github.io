@@ -34,9 +34,10 @@ giac_version\t"giac 2.0.0"
 class SiteGenTests(unittest.TestCase):
     def make_root(self):
         d = pathlib.Path(tempfile.mkdtemp())
-        (d / "results").mkdir()
-        (d / "results" / "D_coverage_giac.tsv").write_text(TSV, encoding="utf-8")
-        (d / "results" / "machine.txt").write_text(MACHINE, encoding="utf-8")
+        (d / "results" / "testhost").mkdir(parents=True)
+        (d / "results" / "REFERENCE").write_text("testhost\n", encoding="utf-8")
+        (d / "results" / "testhost" / "D_coverage_giac.tsv").write_text(TSV, encoding="utf-8")
+        (d / "results" / "testhost" / "machine.txt").write_text(MACHINE, encoding="utf-8")
         (d / "README.md").write_text("# Title\n", encoding="utf-8")
         (d / "CITATION.cff").write_text('cff-version: 1.2.0\ntitle: "A title"\ntype: software\nauthors:\n  - family-names: Doe\n'
                                         '    given-names: Jo\n    orcid: "https://orcid.org/0000-0000-0000-0001"\n'
@@ -98,11 +99,14 @@ class SiteGenTests(unittest.TestCase):
         meth = (out / "content" / "methodology" / "_index.md").read_text(encoding="utf-8")
         self.assertIn(sitegen.BLOB + "/docs/../lib/common.jl", meth)   # relative links rewritten from docs/
         self.assertTrue((out / "static" / "llms.txt").exists())
-        self.assertTrue((out / "static" / "data" / "D_coverage_giac.tsv").exists())   # raw data republished
+        self.assertTrue((out / "static" / "data" / "testhost" / "D_coverage_giac.tsv").exists())   # raw data republished, per host
         self.assertTrue((out / "static" / "data" / "results.zip").exists())
         data = (out / "content" / "data" / "_index.md").read_text(encoding="utf-8")
-        self.assertIn("D_coverage_giac.tsv", data)
-        self.assertIn("data/D_coverage_giac.tsv", page)                              # linked from the bench page
+        self.assertIn("testhost/D_coverage_giac.tsv", data)
+        self.assertIn("data/testhost/D_coverage_giac.tsv", page)                     # linked from the bench page
+        self.assertIn("come from the host `testhost`", home)
+        envp = (out / "content" / "environment" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("## testhost (reference)", envp)
 
     def test_case_pages(self):
         root = self.make_root()
@@ -124,9 +128,9 @@ class SiteGenTests(unittest.TestCase):
     def test_history(self):
         root = self.make_root()
         (root / "results" / "history.tsv").write_text(
-            "date\tbench\tsystem\tn\tverified\twrong\tunverified\tunsolved\tunavailable\terror\ttimeout\tt_warm_sum\tt_warm_median\tversions\tsource\n"
-            "2026-11-18 08:28:32\tD_coverage\tgiac\t23\t22\t0\t1\t0\t0\t0\t0\t1.8\t7.5e-05\t\tabc\n"
-            "2026-11-19 10:00:00\tD_coverage\tgiac\t23\t23\t0\t0\t0\t0\t0\t0\t1.8\t7.0e-05\t\trun\n", encoding="utf-8")
+            "date\thost\tbench\tsystem\tn\tverified\twrong\tunverified\tunsolved\tunavailable\terror\ttimeout\tt_warm_sum\tt_warm_median\tversions\tsource\n"
+            "2026-11-18 08:28:32\ttesthost\tD_coverage\tgiac\t23\t22\t0\t1\t0\t0\t0\t0\t1.8\t7.5e-05\t\tabc\n"
+            "2026-11-19 10:00:00\ttesthost\tD_coverage\tgiac\t23\t23\t0\t0\t0\t0\t0\t0\t1.8\t7.0e-05\t\trun\n", encoding="utf-8")
         out = pathlib.Path(tempfile.mkdtemp())
         site = sitegen.generate(root, out)
         self.assertEqual(len(site.history), 2)
@@ -137,6 +141,24 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("last run recorded 2026-11-18 08:28:32", home)
         self.assertIn('<svg class="chart"', sitegen.svg_chart({"a": [("2026-11-18", 1.0), ("2026-11-19", 2.0)]}, "t", "y"))
         self.assertIn("no data yet", sitegen.svg_chart({"a": []}, "t", "y"))
+
+    def test_hosts(self):
+        """A second host gets its own directory, the Hosts page compares it with the reference, the home page names it."""
+        root = self.make_root()
+        (root / "results" / "other").mkdir()
+        (root / "results" / "other" / "D_coverage_giac.tsv").write_text(TSV.replace("\t0.2\t0.1\t", "\t0.2\t0.2\t"), encoding="utf-8")
+        (root / "results" / "other" / "machine.txt").write_text(MACHINE.replace("host\tvm", "host\tlaptop"), encoding="utf-8")
+        out = pathlib.Path(tempfile.mkdtemp())
+        site = sitegen.generate(root, out)
+        self.assertEqual(sorted(site.hosts), ["other", "testhost"])
+        self.assertEqual(site.reference, "testhost")
+        self.assertEqual(site.ncases(), 4)                                             # the tiles count the reference host only
+        hosts = (out / "content" / "hosts" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("| bench | system | `testhost` | `other` |", hosts)
+        self.assertIn("| D. Functional coverage | Giac.jl | 2/3 verified, 100.0 ms | 2/3 verified, 200.0 ms |", hosts)
+        home = (out / "content" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("1 other host (`other`) ran the same benches", home)
+        self.assertTrue((out / "static" / "data" / "other" / "D_coverage_giac.tsv").exists())
 
     def test_workflow(self):
         root = self.make_root()
@@ -206,9 +228,8 @@ class SiteGenTests(unittest.TestCase):
         if not (ROOT / "results").exists():
             self.skipTest("no results directory")
         cases, systems = {}, set()
-        for p in sorted((ROOT / "results").glob("*_*.tsv")):
-            if p.name == "history.tsv":
-                continue
+        reference = (ROOT / "results" / "REFERENCE").read_text(encoding="utf-8").strip()
+        for p in sorted((ROOT / "results" / reference).glob("*_*.tsv")):
             with open(p, newline="", encoding="utf-8") as f:
                 for r in csv.DictReader(f, delimiter="\t", quoting=csv.QUOTE_NONE):
                     if r.get("case") == "_load" or not r.get("idx", "").isdigit():

@@ -109,14 +109,14 @@ flowchart LR
     A -->|missing operation| U[unavailable] --> R
     A -->|declined, unevaluated| N[unsolved] --> R
     S -->|limit, signal| T[timeout / error] --> R
-    R[("results/&lt;bench&gt;_&lt;system&gt;.tsv<br/>status, first call, warm time, answer, note<br/>+ machine.txt, environment.txt")]
+    R[("results/&lt;host&gt;/&lt;bench&gt;_&lt;system&gt;.tsv<br/>status, first call, warm time, wall time, repeats, load, run id, answer, note, input<br/>+ machine.txt (run id, harness commit, calibration), environment.txt")]
 ```
 
 ## From results to tables, figures and pages
 
 ```mermaid
 flowchart LR
-    R[("results/*.tsv")] --> M["make_tables.jl<br/>make_tables_E.jl"]
+    R[("results/&lt;reference host&gt;/*.tsv")] --> M["make_tables.jl<br/>make_tables_E.jl"]
     M --> T["tables/*.tex"] & F["figures/E_times.tex"] & S["results/summary.md"]
     R --> G["tools/site/sitegen.py"] --> H["Hugo + Hextra<br/>.github/workflows/site.yml"] --> P["this site"]
     T & F -->|copied, submodule bumped| J["paper repository<br/>paper/tables, paper/figures"]
@@ -149,7 +149,7 @@ sequenceDiagram
     U->>N: git clone --recurse-submodules, then nix run the bench app
     N->>N: pin julia 1.13.3 and python3+sympy, record environment.txt
     N->>J: run_all.jl calls supervise(env, worker, bench, system, out, timeout)
-    J-->>N: results/BENCH_SYSTEM.tsv
+    J-->>N: results/HOST/BENCH_SYSTEM.tsv
     N->>N: make_tables.jl
     N-->>U: tables/, figures/, results/summary.md
 ```
@@ -226,6 +226,7 @@ def read_history(path):
     with open(path, newline="", encoding="utf-8") as f:
         for r in csv.DictReader(f, delimiter="\t", quoting=csv.QUOTE_NONE):
             try:
+                r.setdefault("host", "")
                 for k in ("n", "verified", "wrong", "unverified", "unsolved", "unavailable", "error", "timeout"):
                     r[k] = int(r[k])
                 r["t_warm_median"] = float(r["t_warm_median"])
@@ -350,14 +351,26 @@ def svg_dotplot(by_idx, systems, categories=None, title="", width=760):
 class Site:
     def __init__(self, root):
         self.root = pathlib.Path(root)
-        self.results = {}          # bench -> system -> [rows]
-        for p in sorted((self.root / "results").glob("*.tsv")):
-            for r in read_tsv(p):
-                if r["case"] == "_load":
-                    continue
-                r["system"] = SYSTEM_LABELS.get(r["system"], r["system"])
-                self.results.setdefault(r["bench"], {}).setdefault(r["system"], []).append(r)
-        self.machine = self.read_machine()
+        res = self.root / "results"
+        ref = res / "REFERENCE"
+        self.reference = ref.read_text(encoding="utf-8").strip() if ref.exists() else ""
+        self.hosts = {}            # host -> bench -> system -> [rows]; one directory per host under results/
+        self.machines = {}         # host -> blocks of its machine.txt
+        for hostdir in sorted(p for p in res.iterdir() if p.is_dir()) if res.exists() else []:
+            results = {}
+            for p in sorted(hostdir.glob("*.tsv")):
+                for r in read_tsv(p):
+                    if r["case"] == "_load":
+                        continue
+                    r["system"] = SYSTEM_LABELS.get(r["system"], r["system"])
+                    results.setdefault(r["bench"], {}).setdefault(r["system"], []).append(r)
+            if results or (hostdir / "machine.txt").exists():
+                self.hosts[hostdir.name] = results
+                self.machines[hostdir.name] = self.read_machine(hostdir / "machine.txt")
+        if self.reference not in self.hosts:
+            self.reference = next(iter(self.hosts), "")
+        self.results = self.hosts.get(self.reference, {})     # the published numbers: the reference host
+        self.machine = self.machines.get(self.reference, [])
         self.categories = self.read_categories()
         self._task_cache = {}
         self.history = read_history(self.root / "results" / "history.tsv")
@@ -383,10 +396,9 @@ class Site:
         return s
 
     # -- inputs -------------------------------------------------------------
-    def read_machine(self):
-        """Blocks of results/machine.txt: list of (date, {key: value})."""
+    def read_machine(self, p):
+        """Blocks of a machine.txt: list of (date, {key: value})."""
         blocks = []
-        p = self.root / "results" / "machine.txt"
         if not p.exists():
             return blocks
         for line in p.read_text(encoding="utf-8").splitlines():
@@ -562,10 +574,11 @@ class Site:
 
     def system_key(self, key, label):
         """The file key of a system label: results/<bench>_<key>.tsv (the inverse of SYSTEM_LABELS, else the label itself)."""
+        hostdir = self.root / "results" / self.reference
         for k, v in SYSTEM_LABELS.items():
-            if v == label and (self.root / "results" / f"{key}_{k}.tsv").exists():
+            if v == label and (hostdir / f"{key}_{k}.tsv").exists():
                 return k
-        for p in (self.root / "results").glob(f"{key}_*.tsv"):
+        for p in hostdir.glob(f"{key}_*.tsv"):
             rows = read_tsv(p)
             if rows and SYSTEM_LABELS.get(rows[-1]["system"], rows[-1]["system"]) == label:
                 return p.name[len(key) + 1:-4]
@@ -598,6 +611,12 @@ class Site:
             out += f'<a class="suite-stat" href="{href}"><strong>{esc(n)}</strong><span>{label}</span></a>\n'
         out += "</div>\n\n"
         out += f'<div class="disclaimer">{esc(DISCLAIMER)}</div>\n\n'
+        others = [h for h in self.hosts if h != self.reference]
+        out += (f"Host: the numbers of this page and of the bench pages come from the host `{esc(self.reference)}` "
+                f"(`results/REFERENCE`); " + (f"{len(others)} other host{'s' if len(others) > 1 else ''} "
+                f"({', '.join('`' + esc(h) + '`' for h in others)}) ran the same benches: [Hosts](hosts/) compares them."
+                if others else "a run on another machine lands in its own directory under `results/` and is compared on the "
+                "[Hosts](hosts/) page.") + "\n\n")
         out += f"{self.coi_summary()} Every contributor's declaration and the relation to every system are on the [conflict of interest](conflict-of-interest/) page.\n\n"
         ncb = self.ncases_by_bench()
         out += (f"## Benches\n\nThe {nc} cases are the sum of the cases column: a case is counted once per bench, "
@@ -620,7 +639,7 @@ class Site:
             out += f"| {badge(s)} | {STATUS_HELP[s]} |\n"
         out += self.cite_section()
         out += (f"\n[Data](data/) · [History](history/) · [Workflow](workflow/) · [Methodology](methodology/) · [Systems and versions](systems/) · "
-                f"[Machine](environment/) · [Repository]({REPO}) · Code MIT, data and pages CC BY 4.0\n")
+                f"[Machine](environment/) · [Hosts](hosts/) · [Repository]({REPO}) · Code MIT, data and pages CC BY 4.0\n")
         return out
 
     def cite_section(self):
@@ -672,7 +691,7 @@ class Site:
         out += f"{desc} Source: [`{key}/`]({BLOB}/{key}), results: [`results/`]({BLOB}/results).\n\n"
         out += ("Time shown: the minimum over repeated calls (warm; for a system run as a process, its own in-process time of "
                 "the single call), else the first call. Type to filter, click a heading to sort, click a case for every answer.\n\n")
-        raw = ", ".join(f"[{esc(s)}](../../data/{key}_{self.system_key(key, s)}.tsv)" for s in names)
+        raw = ", ".join(f"[{esc(s)}](../../data/{self.reference}/{key}_{self.system_key(key, s)}.tsv)" for s in names)
         out += f"Raw data (TSV, one file per system): {raw}; [all benches](../../data/results.zip); [every file](../../data/).\n\n"
         by_idx = self.by_case(key)
         if len(names) > 1:
@@ -848,23 +867,73 @@ class Site:
                 f"request on the [repository]({REPO}) with the idiom that system's users would write.\n")
         return out
 
+    def host_summary(self, host):
+        """Key -> value of a host from its machine blocks: fixed keys from the first block, run identity from the last."""
+        blocks = self.machines.get(host, [])
+        first, last = (blocks[0][1] if blocks else {}), (blocks[-1][1] if blocks else {})
+        out = {k: first[k] for k in ("host", "kernel", "cpu", "memory_GiB", "julia", "julia_threads") if k in first}
+        for k in ("harness_commit", "harness_dirty", "giac_jl_commit", "osr_commit", "calibration_s", "run_id"):
+            if k in last:
+                out[k] = last[k]
+        calib = [float(kv["calibration_s"]) for _, kv in blocks if kv.get("calibration_s", "").replace(".", "", 1).isdigit()]
+        if calib:
+            out["calibration_s (min, max over the blocks)"] = f"{min(calib):.4g}, {max(calib):.4g}"
+        return out
+
     def environment_page(self):
         out = front("Environment", 3)
-        first = self.machine[0][1] if self.machine else {}
-        out += "The machine, from the first block of `results/machine.txt`:\n\n| key | value |\n|---|---|\n"
-        for k in ("host", "kernel", "cpu", "memory_GiB", "julia", "julia_threads"):
-            if k in first:
-                out += f"| {k} | `{esc(first[k])}` |\n"
-        out += f"\nRuns recorded: {len(self.machine)} blocks, from {esc(min((d for d, _ in self.machine), default=''))} to {esc(self.last_date())}.\n\n"
-        env = self.root / "results" / "environment.txt"
-        if env.exists():
-            out += "## environment.txt\n\n" + fence(env.read_text(encoding="utf-8").strip())
+        out += ("One section per host (one directory per host under `results/`, the reference host first); the machine comes "
+                "from the first block of its `machine.txt`, the run identity (harness commit, submodule commits, calibration) "
+                "from the last. [Hosts](../hosts/) compares the results across hosts.\n\n")
+        for host in [self.reference] + [h for h in self.hosts if h != self.reference]:
+            if host not in self.hosts:
+                continue
+            blocks = self.machines.get(host, [])
+            out += f"## {esc(host)}" + (" (reference)" if host == self.reference else "") + "\n\n| key | value |\n|---|---|\n"
+            for k, v in self.host_summary(host).items():
+                out += f"| {esc(k)} | `{esc(str(v)[:120])}` |\n"
+            out += (f"\nRuns recorded: {len(blocks)} blocks, from {esc(min((d for d, _ in blocks), default=''))} to "
+                    f"{esc(max((d for d, _ in blocks), default=''))}.\n\n")
+            env = self.root / "results" / host / "environment.txt"
+            if env.exists():
+                out += f"<details><summary>environment.txt of {esc(host)}</summary>\n\n" + fence(env.read_text(encoding="utf-8").strip()) + "\n</details>\n\n"
+        return out
+
+    def hosts_page(self):
+        """The same benches on every host: verified counts and median warm times side by side."""
+        out = front("Hosts", 4)
+        hosts = [self.reference] + [h for h in self.hosts if h != self.reference]
+        out += (f"One directory per host under `results/`; the published numbers are those of `{esc(self.reference)}` "
+                "(`results/REFERENCE`). A run on another machine goes to its own directory and appears here: statuses should "
+                "agree across hosts (a difference is a bug or an unstable case), times scale with the machine (see the "
+                "calibration workload of each host on the [Environment](../environment/) page).\n\n")
+        out += "| host | cpu | memory GiB | julia | calibration s | last harness commit |\n|---|---|---|---|---|---|\n"
+        for h in hosts:
+            s = self.host_summary(h)
+            out += (f"| `{esc(h)}` | {esc(s.get('cpu', ''))} | {esc(s.get('memory_GiB', ''))} | {esc(s.get('julia', ''))} | "
+                    f"{esc(s.get('calibration_s', ''))} | `{esc(str(s.get('harness_commit', ''))[:12])}`"
+                    f"{' (dirty)' if str(s.get('harness_dirty', '')) == 'true' else ''} |\n")
+        out += "\n## Verified cases and median warm time per host\n\n"
+        out += "| bench | system | " + " | ".join(f"`{esc(h)}`" for h in hosts) + " |\n|---|---|" + "---|" * len(hosts) + "\n"
+        pairs = sorted({(b, s) for h in hosts for b, systems in self.hosts[h].items() for s in systems})
+        for b, s in pairs:
+            cells = []
+            for h in hosts:
+                rows = self.hosts[h].get(b, {}).get(s)
+                if not rows:
+                    cells.append("")
+                    continue
+                ok = [r for r in rows if r["status"] == "verified"]
+                times = sorted(etime(r) for r in ok if etime(r) == etime(r))
+                med = times[len(times) // 2] if times else float("nan")
+                cells.append(f"{len(ok)}/{len(rows)} verified, {fmt_time(med)}" if times else f"{len(ok)}/{len(rows)} verified")
+            out += f"| {esc(BENCHES.get(b, (b, ''))[0])} | {esc(s)} | " + " | ".join(cells) + " |\n"
         return out
 
     def history_page(self):
         out = front("History", 5)
         out += (f'<p class="site-stamp">{self.stamp()}</p>\n\n'
-                "Every run of every bench and system, from `results/history.tsv` (one row per bench, system and run date; "
+                "Every run of every bench and system on every host, from `results/history.tsv` (one row per host, bench, system and run date; "
                 "appended by `make_tables.jl`, backfilled from the git history by `tools/history_backfill.py`). "
                 "Verified counts and median warm times over the verified cases; hover a point for its value.\n\n")
         if not self.history:
@@ -874,16 +943,17 @@ class Site:
         for b in benches:
             title = BENCHES.get(b, (b, ""))[0]
             rows = [r for r in self.history if r["bench"] == b]
-            systems = sorted({r["system"] for r in rows})
-            lab = lambda s: SYSTEM_LABELS.get(s, s)
+            multi = len({r["host"] for r in rows}) > 1
+            series = sorted({(r["system"], r["host"]) for r in rows})
+            lab = lambda s, h: SYSTEM_LABELS.get(s, s) + (f" @{h}" if multi and h else "")
             out += f"## {esc(title)}\n\n"
-            out += svg_chart({lab(s): [(r["date"], r["verified"]) for r in rows if r["system"] == s] for s in systems},
+            out += svg_chart({lab(s, h): [(r["date"], r["verified"]) for r in rows if r["system"] == s and r["host"] == h] for s, h in series},
                              f"{title}: verified cases per run", "verified")
-            out += svg_chart({lab(s): [(r["date"], r["t_warm_median"]) for r in rows if r["system"] == s] for s in systems},
+            out += svg_chart({lab(s, h): [(r["date"], r["t_warm_median"]) for r in rows if r["system"] == s and r["host"] == h] for s, h in series},
                              f"{title}: median warm time of the verified cases (s, log)", "seconds", log=True)
-            out += "<details><summary>runs</summary>\n\n| date | system | n | verified | wrong | unverified | unsolved | unavailable | error | timeout | median warm | source |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n"
+            out += "<details><summary>runs</summary>\n\n| date | host | system | n | verified | wrong | unverified | unsolved | unavailable | error | timeout | median warm | source |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|\n"
             for r in rows:
-                out += (f"| {esc(r['date'][:16].replace('T', ' '))} | {esc(lab(r['system']))} | {r['n']} | {r['verified']} | {r['wrong']} | {r['unverified']} | "
+                out += (f"| {esc(r['date'][:16].replace('T', ' '))} | {esc(r['host'])} | {esc(SYSTEM_LABELS.get(r['system'], r['system']))} | {r['n']} | {r['verified']} | {r['wrong']} | {r['unverified']} | "
                         f"{r['unsolved']} | {r['unavailable']} | {r['error']} | {r['timeout']} | {fmt_time(r['t_warm_median'])} | `{esc(r['source'])}` |\n")
             out += "\n</details>\n\n"
         return out
@@ -891,10 +961,11 @@ class Site:
     def data_files(self):
         """The raw files the site republishes: (relative path under static/data, source path)."""
         res = self.root / "results"
-        files = [(p.name, p) for p in sorted(res.glob("*.tsv"))]
-        for name in ("machine.txt", "environment.txt", "summary.md"):
-            if (res / name).exists():
-                files.append((name, res / name))
+        files = [(p.name, p) for p in sorted(res.glob("*.tsv"))] + [(n, res / n) for n in ("summary.md", "REFERENCE") if (res / n).exists()]
+        for host in [self.reference] + [h for h in self.hosts if h != self.reference]:
+            hostdir = res / host
+            files += [(f"{host}/{p.name}", p) for p in sorted(hostdir.glob("*.tsv"))]
+            files += [(f"{host}/{n}", hostdir / n) for n in ("machine.txt", "environment.txt") if (hostdir / n).exists()]
         for extra in ("F_integration/sample.tsv", "H_osr/rules.tsv", "G_groebner/inputs.jl", "I_scale/inputs.jl"):
             p = self.root / extra
             if p.exists():
@@ -907,6 +978,7 @@ class Site:
         d.mkdir(parents=True, exist_ok=True)
         out = []
         for name, src in self.data_files():
+            (d / name).parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(src, d / name)
             out.append((name, src.stat().st_size))
         with zipfile.ZipFile(d / "results.zip", "w", zipfile.ZIP_DEFLATED) as z:
@@ -917,17 +989,18 @@ class Site:
     def data_page(self, files):
         out = front("Data", 3)
         out += (f'<p class="site-stamp">{self.stamp()}</p>\n\n'
-                "Every number of this site comes from these files, republished as they are in the repository: one TSV per "
-                "bench and system (columns `bench, system, idx, case, op, status, t_first_s, t_warm_s, result, note` and, in "
-                "the runs from 2026-11-20, `input`; times in seconds, `result`, `note` and `input` truncated to 200, 300 and "
-                "2 000 characters), the history of the runs, the "
-                "machine and environment records, and the fixed inputs. Each bench page also offers its table as CSV, "
-                "filtered and sorted as shown.\n\n"
+                "Every number of this site comes from these files, republished as they are in the repository: one directory "
+                "per host with one TSV per bench and system (columns `bench, system, idx, case, op, status, t_first_s, "
+                "t_warm_s, result, note`, then `input` in the runs from 2026-11-20, then `t_wall_s, t_repeats_s, load_avg, run` "
+                "in the runs with a run identity: the harness's own wall time, every repeated time, the load average before "
+                "the case, the run id; times in seconds, `result`, `note` and `input` truncated to 200, 300 and 2 000 "
+                "characters), its machine and environment records, plus the history of the runs on every host, the summary "
+                "and the fixed inputs. Each bench page also offers its table as CSV, filtered and sorted as shown.\n\n"
                 "- [results.zip](../data/results.zip): everything below in one archive.\n")
         for name, size in files:
             out += f"- [{esc(name)}](../data/{name}) ({size // 1024 + 1} kB)\n"
         out += ("\n## Reading them\n\n```python\nimport pandas as pd\n"
-                "df = pd.read_csv('https://s-celles.github.io/computer-algebra-system-benchmarks/data/E_suite_giac.tsv', sep='\\t')\n"
+                f"df = pd.read_csv('https://s-celles.github.io/computer-algebra-system-benchmarks/data/{self.reference}/E_suite_giac.tsv', sep='\\t')\n"
                 "df[df.status == 'verified'].t_warm_s.describe()\n```\n\n"
                 "```julia\nusing CSV, DataFrames\n"
                 "df = CSV.read(download(\"https://s-celles.github.io/computer-algebra-system-benchmarks/data/history.tsv\"), DataFrame)\n```\n")
@@ -1025,6 +1098,7 @@ def generate(root, out):
     write(c / "systems" / "_index.md", site.systems_page())
     write(c / "conflict-of-interest" / "_index.md", site.conflict_page())
     write(c / "environment" / "_index.md", site.environment_page())
+    write(c / "hosts" / "_index.md", site.hosts_page())
     files = site.write_data(s)
     write(c / "data" / "_index.md", site.data_page(files))
     write(c / "history" / "_index.md", site.history_page())
