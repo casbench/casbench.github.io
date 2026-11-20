@@ -9,8 +9,10 @@ timeout record and the restarted worker's record of the same case were
 appended (seen in F_integration_symbolics and F_integration_symj of the
 2026-11-19 runs). The last row is the one the restarted worker wrote, after
 the supervisor's record, so it is the one kept; rows are otherwise untouched
-and keep their order. The key is the index and the op together: bench A writes one
-row per case and dispatch level, with the level in the op column.
+and keep their order. The key is the index (the supervisor's record of a case has
+an empty op, the worker's the operation), except for bench A, whose rows are one
+per case and dispatch level with the level in the op column: there the key is
+the index and the op together.
 """
 import sys
 
@@ -21,7 +23,8 @@ def dedupe(path, check):
     if lines and lines[-1] == "":
         lines.pop()
     header, rows = lines[0], lines[1:]
-    key = lambda f: (f[2], f[4] if len(f) > 4 else "")
+    per_level = rows and rows[0].startswith("A_ffi\t")
+    key = lambda f: (f[2], f[4] if per_level and len(f) > 4 else "")
     last = {}
     for i, l in enumerate(rows):
         f = l.split("\t")

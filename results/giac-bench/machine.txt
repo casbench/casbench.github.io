@@ -842,6 +842,1362 @@ system	SymPy
 SymPy	1.14.0
 SymPyPythonCall	0.5.3
 
+# 2026-11-19 09:20:40
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-19 09:21:47
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Groebner.jl
+Groebner	0.10.11
+AbstractAlgebra	0.50.5
+
+# 2026-11-19 09:21:57
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	msolve (AlgebraicSolving.jl)
+AlgebraicSolving	0.13.0
+Nemo	0.57.2
+msolve_jll	0.1100.0+0
+
+# 2026-11-19 09:22:08
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-19 09:23:19
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Groebner.jl
+Groebner	0.10.11
+AbstractAlgebra	0.50.5
+
+# 2026-11-19 09:24:07
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	msolve (AlgebraicSolving.jl)
+AlgebraicSolving	0.13.0
+Nemo	0.57.2
+msolve_jll	0.1100.0+0
+
+# 2026-11-19 09:24:55
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-19 09:26:04
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-19 09:26:16
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-19 09:32:05
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Symbolics.jl
+Symbolics	7.49.0
+SymbolicUtils	4.56.1
+Nemo	0.56.2
+Groebner	0.10.11
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+Primes	0.5.7
+
+# 2026-11-19 09:33:20
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	SymJ.jl
+SymJ	0.1.0
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+
+# 2026-11-19 09:34:50
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-19 09:35:06
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-19 09:36:50
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-19 09:39:09
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Maxima
+Maxima	5.49.0
+
+# 2026-11-19 09:39:44
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Maxima
+Maxima	5.49.0
+
+# 2026-11-19 09:39:56
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	FriCAS
+FriCAS	Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg
+
+# 2026-11-19 09:50:07
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Maxima
+Maxima	5.49.0
+
+# 2026-11-19 09:50:13
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	FriCAS
+FriCAS	Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg
+
+# 2026-11-19 10:06:05
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Maxima
+Maxima	5.49.0
+
+# 2026-11-19 10:06:11
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	FriCAS
+FriCAS	Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg
+
+# 2026-11-19 10:06:47
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Maxima
+Maxima	5.49.0
+
+# 2026-11-19 10:07:35
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Maxima
+Maxima	5.49.0
+
+# 2026-11-19 10:07:42
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	FriCAS
+FriCAS	Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg
+
+# 2026-11-19 10:25:05
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-19 10:26:21
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-19 10:51:51
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Symbolics.jl
+Symbolics	7.49.0
+SymbolicUtils	4.56.1
+Nemo	0.56.2
+Groebner	0.10.11
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+Primes	0.5.7
+
+# 2026-11-19 12:31:56
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/Giac
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	giac
+
+# 2026-11-19 12:32:12
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/FriCAS
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	fricas
+
+# 2026-11-19 12:33:10
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Sage/Singular
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	singular
+
+# 2026-11-19 12:33:18
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Macaulay2
+Macaulay2	1.26.06
+
+# 2026-11-19 12:33:54
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Sage/Singular
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	singular
+
+# 2026-11-19 12:34:07
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Macaulay2
+Macaulay2	1.26.06
+
+# 2026-11-19 12:35:14
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/Giac
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	giac
+
+# 2026-11-19 12:36:05
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	SymJ.jl
+SymJ	0.1.0
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+
+# 2026-11-19 12:36:09
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Sage/Giac
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	giac
+
+# 2026-11-19 13:28:47
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-19 16:23:29
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Maxima
+Maxima	5.49.0
+
+# 2026-11-19 16:31:53
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	FriCAS
+FriCAS	Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg
+
+# 2026-11-19 17:05:08
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/Giac
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	giac
+
+# 2026-11-19 17:24:49
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Maxima
+Maxima	5.49.0
+
+# 2026-11-19 17:25:50
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Maxima
+Maxima	5.49.0
+
+# 2026-11-19 17:27:30
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	FriCAS
+FriCAS	Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg
+
+# 2026-11-19 17:59:36
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-19 17:59:54
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Maxima
+Maxima	5.49.0
+
+# 2026-11-19 18:00:13
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-19 18:59:59
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Maxima
+Maxima	5.49.0
+
+# 2026-11-19 19:11:10
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	FriCAS
+FriCAS	Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg
+
+# 2026-11-19 19:35:50
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/Giac
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	giac
+
+# 2026-11-19 21:01:00
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/Giac
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	giac
+
+# 2026-11-19 21:01:13
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Sage/Singular
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	singular
+
+# 2026-11-19 21:01:55
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/Giac
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	giac
+
+# 2026-11-19 21:40:16
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/Maxima
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	maxima
+
+# 2026-11-19 21:52:17
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/FriCAS
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	fricas
+
+# 2026-11-19 22:29:48
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/SymPy
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	sympy
+
+# 2026-11-19 22:56:21
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	I_scale
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-19 22:56:45
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	I_scale
+system	Symbolics.jl
+Symbolics	7.49.0
+SymbolicUtils	4.56.1
+Nemo	0.56.2
+Groebner	0.10.11
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+Primes	0.5.7
+
+# 2026-11-19 22:57:44
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	I_scale
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-19 22:59:29
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	I_scale
+system	SymJ.jl
+SymJ	0.1.0
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+
+# 2026-11-19 23:01:01
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	B_cas
+system	SymEngine.jl
+SymEngine	0.13.2
+symengine_jll	0.12.0+0
+
+# 2026-11-19 23:01:12
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	SymEngine.jl
+SymEngine	0.13.2
+symengine_jll	0.12.0+0
+
+# 2026-11-19 23:01:24
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	I_scale
+system	SymEngine.jl
+SymEngine	0.13.2
+symengine_jll	0.12.0+0
+
+# 2026-11-20 00:17:52
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	E_suite
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-20 00:18:01
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Maxima
+Maxima	5.49.0
+
+# 2026-11-20 01:43:37
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Sage/Singular
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	singular
+
+# 2026-11-20 01:50:41
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Sage/Giac
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	giac
+
+# 2026-11-20 01:52:36
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Macaulay2
+Macaulay2	1.26.06
+
+# 2026-11-20 01:58:34
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-20 02:02:06
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Symbolics.jl
+Symbolics	7.49.0
+SymbolicUtils	4.56.1
+Nemo	0.56.2
+Groebner	0.10.11
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+Primes	0.5.7
+
+# 2026-11-20 02:08:00
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	SymJ.jl
+SymJ	0.1.0
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+
+# 2026-11-20 02:09:34
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-20 02:12:54
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Maxima
+Maxima	5.49.0
+
+# 2026-11-20 02:14:59
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	FriCAS
+FriCAS	Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg
+
+# 2026-11-20 02:17:11
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Sage/Giac
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	giac
+
+# 2026-11-20 02:18:54
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Sage/Maxima
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	maxima
+
+# 2026-11-20 02:22:17
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Sage/FriCAS
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	fricas
+
+# 2026-11-20 02:23:32
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Sage/SymPy
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	sympy
+
+# 2026-11-20 02:26:33
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	FriCAS
+FriCAS	Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg
+
+# 2026-11-20 02:31:07
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/Giac
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	giac
+
+# 2026-11-20 02:32:59
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/Maxima
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	maxima
+
+# 2026-11-20 02:37:29
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/FriCAS
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	fricas
+
+# 2026-11-20 02:41:24
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/SymPy
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	sympy
+
+# 2026-11-20 02:44:39
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	B_cas
+system	SymEngine.jl
+SymEngine	0.13.2
+symengine_jll	0.12.0+0
+
+# 2026-11-20 02:44:46
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	D_coverage
+system	SymEngine.jl
+SymEngine	0.13.2
+symengine_jll	0.12.0+0
+
+# 2026-11-20 02:44:57
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	I_scale
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-20 02:45:31
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	I_scale
+system	Symbolics.jl
+Symbolics	7.49.0
+SymbolicUtils	4.56.1
+Nemo	0.56.2
+Groebner	0.10.11
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+Primes	0.5.7
+
+# 2026-11-20 02:48:32
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	I_scale
+system	SymEngine.jl
+SymEngine	0.13.2
+symengine_jll	0.12.0+0
+
+# 2026-11-20 02:48:59
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	I_scale
+system	SymJ.jl
+SymJ	0.1.0
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+
+# 2026-11-20 02:52:43
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	I_scale
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-20 02:57:34
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	I_scale
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-20 03:03:21
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/Giac
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	giac
+
+# 2026-11-20 03:42:55
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/Maxima
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	maxima
+
+# 2026-11-20 04:01:03
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/FriCAS
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	fricas
+
+# 2026-11-20 04:27:07
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Sage/SymPy
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	sympy
+
+# 2026-11-20 07:26:25
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	FriCAS
+FriCAS	Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg
+
+# 2026-11-20 07:33:07
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	I_scale
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-20 07:52:31
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Sage/Singular
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	singular
+
+# 2026-11-20 08:00:17
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Sage/Giac
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	giac
+
+# 2026-11-20 08:01:59
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	G_groebner
+system	Macaulay2
+Macaulay2	1.26.06
+
+# 2026-11-20 08:04:48
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	F_integration
+system	Compute Engine
+compute-engine	0.194.3
+node	v24.22.2
+
+# 2026-11-20 08:05:00
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	I_scale
+system	Compute Engine
+compute-engine	0.194.3
+node	v24.22.2
+
+# 2026-11-20 08:05:59
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	I_scale
+system	Compute Engine
+compute-engine	0.194.3
+node	v24.22.2
+
+# 2026-11-20 08:07:31
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-20 08:24:28
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Maxima
+Maxima	5.49.0
+
+# 2026-11-20 08:34:41
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	FriCAS
+FriCAS	Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg
+
+# 2026-11-20 08:59:29
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Sage/Giac
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	giac
+
+# 2026-11-20 09:21:40
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Sage/Maxima
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	maxima
+
+# 2026-11-20 09:27:45
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Sage/FriCAS
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	fricas
+
+# 2026-11-20 09:51:47
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Sage/SymPy
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	sympy
+
+# 2026-11-20 12:19:00
+host	workstation
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+bench	H_osr
+system	Symbolics.jl
+Symbolics	7.49.0
+SymbolicUtils	4.56.1
+Nemo	0.56.2
+Groebner	0.10.11
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+Primes	0.5.7
+
 # 2026-11-20 14:55:45
 run_id	20261120-145512_giac-bench
 harness_commit	449ff557bbc22fe17cf36f2018f17e9ca4021e47

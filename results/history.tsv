@@ -19,3 +19,35 @@ date	host	bench	system	n	verified	wrong	unverified	unsolved	unavailable	error	ti
 2026-11-19 07:58:41	giac-bench	D_coverage	sympy	23	21	0	0	0	1	0	1	0.313256	0.00435352	SymPy 1.14.0; SymPyPythonCall 0.5.3	dadfded3b2c3
 2026-11-19 08:29:17	giac-bench	E_suite	giac	107	64	3	0	30	9	1	0	3.61393	0.000752015	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	9bd0e3e49362
 2026-11-19 08:31:03	giac-bench	E_suite	sympy	107	71	0	0	20	3	7	6	10.3912	0.026026	SymPy 1.14.0; SymPyPythonCall 0.5.3	9bd0e3e49362
+2026-11-20 02:44:39	giac-bench	B_cas	symengine	34	6	0	0	0	28	0	0	0.000191788	2.35347e-05	SymEngine 0.13.2; symengine_jll 0.12.0+0	run
+2026-11-20 02:44:46	giac-bench	D_coverage	symengine	23	0	0	0	0	21	2	0	0	NaN	SymEngine 0.13.2; symengine_jll 0.12.0+0	run
+2026-11-20 00:17:52	giac-bench	E_suite	giac	107	64	3	0	30	9	1	0	3.61393	0.000752015	GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0; Giac.jl 0.14.3	run
+2026-11-20 07:26:25	giac-bench	F_integration	fricas	639	222	4	282	110	0	20	1	39.5164	0.144281	FriCAS Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg	run
+2026-11-19 18:00:13	giac-bench	F_integration	giac	639	303	13	39	238	0	23	23	32.0928	0.0152597	GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0; Giac.jl 0.14.3	run
+2026-11-20 00:18:01	giac-bench	F_integration	maxima	639	277	2	58	293	0	8	1	19.299	0.01	Maxima 5.49.0	run
+2026-11-20 04:01:03	giac-bench	F_integration	sage_fricas	639	254	26	314	0	0	26	19	11.2578	0.00791204	sage_algorithm fricas; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-20 03:03:21	giac-bench	F_integration	sage_giac	639	248	28	144	166	0	32	21	27.1302	0.019484	sage_algorithm giac; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-20 03:42:55	giac-bench	F_integration	sage_maxima	639	215	26	66	271	0	50	11	32.7332	0.00293326	sage_algorithm maxima; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-20 04:27:07	giac-bench	F_integration	sage_sympy	639	133	8	30	332	0	17	119	396.239	0.417422	sage_algorithm sympy; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-19 10:51:51	giac-bench	F_integration	symbolics	639	271	2	31	164	0	83	88	14.9596	0.0115323	Nemo 0.56.2; Symbolics 7.49.0; GruntzLimit 1.7.0; Groebner 0.10.11; SymbolicUtils 4.56.1; RischIntegrate 1.4.0; Primes 0.5.7	run
+2026-11-19 12:36:05	giac-bench	F_integration	symj	639	297	2	51	203	0	42	44	31.7758	0.0131751	GruntzLimit 1.7.0; SymJ 0.1.0; RischIntegrate 1.4.0	run
+2026-11-19 13:28:47	giac-bench	F_integration	sympy	639	144	2	18	275	0	14	186	102.121	0.338089	SymPyPythonCall 0.5.3; SymPy 1.14.0	run
+2026-11-19 10:25:05	giac-bench	G_groebner	giac	32	32	0	0	0	0	0	0	8.99662	0.0366644	GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0; Giac.jl 0.14.3	run
+2026-11-19 09:23:19	giac-bench	G_groebner	groebner	32	32	0	0	0	0	0	0	3.04129	0.00741862	Groebner 0.10.11; AbstractAlgebra 0.50.5	run
+2026-11-20 08:01:59	giac-bench	G_groebner	macaulay2	32	32	0	0	0	0	0	0	345.735	0.0242354	Macaulay2 1.26.06	run
+2026-11-19 09:24:07	giac-bench	G_groebner	msolve	32	32	0	0	0	0	0	0	4.06405	0.00955555	AlgebraicSolving 0.13.0; msolve_jll 0.1100.0+0; Nemo 0.57.2	run
+2026-11-20 08:00:17	giac-bench	G_groebner	sage_giac	32	25	0	0	0	0	7	0	1.81591	0.00928974	sage_algorithm giac; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-20 07:52:31	giac-bench	G_groebner	sage_singular	32	29	0	0	0	0	2	1	130.037	0.0165052	sage_algorithm singular; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-19 09:24:55	giac-bench	G_groebner	sympy	32	23	0	0	0	0	0	9	24.4826	0.314434	SymPyPythonCall 0.5.3; SymPy 1.14.0	run
+2026-11-20 08:34:41	giac-bench	H_osr	fricas	641	32	0	87	482	0	32	8	4.24786	0.137203	FriCAS Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg	run
+2026-11-20 08:07:31	giac-bench	H_osr	giac	641	77	1	4	535	0	16	8	3.93191	0.00871582	GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0; Giac.jl 0.14.3	run
+2026-11-20 08:24:28	giac-bench	H_osr	maxima	641	86	0	26	520	0	9	0	5.53001	0.01	Maxima 5.49.0	run
+2026-11-20 09:27:45	giac-bench	H_osr	sage_fricas	641	35	16	478	0	0	72	40	0.696216	0.00588632	sage_algorithm fricas; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-20 08:59:29	giac-bench	H_osr	sage_giac	641	31	22	134	340	0	96	18	0.637049	0.00858545	sage_algorithm giac; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-20 09:21:40	giac-bench	H_osr	sage_maxima	641	36	12	28	254	0	307	4	1.17068	0.00402928	sage_algorithm maxima; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-20 09:51:47	giac-bench	H_osr	sage_sympy	641	26	7	13	319	0	76	200	9.10531	0.136536	sage_algorithm sympy; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-20 02:44:57	giac-bench	I_scale	giac	14	11	1	0	0	0	2	0	1.12616	0.0409775	GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0; Giac.jl 0.14.3	run
+2026-11-20 02:45:31	giac-bench	I_scale	symbolics	14	9	1	2	0	0	2	0	7.81766	0.22089	Nemo 0.56.2; Symbolics 7.49.0; GruntzLimit 1.7.0; Groebner 0.10.11; SymbolicUtils 4.56.1; RischIntegrate 1.4.0; Primes 0.5.7	run
+2026-11-20 02:48:32	giac-bench	I_scale	symengine	14	14	0	0	0	0	0	0	1.67864	0.0096777	SymEngine 0.13.2; symengine_jll 0.12.0+0	run
+2026-11-20 02:48:59	giac-bench	I_scale	symj	14	13	0	0	1	0	0	0	9.07624	0.0906128	GruntzLimit 1.7.0; SymJ 0.1.0; RischIntegrate 1.4.0	run
+2026-11-20 07:33:07	giac-bench	I_scale	sympy	8	8	0	0	0	0	0	0	13.7888	1.01861	SymPyPythonCall 0.5.3; SymPy 1.14.0	run
