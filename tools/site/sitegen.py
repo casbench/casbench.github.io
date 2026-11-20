@@ -72,6 +72,14 @@ def package(label):
     return ("external", label.split(" (")[0].strip())
 
 
+# the projects compared or consumed here that the author of the benchmarks also writes (conflict of interest)
+AUTHOR_RELATION = {"Giac.jl": "author and maintainer", "LibPARI.jl": "author",
+                   "OpenSymbolicRules": "author (the source of bench H: its rules are both the problems and the certified reference)"}
+DISCLOSURE = ("Who runs this: the author of these benchmarks maintains Giac.jl, one of the systems compared, wrote LibPARI.jl "
+              "(bench C) and OpenSymbolicRules (the source of bench H), and wrote or chose the task files of every system. "
+              "The task files of bench E come from a fork of Giac.jl by an external contributor. This is why every case page "
+              "shows the exact input sent to each system, why every answer is checked by a system-neutral test and why the raw "
+              "data are published: an idiom unfair to a system can be found and corrected. Corrections are welcome.")
 DISCLAIMER = ("An individual, non-commercial project. The numbers are dated: they were measured on a shared virtual "
               "machine with the package versions recorded in the results files, and the systems compared are moving "
               "quickly. A status is a claim to check against the results files, not a verdict on a system: an unsolved "
@@ -581,6 +589,7 @@ class Site:
             out += f'<a class="suite-stat" href="{href}"><strong>{esc(n)}</strong><span>{label}</span></a>\n'
         out += "</div>\n\n"
         out += f'<div class="disclaimer">{esc(DISCLAIMER)}</div>\n\n'
+        out += f'<div class="disclaimer disclosure">{esc(DISCLOSURE)} Per system: [Systems](systems/).</div>\n\n'
         ncb = self.ncases_by_bench()
         out += (f"## Benches\n\nThe {nc} cases are the sum of the cases column: a case is counted once per bench, "
                 "whatever the number of systems that ran it. A bench without a committed results file is listed without a count.\n\n"
@@ -745,6 +754,11 @@ class Site:
         out += "| package | version | recorded |\n|---|---|---|\n"
         for k, (v, d) in sorted(self.versions().items(), key=lambda kv: kv[0].lower()):
             out += f"| {esc(k)} | `{esc(v[:90])}` | {esc(d[:10])} |\n"
+        out += (f"\n## Relation to the author\n\n{esc(DISCLOSURE)}\n\n| system or package | kind | relation to the author |\n|---|---|---|\n")
+        for kind, names in self.packages_by_kind().items():
+            for n in names:
+                out += f"| {esc(n)} | {'Julia package' if kind == 'julia' else 'other system'} | {esc(AUTHOR_RELATION.get(n, 'none'))} |\n"
+        out += f"| OpenSymbolicRules | source of bench H | {esc(AUTHOR_RELATION['OpenSymbolicRules'])} |\n"
         out += ("\n## Adapters\n\n`lib/adapters/<system>.jl` give the systems the same small interface "
                 "(`OPS`, `EVAL`, `NTERMS`, `NFACTORS`, `UNSOLVED`, `VERSIONS`). Bench E has one task file per system, "
                 "`E_suite/tasks_<system>.jl`, written the way that system's user would write it. An operation an adapter "
@@ -852,7 +866,7 @@ class Site:
         return front("Methodology", 7) + "\n\n---\n\n".join(parts)
 
     def llms(self):
-        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of computer algebra systems, {self.systems_sentence()}. {DISCLAIMER}\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
+        return (f"# Computer algebra system benchmarks\n\n> Reproducible, verified, dated benchmarks of computer algebra systems, {self.systems_sentence()}. {DISCLAIMER} {DISCLOSURE}\n\n- Consumes OpenSymbolicRules (OSR): {OSR}\n"
                 + "\n".join(f"- {t}: {d}" for k, (t, d) in BENCHES.items() if k in self.results) + f"\n- Repository: {REPO}\n")
 
 

@@ -28,6 +28,13 @@ OpenSymbolicRules, and throughput at scale.
 > output, and every results file has an `input` column (runs from
 > 2026-11-20). Corrections of a task that does not ask a system the way its
 > users would are welcome: open an issue or a pull request with the idiom.
+>
+> Who runs this: the author of these benchmarks maintains Giac.jl, one of
+> the systems compared, wrote LibPARI.jl (bench C) and OpenSymbolicRules
+> (the source of bench H), and wrote or chose the task files of every
+> system (those of bench E come from a fork of Giac.jl by an external
+> contributor). The published inputs, the system-neutral checks and the raw
+> data are there so that this can be checked.
 
 They are the reproduced numbers of the JuliaCon Proceedings paper on Giac.jl
 (in preparation for 2027), whose repository includes this one as a git
