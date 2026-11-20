@@ -31,14 +31,14 @@ PAPER = "JuliaCon Proceedings paper on Giac.jl (in preparation, 2027)"
 # bench key -> (title, one-line description)
 BENCHES = {
     "A_ffi": ("A. FFI overhead", "Microseconds per call through each dispatch level of Giac.jl, minimum over rounds."),
-    "B_cas": ("B. CAS operations", "expand, factor, integrate and simplify on 34 fixed inputs; every answer verified."),
+    "B_cas": ("B. CAS operations", "expand, factor, integrate and simplify on fixed inputs; every answer verified."),
     "C_ifactor": ("C. Integer factorisation", "Giac.ifactor, Primes.factor and LibPARI on Int64 values, smooth integers and semiprimes of 20 to 60 digits."),
     "D_coverage": ("D. Functional coverage", "One problem per capability: is the operation available, and is the answer right?"),
-    "E_suite": ("E. Problem suite", "107 problems in thirteen categories, from the 103 of the fork notebook plus four model-to-Jacobian tasks."),
+    "E_suite": ("E. Problem suite", "The problems of the fork notebook, in categories from arithmetic to transforms and modelling, plus four model-to-Jacobian tasks."),
     "F_integration": ("F. Integration sample", "A stratified sample of the 12000.org independent integration tests, checked by differentiation."),
     "G_groebner": ("G. Gröbner bases", "Reduced Gröbner bases of classical systems (katsura, cyclic, eco, noon) over Q and a prime field."),
-    "I_scale": ("I. Throughput at scale", "How the time grows with the size of the expression: dense expansion, a large derivative, a series, substitution, evaluation and code generation on random trees of up to a hundred thousand leaves."),
     "H_osr": ("H. OSR rules", "The integration rules of OpenSymbolicRules v1 as problems: every integrand, checked by differentiation and against the Lean-certified replacement."),
+    "I_scale": ("I. Throughput at scale", "How the time grows with the size of the expression: dense expansion, a large derivative, a series, substitution, evaluation and code generation on random trees of up to a hundred thousand leaves."),
 }
 OSR = "https://opensymbolicrules.github.io/"
 STATUSES = ("verified", "wrong", "unverified", "unsolved", "unavailable", "error", "timeout")
@@ -404,12 +404,15 @@ class Site:
                 self._e_tex = {}
                 p = self.root / "E_suite" / "statements.tsv"
                 if p.exists():
+                    k = 0
                     for line in p.read_text(encoding="utf-8").splitlines():
                         if line.startswith("#") or line.startswith("name\t") or "\t" not in line:
                             continue
+                        k += 1
                         n, l = line.split("\t", 1)
-                        self._e_tex[n] = l
-            return self._e_tex.get(name)
+                        self._e_tex[k] = (n, l)     # one row per problem, in the order of E_suite/problems.jl
+            row = self._e_tex.get(idx)
+            return row[1] if row and row[0] == name else None
         if key == "F_integration":
             if not hasattr(self, "_f_rows"):
                 self._f_rows = {}
@@ -507,8 +510,13 @@ class Site:
     def last_date(self):
         return max((d for d, _ in self.machine), default="")
 
+    def ncases_by_bench(self):
+        """Bench -> number of cases, a case being an index of the bench (two cases may share a name) counted once
+        whatever the number of systems that ran it."""
+        return {key: len({r["idx"] for rows in systems.values() for r in rows}) for key, systems in self.results.items()}
+
     def ncases(self):
-        return sum(len({r["case"] for rows in systems.values() for r in rows}) for systems in self.results.values())
+        return sum(self.ncases_by_bench().values())
 
     def systems(self):
         return sorted({s for systems in self.results.values() for s in systems})
@@ -573,10 +581,15 @@ class Site:
             out += f'<a class="suite-stat" href="{href}"><strong>{esc(n)}</strong><span>{label}</span></a>\n'
         out += "</div>\n\n"
         out += f'<div class="disclaimer">{esc(DISCLAIMER)}</div>\n\n'
-        out += "## Benches\n\n| bench | what it measures |\n|---|---|\n"
+        ncb = self.ncases_by_bench()
+        out += (f"## Benches\n\nThe {nc} cases are the sum of the cases column: a case is counted once per bench, "
+                "whatever the number of systems that ran it. A bench without a committed results file is listed without a count.\n\n"
+                "| bench | cases | systems | what it measures |\n|---|---|---|---|\n")
         for key, (title, desc) in BENCHES.items():
             if key in self.results:
-                out += f"| [{title}](results/{key.lower()}/) | {desc} |\n"
+                out += f"| [{title}](results/{key.lower()}/) | {ncb[key]} | {len(self.results[key])} | {desc} |\n"
+            else:
+                out += f"| {title} | no run committed yet | | {desc} |\n"
         out += ("\n## Sources\n\n"
                 "- Bench E follows the notebook of a fork of Giac.jl; bench F samples the 12000.org independent integration tests "
                 "(Nasser M. Abbasi; the problems come from the Rubi test suite and other collections); bench G uses the classical "

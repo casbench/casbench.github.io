@@ -17,6 +17,7 @@ D_coverage\tGiac.jl\t2\tztrans n\tztrans\twrong\t0.01\t0.0003\tz/(z-1)^2\t
 D_coverage\tSymPy\t1\tfactor x^4-1\tfactor\tverified\t0.5\t0.004\t(x - 1)*(x + 1)*(x**2 + 1)\t\tfactor(x**4 - 1)
 D_coverage\tSymPy\t2\tztrans n\tztrans\tunavailable\tNaN\tNaN\t\tno Z transform
 D_coverage\tsympy\t3\tslow\tslow\ttimeout\tNaN\tNaN\t\tover the limit
+D_coverage\tGiac.jl\t4\tslow\tslow\tverified\t0.2\t0.1\t1\ta second case with the same name
 """
 MACHINE = """# 2026-11-18 08:28:32
 host\tvm
@@ -43,7 +44,8 @@ class SiteGenTests(unittest.TestCase):
         root = self.make_root()
         out = pathlib.Path(tempfile.mkdtemp())
         site = sitegen.generate(root, out)
-        self.assertEqual(site.ncases(), 3)                      # _load rows are dropped
+        self.assertEqual(site.ncases(), 4)                      # _load rows are dropped; cases 3 and 4 share a name
+        self.assertEqual(site.ncases_by_bench(), {"D_coverage": 4})
         self.assertEqual(site.systems(), ["Giac.jl", "SymPy"])   # the supervisor key sympy is relabelled
         self.assertEqual(site.packages(), ["Giac.jl", "SymPy"])
         self.assertEqual(site.packages_by_kind(), {"julia": ["Giac.jl"], "external": ["SymPy"]})
@@ -56,7 +58,9 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn('class="chart dotplot"', page)                 # the dot plot of the bench
         self.assertIn('fill="none"', page)                           # a hollow mark for the wrong answer
         home = (out / "content" / "_index.md").read_text(encoding="utf-8")
-        self.assertIn("<strong>3</strong><span>cases</span>", home)
+        self.assertIn("<strong>4</strong><span>cases</span>", home)
+        self.assertIn("| [D. Functional coverage](results/d_coverage/) | 4 | 2 |", home)   # cases and systems per bench
+        self.assertIn("| E. Problem suite | no run committed yet |", home)               # a bench without results is listed
         self.assertIn("<strong>1</strong><span>Julia packages</span>", home)
         self.assertIn("<strong>1</strong><span>other systems</span>", home)
         self.assertIn("Julia packages (Giac.jl) and other systems (SymPy)", home)   # the lists come from the results
@@ -86,6 +90,7 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("#### Output", text)
         self.assertIn("$$\\operatorname{factor}\\left(x^{4} - 1\\right)$$", text)   # the statement rendered as LaTeX
         self.assertTrue((out / "content" / "results" / "d_coverage" / "003-slow" / "_index.md").exists())
+        self.assertTrue((out / "content" / "results" / "d_coverage" / "004-slow" / "_index.md").exists())
 
     def test_history(self):
         root = self.make_root()
