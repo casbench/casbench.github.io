@@ -54,6 +54,7 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
         last_progress = ""
         last_change = time()
         killed = false
+        elapsed = NaN
         while process_running(proc)
             sleep(0.25)
             p = isfile(progress) ? read(progress, String) : ""
@@ -62,6 +63,7 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
                 last_change = time()
             end
             if !isempty(p) && time() - last_change > timeout
+                elapsed = time() - last_change     # what the case had consumed when it was stopped (recorded as t_first)
                 killgroup("TERM")                # SIGTERM to the group; a worker blocked in a C call ignores it
                 killed = true
                 break
@@ -78,7 +80,8 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
         if killed
             idx, name = split(last_progress, '\t'; limit = 2)
             i = parse(Int, idx)
-            append_record(out, Record(bench, system, i, name, "", "timeout", NaN, NaN, "", "killed after $(timeout)s"))
+            append_record(out, Record(bench, system, i, name, "", "timeout", round(elapsed; digits = 2), NaN, "",
+                                      "stopped after $(round(elapsed; digits = 1)) s, limit $(timeout) s (t_first is the time consumed when stopped)"))
             start = i + 1
             println("[supervise] $bench/$system: case $i ($name) timed out; restarting at $(start)")
             continue
