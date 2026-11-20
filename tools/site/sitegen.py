@@ -802,7 +802,8 @@ class Site:
         if not by_c:
             out += "*No declaration yet.*\n\n"
         out += ("## Use of AI assistants\n\n"
-                "Each contributor declares the AI assistants they used, for what, and how the output was reviewed. This matters "
+                "Each contributor declares their use of AI assistants: for what, and how the output was reviewed (the tool need "
+                "not be named). This matters "
                 "here more than elsewhere: an idiom an assistant generated for a system is a possible source of a benchmark-side "
                 "error, which is why every case page shows the exact input sent to each system. The measurements themselves "
                 "come from the scripts of the repository, never from an assistant.\n\n| contributor | assistant | used for | review and limits |\n|---|---|---|---|\n")

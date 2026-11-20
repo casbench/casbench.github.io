@@ -28,7 +28,7 @@ abstract: >-
   integration rules and throughput at scale. The author maintains Giac.jl,
   one of the systems compared, and wrote LibPARI.jl and OpenSymbolicRules
   (the Julia packages, not the Giac and PARI/GP engines); the code, task
-  files and documentation were written with an AI assistant (Claude Code)
-  under the author's review, the measurements come from the scripts. Fixed inputs, one adapter per system, every answer checked by a
+  files and documentation were written with an AI assistant under the
+  author's review, the measurements come from the scripts. Fixed inputs, one adapter per system, every answer checked by a
   system-neutral test, every run dated and its environment pinned. The
   reproduced numbers of the JuliaCon Proceedings paper on Giac.jl.

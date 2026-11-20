@@ -9,7 +9,8 @@ adapter (`lib/adapters/`), a check or a problem list comes with the
 contributor's own rows in `docs/disclosures.tsv`: their relation to the systems
 compared and to the sources of the problems (author, maintainer, contributor,
 employee, funded by, none), and their use of AI assistants (kind
-`AI assistance`: which tool, for what, how the output was reviewed), since an
+`AI assistance`: for what, how the output was reviewed; naming the tool is
+not required), since an
 idiom an assistant generated for a system is a possible source of a
 benchmark-side error. A row whose project is `none` is also a declaration.
 The site renders the file on its conflict of interest page.

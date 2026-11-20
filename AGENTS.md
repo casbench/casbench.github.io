@@ -8,12 +8,13 @@ or by an agent on a person's behalf.
 Every contributor to the benchmarks declares, in `docs/disclosures.tsv`, their
 relation to the systems compared and to the sources of the problems (author,
 maintainer, contributor, employee, funded by, none) and their use of AI
-assistants (which tool, for what, how the output was reviewed). One row per
+assistants (for what, how the output was reviewed; the tool need not be
+named). One row per
 contributor and project; a row whose project is `none` is also a declaration.
 A change that touches a task file (`E_suite/tasks_<system>.jl`), an adapter
 (`lib/adapters/`), a check, a problem list or an input file is not complete
 without the rows of the person it is made for. An agent making such a change
-adds or updates the rows of the person it works for and names itself in their
+adds or updates the rows of the person it works for, including their
 `AI assistance` row. The site renders the file on its conflict of interest
 page; `tools/site/test_sitegen.py` checks that the file parses and that an
 AI assistance row exists. See `CONTRIBUTING.md`.
