@@ -165,6 +165,7 @@ include(joinpath(@__DIR__, "make_tables_F.jl"))
 include(joinpath(@__DIR__, "make_tables_H.jl"))
 include(joinpath(@__DIR__, "make_tables_I.jl"))
 include(joinpath(@__DIR__, "make_tables_history.jl"))
+include(joinpath(@__DIR__, "make_tables_metrics.jl"))
 
 write(joinpath(RESULTS_ROOT, "summary.md"), String(take!(md)))
 println("tables written to ", TABLES)

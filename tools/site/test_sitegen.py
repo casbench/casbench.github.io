@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Checks for the site generator. Run with python3 -I tools/site/test_sitegen.py."""
 import csv
+import math
 import pathlib
 import re
 import sys
@@ -53,6 +54,41 @@ class SiteGenTests(unittest.TestCase):
             "Jo Doe\t0000-0000-0000-0001\tSome Assistant\tAI assistance\tused to draft the adapters\treviewed by the contributor\n", encoding="utf-8")
         return d
 
+    def test_committed_operation_metrics_match_site(self):
+        table = ROOT / "tables" / "operation_metrics.tsv"
+        if not table.exists():
+            self.skipTest("operation metrics not present")
+        with table.open(encoding="utf-8", newline="") as f:
+            expected = {(r["bench"], r["source"], r["op"]): r for r in csv.DictReader(f, delimiter="\t")}
+        site = sitegen.Site(ROOT)
+        seen = set()
+        for bench, systems in site.results.items():
+            for system, rows in systems.items():
+                source = f"{bench}_{site.system_key(bench, system)}.tsv"
+                for op, group in site.operation_groups(bench, rows).items():
+                    key = bench, source, op
+                    self.assertIn(key, expected)
+                    seen.add(key)
+                    r = expected[key]
+                    n, k, quartiles = sitegen.operation_metrics(group)
+                    self.assertEqual((n, k), (int(r["attempted"]), int(r["solved"])), key)
+                    if quartiles is None:
+                        self.assertTrue(math.isnan(float(r["median_s"])), key)
+                    else:
+                        for value, column in zip(quartiles, ("q1_s", "median_s", "q3_s")):
+                            self.assertTrue(math.isclose(value, float(r[column]), rel_tol=1e-12, abs_tol=1e-14), key)
+        self.assertEqual(seen, set(expected))
+
+    def test_operation_metrics(self):
+        def row(status, warm, first=float("nan")):
+            return {"status": status, "t_warm_s": warm, "t_first_s": first}
+        rows = [row("verified", 1), row("verified", 3), row("verified", 9),
+                row("timeout", 600), row("unavailable", 0)]
+        self.assertEqual(sitegen.operation_metrics(rows), (4, 3, (2, 3, 6)))
+        self.assertEqual(sitegen.operation_metrics([row("verified", 1), row("timeout", 600)]), (2, 1, (1, 1, 1)))
+        self.assertIsNone(sitegen.operation_metrics([row("verified", 1), row("timeout", 600), row("wrong", 1)])[2])
+        self.assertIsNone(sitegen.operation_metrics([row("verified", float("nan"))])[2])
+
     def test_pages(self):
         root = self.make_root()
         out = pathlib.Path(tempfile.mkdtemp())
@@ -62,7 +98,14 @@ class SiteGenTests(unittest.TestCase):
         self.assertEqual(site.systems(), ["Giac.jl", "SymPy"])   # the supervisor key sympy is relabelled
         self.assertEqual(site.packages(), ["Giac.jl", "SymPy"])
         self.assertEqual(site.packages_by_kind(), {"julia": ["Giac.jl"], "external": ["SymPy"]})
+        synthesis = (out / "content" / "results" / "synthesis" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("Giac.jl", synthesis)
+        self.assertIn("2/3 verified", synthesis)
+        self.assertNotIn("warm time, sum", synthesis)
+        self.assertIn("weight: 1", synthesis)
         page = (out / "content" / "results" / "d_coverage" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("## Operation metrics", page)
+        self.assertIn("not shown: fewer than half solved or missing time", page)
         self.assertIn('<span class="sk-badge sk-tone--good" data-status="verified"', page)          # site-kit badges
         self.assertIn('<span class="sk-badge sk-tone--neutral-dashed" data-status="unavailable"', page)
         self.assertIn("200 µs", page)                            # warm time formatted

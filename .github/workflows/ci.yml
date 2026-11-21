@@ -30,5 +30,7 @@ jobs:
           diff -r tables "$RUNNER_TEMP/tables"
           diff -r figures "$RUNNER_TEMP/figures"
           git diff --exit-code results/summary.md results/history.tsv
+      - name: Robust statistics tests
+        run: julia --startup-file=no test/metrics.jl
       - name: Site generator tests
         run: python3 -I tools/site/test_sitegen.py

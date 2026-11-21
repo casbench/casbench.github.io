@@ -1,0 +1,615 @@
+bench	source	op	attempted	solved	timed	fraction	q1_s	median_s	q3_s
+A_ffi	A_ffi_giac.tsv	binding	5	5	5	1.0	2.14848e-6	5.9079e-6	4.9141e-5
+A_ffi	A_ffi_giac.tsv	giac_eval	5	5	5	1.0	6.56482e-6	1.05609e-5	5.68469e-5
+A_ffi	A_ffi_giac.tsv	invoke_fast	5	5	5	1.0	5.60308e-6	1.21281e-5	4.95356e-5
+A_ffi	A_ffi_giac.tsv	invoke_str	5	5	5	1.0	8.4012e-6	1.17378e-5	5.79143e-5
+A_ffi	A_ffi_giac.tsv	tier1	3	3	3	1.0	1.5024985e-6	2.17717e-6	4.03135e-6
+B_cas	B_cas_giac.tsv	expand	6	5	5	0.8333333333333334	8.56969e-5	9.33613e-5	0.000356048
+B_cas	B_cas_giac.tsv	factor	8	8	8	1.0	0.0001396475	0.00014549700000000002	0.00017161024999999997
+B_cas	B_cas_giac.tsv	integrate	12	12	12	1.0	8.333515e-5	0.00011542135	0.00024842225
+B_cas	B_cas_giac.tsv	simplify	8	8	8	1.0	3.3965400000000005e-5	3.849685e-5	6.43863e-5
+B_cas	B_cas_symbolics.tsv	expand	6	6	6	1.0	0.00010608775	0.0001559105	0.0002729175
+B_cas	B_cas_symbolics.tsv	factor	8	8	8	1.0	0.00015630175	0.000215254	0.00021792375
+B_cas	B_cas_symbolics.tsv	integrate	12	12	12	1.0	0.00021484099999999998	0.000289297	0.000653624
+B_cas	B_cas_symbolics.tsv	simplify	8	6	6	0.75	9.487450000000001e-5	0.000106421	0.00013880025
+B_cas	B_cas_symengine.tsv	expand	6	6	6	1.0	1.191039e-5	2.35347e-5	3.0474599999999998e-5
+B_cas	B_cas_symengine.tsv	factor	0	0	0	NaN	NaN	NaN	NaN
+B_cas	B_cas_symengine.tsv	integrate	0	0	0	NaN	NaN	NaN	NaN
+B_cas	B_cas_symengine.tsv	simplify	0	0	0	NaN	NaN	NaN	NaN
+B_cas	B_cas_symj.tsv	expand	6	6	6	1.0	3.7152925e-6	5.319935e-6	8.81523e-6
+B_cas	B_cas_symj.tsv	factor	8	8	8	1.0	0.0001036545	0.000171745	0.0002497135
+B_cas	B_cas_symj.tsv	integrate	12	12	12	1.0	0.00016366875	0.0002257665	0.00046468275000000005
+B_cas	B_cas_symj.tsv	simplify	8	8	8	1.0	0.00039421025	0.0004698705	0.00073495425
+B_cas	B_cas_sympy.tsv	expand	6	6	6	1.0	0.0023943475	0.003550355	0.00412467
+B_cas	B_cas_sympy.tsv	factor	8	8	8	1.0	0.0008197382500000001	0.001359605	0.0019569525
+B_cas	B_cas_sympy.tsv	integrate	12	12	12	1.0	0.010355699999999999	0.01546155	0.03487385
+B_cas	B_cas_sympy.tsv	simplify	8	8	8	1.0	0.005543895	0.005921325	0.012684475
+C_ifactor	C_ifactor_giac.tsv	ifactor	13	13	13	1.0	0.000102297	0.000186913	0.00371881
+C_ifactor	C_ifactor_pari.tsv	ifactor	13	13	13	1.0	7.78792e-5	0.000150017	0.00210749
+C_ifactor	C_ifactor_primes.tsv	ifactor	13	10	10	0.7692307692307693	1.7053375e-6	4.0798e-6	5.999615e-5
+D_coverage	D_coverage_giac.tsv	assume_simplify	1	1	1	1.0	2.68157e-5	2.68157e-5	2.68157e-5
+D_coverage	D_coverage_giac.tsv	cfactor	1	1	1	1.0	0.000117353	0.000117353	0.000117353
+D_coverage	D_coverage_giac.tsv	desolve_ivp	1	1	1	1.0	0.000534729	0.000534729	0.000534729
+D_coverage	D_coverage_giac.tsv	det	1	1	1	1.0	2.85326e-5	2.85326e-5	2.85326e-5
+D_coverage	D_coverage_giac.tsv	diophantine	1	1	1	1.0	0.000126525	0.000126525	0.000126525
+D_coverage	D_coverage_giac.tsv	discriminant	1	1	1	1.0	4.33978e-5	4.33978e-5	4.33978e-5
+D_coverage	D_coverage_giac.tsv	eigenvals	1	1	1	1.0	0.000959057	0.000959057	0.000959057
+D_coverage	D_coverage_giac.tsv	factor	1	1	1	1.0	0.00087547	0.00087547	0.00087547
+D_coverage	D_coverage_giac.tsv	gcd	1	1	1	1.0	2.22849e-5	2.22849e-5	2.22849e-5
+D_coverage	D_coverage_giac.tsv	groebner	1	1	1	1.0	0.000106641	0.000106641	0.000106641
+D_coverage	D_coverage_giac.tsv	ifactor	1	1	1	1.0	1.82764	1.82764	1.82764
+D_coverage	D_coverage_giac.tsv	ilaplace	1	1	1	1.0	6.64223e-5	6.64223e-5	6.64223e-5
+D_coverage	D_coverage_giac.tsv	integrate	1	1	1	1.0	0.000139049	0.000139049	0.000139049
+D_coverage	D_coverage_giac.tsv	laplace	1	1	1	1.0	0.00154757	0.00154757	0.00154757
+D_coverage	D_coverage_giac.tsv	limit	2	2	2	1.0	6.426075e-5	9.36945e-5	0.00012312825
+D_coverage	D_coverage_giac.tsv	partfrac	1	1	1	1.0	3.87731e-5	3.87731e-5	3.87731e-5
+D_coverage	D_coverage_giac.tsv	resultant	1	1	1	1.0	2.56075e-5	2.56075e-5	2.56075e-5
+D_coverage	D_coverage_giac.tsv	series	1	1	1	1.0	3.03783e-5	3.03783e-5	3.03783e-5
+D_coverage	D_coverage_giac.tsv	solve	1	1	1	1.0	0.000143065	0.000143065	0.000143065
+D_coverage	D_coverage_giac.tsv	sum	1	1	1	1.0	0.000145297	0.000145297	0.000145297
+D_coverage	D_coverage_giac.tsv	trigsimp	1	1	1	1.0	0.000342577	0.000342577	0.000342577
+D_coverage	D_coverage_giac.tsv	ztrans	1	1	1	1.0	0.00125246	0.00125246	0.00125246
+D_coverage	D_coverage_symbolics.tsv	assume_simplify	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symbolics.tsv	cfactor	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symbolics.tsv	desolve_ivp	1	1	1	1.0	0.00437659	0.00437659	0.00437659
+D_coverage	D_coverage_symbolics.tsv	det	1	1	1	1.0	6.1433e-6	6.1433e-6	6.1433e-6
+D_coverage	D_coverage_symbolics.tsv	diophantine	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symbolics.tsv	discriminant	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symbolics.tsv	eigenvals	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symbolics.tsv	factor	1	1	1	1.0	0.000143553	0.000143553	0.000143553
+D_coverage	D_coverage_symbolics.tsv	gcd	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symbolics.tsv	groebner	1	1	1	1.0	0.000308214	0.000308214	0.000308214
+D_coverage	D_coverage_symbolics.tsv	ifactor	1	0	0	0.0	NaN	NaN	NaN
+D_coverage	D_coverage_symbolics.tsv	ilaplace	1	1	1	1.0	0.00278532	0.00278532	0.00278532
+D_coverage	D_coverage_symbolics.tsv	integrate	1	1	1	1.0	14.9073	14.9073	14.9073
+D_coverage	D_coverage_symbolics.tsv	laplace	1	1	1	1.0	0.000935757	0.000935757	0.000935757
+D_coverage	D_coverage_symbolics.tsv	limit	2	0	0	0.0	NaN	NaN	NaN
+D_coverage	D_coverage_symbolics.tsv	partfrac	1	1	1	1.0	0.00225259	0.00225259	0.00225259
+D_coverage	D_coverage_symbolics.tsv	resultant	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symbolics.tsv	series	1	1	1	1.0	5.5075e-5	5.5075e-5	5.5075e-5
+D_coverage	D_coverage_symbolics.tsv	solve	1	0	0	0.0	NaN	NaN	NaN
+D_coverage	D_coverage_symbolics.tsv	sum	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symbolics.tsv	trigsimp	1	1	1	1.0	0.000143863	0.000143863	0.000143863
+D_coverage	D_coverage_symbolics.tsv	ztrans	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	assume_simplify	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	cfactor	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	desolve_ivp	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	det	1	0	0	0.0	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	diophantine	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	discriminant	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	eigenvals	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	factor	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	gcd	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	groebner	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	ifactor	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	ilaplace	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	integrate	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	laplace	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	limit	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	partfrac	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	resultant	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	series	1	0	0	0.0	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	solve	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	sum	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	trigsimp	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symengine.tsv	ztrans	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symj.tsv	assume_simplify	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symj.tsv	cfactor	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symj.tsv	desolve_ivp	1	1	1	1.0	0.00243098	0.00243098	0.00243098
+D_coverage	D_coverage_symj.tsv	det	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symj.tsv	diophantine	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symj.tsv	discriminant	1	1	1	1.0	4.6599e-5	4.6599e-5	4.6599e-5
+D_coverage	D_coverage_symj.tsv	eigenvals	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symj.tsv	factor	1	1	1	1.0	5.8807e-5	5.8807e-5	5.8807e-5
+D_coverage	D_coverage_symj.tsv	gcd	1	1	1	1.0	1.05657e-5	1.05657e-5	1.05657e-5
+D_coverage	D_coverage_symj.tsv	groebner	1	1	1	1.0	4.9049e-5	4.9049e-5	4.9049e-5
+D_coverage	D_coverage_symj.tsv	ifactor	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symj.tsv	ilaplace	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symj.tsv	integrate	1	1	1	1.0	0.00038537	0.00038537	0.00038537
+D_coverage	D_coverage_symj.tsv	laplace	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_symj.tsv	limit	2	2	2	1.0	0.00027839499999999997	0.000377102	0.000475809
+D_coverage	D_coverage_symj.tsv	partfrac	1	1	1	1.0	4.14527e-5	4.14527e-5	4.14527e-5
+D_coverage	D_coverage_symj.tsv	resultant	1	1	1	1.0	1.7567e-5	1.7567e-5	1.7567e-5
+D_coverage	D_coverage_symj.tsv	series	1	1	1	1.0	1.42271e-5	1.42271e-5	1.42271e-5
+D_coverage	D_coverage_symj.tsv	solve	1	1	1	1.0	0.000119103	0.000119103	0.000119103
+D_coverage	D_coverage_symj.tsv	sum	1	1	1	1.0	0.000820062	0.000820062	0.000820062
+D_coverage	D_coverage_symj.tsv	trigsimp	1	1	1	1.0	0.000990325	0.000990325	0.000990325
+D_coverage	D_coverage_symj.tsv	ztrans	0	0	0	NaN	NaN	NaN	NaN
+D_coverage	D_coverage_sympy.tsv	assume_simplify	1	1	1	1.0	0.0001341	0.0001341	0.0001341
+D_coverage	D_coverage_sympy.tsv	cfactor	1	1	1	1.0	0.00967499	0.00967499	0.00967499
+D_coverage	D_coverage_sympy.tsv	desolve_ivp	1	1	1	1.0	0.0252918	0.0252918	0.0252918
+D_coverage	D_coverage_sympy.tsv	det	1	1	1	1.0	0.000767292	0.000767292	0.000767292
+D_coverage	D_coverage_sympy.tsv	diophantine	1	1	1	1.0	0.056556	0.056556	0.056556
+D_coverage	D_coverage_sympy.tsv	discriminant	1	1	1	1.0	0.0012792	0.0012792	0.0012792
+D_coverage	D_coverage_sympy.tsv	eigenvals	1	1	1	1.0	0.00534052	0.00534052	0.00534052
+D_coverage	D_coverage_sympy.tsv	factor	1	1	1	1.0	0.0007358	0.0007358	0.0007358
+D_coverage	D_coverage_sympy.tsv	gcd	1	1	1	1.0	0.00166492	0.00166492	0.00166492
+D_coverage	D_coverage_sympy.tsv	groebner	1	1	1	1.0	0.00116618	0.00116618	0.00116618
+D_coverage	D_coverage_sympy.tsv	ifactor	1	0	0	0.0	NaN	NaN	NaN
+D_coverage	D_coverage_sympy.tsv	ilaplace	1	1	1	1.0	0.00508512	0.00508512	0.00508512
+D_coverage	D_coverage_sympy.tsv	integrate	1	1	1	1.0	0.0403702	0.0403702	0.0403702
+D_coverage	D_coverage_sympy.tsv	laplace	1	1	1	1.0	0.0956453	0.0956453	0.0956453
+D_coverage	D_coverage_sympy.tsv	limit	2	2	2	1.0	0.0016007649999999999	0.00251835	0.0034359349999999998
+D_coverage	D_coverage_sympy.tsv	partfrac	1	1	1	1.0	0.00369202	0.00369202	0.00369202
+D_coverage	D_coverage_sympy.tsv	resultant	1	1	1	1.0	0.00124246	0.00124246	0.00124246
+D_coverage	D_coverage_sympy.tsv	series	1	1	1	1.0	0.0242875	0.0242875	0.0242875
+D_coverage	D_coverage_sympy.tsv	solve	1	1	1	1.0	0.0252765	0.0252765	0.0252765
+D_coverage	D_coverage_sympy.tsv	sum	1	1	1	1.0	0.00186605	0.00186605	0.00186605
+D_coverage	D_coverage_sympy.tsv	trigsimp	1	1	1	1.0	0.00814311	0.00814311	0.00814311
+D_coverage	D_coverage_sympy.tsv	ztrans	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A Bessel function on the half-line	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A Bessel function, to Struve functions	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A Gaussian with a cosine	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A Jordan block	1	1	1	1.0	0.000341963	0.000341963	0.000341963
+E_suite	E_suite_giac.tsv	A Jordan form	1	1	1	1.0	0.00113079	0.00113079	0.00113079
+E_suite	E_suite_giac.tsv	A Laplace transform	1	1	1	1.0	0.00140152	0.00140152	0.00140152
+E_suite	E_suite_giac.tsv	A Lyapunov equation	1	1	1	1.0	0.000608365	0.000608365	0.000608365
+E_suite	E_suite_giac.tsv	A Mersenne prime	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A Riccati equation (LQR)	1	1	1	1.0	0.000843904	0.000843904	0.000843904
+E_suite	E_suite_giac.tsv	A Riccati equation with Airy solutions	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A Smith normal form	1	1	1	1.0	0.000483969	0.000483969	0.000483969
+E_suite	E_suite_giac.tsv	A Vandermonde determinant	1	1	1	1.0	0.00734999	0.00734999	0.00734999
+E_suite	E_suite_giac.tsv	A bounded oscillation	1	1	1	1.0	7.17051e-5	7.17051e-5	7.17051e-5
+E_suite	E_suite_giac.tsv	A center manifold	1	1	1	1.0	0.000723753	0.000723753	0.000723753
+E_suite	E_suite_giac.tsv	A central binomial series	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A closed form in n	1	1	1	1.0	0.000629344	0.000629344	0.000629344
+E_suite	E_suite_giac.tsv	A damped Bessel function	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A delayed step	1	1	1	1.0	0.000345836	0.000345836	0.000345836
+E_suite	E_suite_giac.tsv	A dilogarithm value	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A discrete logarithm	1	1	1	1.0	0.00403558	0.00403558	0.00403558
+E_suite	E_suite_giac.tsv	A forced Euler-Cauchy equation	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A forced initial-value problem	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A fourth root	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A heptagon sum	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A hypergeometric function	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A matrix exponential	1	1	1	1.0	0.000540231	0.000540231	0.000540231
+E_suite	E_suite_giac.tsv	A minimal polynomial	1	1	1	1.0	0.000973067	0.000973067	0.000973067
+E_suite	E_suite_giac.tsv	A nonlinear autonomous equation	1	1	1	1.0	0.000346318	0.000346318	0.000346318
+E_suite	E_suite_giac.tsv	A pendulum released from rest	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A pendulum's period	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A periodic continued fraction	1	1	1	1.0	1.83183e-5	1.83183e-5	1.83183e-5
+E_suite	E_suite_giac.tsv	A polylogarithm value	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A power of sinc	1	1	1	1.0	0.00037362	0.00037362	0.00037362
+E_suite	E_suite_giac.tsv	A quartic inequality	1	1	1	1.0	0.000187485	0.000187485	0.000187485
+E_suite	E_suite_giac.tsv	A quintic denominator	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A quintic solvable by radicals	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A ratio of Gamma functions	1	1	1	1.0	0.0031995	0.0031995	0.0031995
+E_suite	E_suite_giac.tsv	A second-order term of e	1	1	1	1.0	0.000242579	0.000242579	0.000242579
+E_suite	E_suite_giac.tsv	A sextic system	1	1	1	1.0	0.00335724	0.00335724	0.00335724
+E_suite	E_suite_giac.tsv	A stability region	1	1	1	1.0	0.000298975	0.000298975	0.000298975
+E_suite	E_suite_giac.tsv	A sum-of-squares certificate	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A symmetric septic	1	1	1	1.0	0.00287448	0.00287448	0.00287448
+E_suite	E_suite_giac.tsv	A symmetric system	1	1	1	1.0	0.00154858	0.00154858	0.00154858
+E_suite	E_suite_giac.tsv	A symmetry trick	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	A telescoping product	1	1	1	1.0	0.000397681	0.000397681	0.000397681
+E_suite	E_suite_giac.tsv	A trigonometric identity	1	1	1	1.0	0.000685707	0.000685707	0.000685707
+E_suite	E_suite_giac.tsv	Absolute values	1	1	1	1.0	0.00140909	0.00140909	0.00140909
+E_suite	E_suite_giac.tsv	Ahmed's integral	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	Airy	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	An arctangent of a radical	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	An exponential solution (Kovacic)	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	An inverse Laplace transform	1	1	1	1.0	0.000137288	0.000137288	0.000137288
+E_suite	E_suite_giac.tsv	An inverse Laplace transform to a Bessel function	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	An inverse cosine, with assumptions	1	1	1	1.0	0.000167991	0.000167991	0.000167991
+E_suite	E_suite_giac.tsv	Arithmetic-geometric	1	1	1	1.0	0.00139256	0.00139256	0.00139256
+E_suite	E_suite_giac.tsv	Bernoulli	1	1	1	1.0	0.000765628	0.000765628	0.000765628
+E_suite	E_suite_giac.tsv	Bessel, order 1/2	1	1	1	1.0	0.00184466	0.00184466	0.00184466
+E_suite	E_suite_giac.tsv	Bose-Einstein type	1	1	1	1.0	4.62178e-5	4.62178e-5	4.62178e-5
+E_suite	E_suite_giac.tsv	Cancelling poles	1	1	1	1.0	8.02224e-5	8.02224e-5	8.02224e-5
+E_suite	E_suite_giac.tsv	Chebyshev's pseudo-elliptic integral	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	Cyclotomic factors	1	1	1	1.0	0.00619018	0.00619018	0.00619018
+E_suite	E_suite_giac.tsv	Denesting	1	1	1	1.0	0.0011695	0.0011695	0.0011695
+E_suite	E_suite_giac.tsv	Dirichlet beta(3)	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	Duffing's oscillator from rest	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	Euler's constant	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	Every solution of cos x = 1/2	1	1	1	1.0	0.000200035	0.000200035	0.000200035
+E_suite	E_suite_giac.tsv	Exponential and logarithm (Risch)	1	1	1	1.0	0.000825763	0.000825763	0.000825763
+E_suite	E_suite_giac.tsv	Factoring over Q(sqrt 2)	1	1	1	1.0	0.000738401	0.000738401	0.000738401
+E_suite	E_suite_giac.tsv	Frullani's integral	1	1	1	1.0	0.00129875	0.00129875	0.00129875
+E_suite	E_suite_giac.tsv	Gamma's reflection formula	1	1	1	1.0	0.000285331	0.000285331	0.000285331
+E_suite	E_suite_giac.tsv	Gauss's 17-gon	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	Harmonic numbers	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	Implicitization	1	1	1	1.0	3.75169e-5	3.75169e-5	3.75169e-5
+E_suite	E_suite_giac.tsv	Jacobian: Brusselator N=10 (build)	1	1	1	1.0	0.00308489	0.00308489	0.00308489
+E_suite	E_suite_giac.tsv	Jacobian: Brusselator N=10 (evaluate 1000 points)	1	1	1	1.0	0.12718	0.12718	0.12718
+E_suite	E_suite_giac.tsv	Jacobian: Brusselator N=50 (build)	1	1	1	1.0	0.0261196	0.0261196	0.0261196
+E_suite	E_suite_giac.tsv	Jacobian: Brusselator N=50 (evaluate 1000 points)	1	1	1	1.0	3.16806	3.16806	3.16806
+E_suite	E_suite_giac.tsv	Lambert's W	1	1	1	1.0	0.000400064	0.000400064	0.000400064
+E_suite	E_suite_giac.tsv	Laplace's integral	1	1	1	1.0	0.000773219	0.000773219	0.000773219
+E_suite	E_suite_giac.tsv	Log-sine	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	Motzkin's polynomial	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	Nested exponentials (Gruntz)	1	1	1	1.0	0.000177329	0.000177329	0.000177329
+E_suite	E_suite_giac.tsv	Partitions	1	1	1	1.0	6.31876e-5	6.31876e-5	6.31876e-5
+E_suite	E_suite_giac.tsv	Parts, twice	1	1	1	1.0	0.00860665	0.00860665	0.00860665
+E_suite	E_suite_giac.tsv	Pell's equation	1	1	1	1.0	0.00119498	0.00119498	0.00119498
+E_suite	E_suite_giac.tsv	Polynomial decomposition	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	Quantifier elimination	1	1	1	1.0	0.000126433	0.000126433	0.000126433
+E_suite	E_suite_giac.tsv	Ramanujan's denesting	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	Riccati	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	Serret's integral	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	Stirling	1	1	1	1.0	0.00655424	0.00655424	0.00655424
+E_suite	E_suite_giac.tsv	Symbolic eigenvalues	1	1	1	1.0	0.000650732	0.000650732	0.000650732
+E_suite	E_suite_giac.tsv	The Fermat number F7	1	1	1	1.0	0.0207197	0.0207197	0.0207197
+E_suite	E_suite_giac.tsv	The cyclic-6 system	1	1	1	1.0	0.187178	0.187178	0.187178
+E_suite	E_suite_giac.tsv	The error function	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	The error function squared	1	1	1	1.0	0.00288719	0.00288719	0.00288719
+E_suite	E_suite_giac.tsv	The heat equation	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	The series of Lambert's W	1	1	1	1.0	0.00018894	0.00018894	0.00018894
+E_suite	E_suite_giac.tsv	The sine integral's Laplace transform	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	The transport equation	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	The unicycle's Lie algebra rank	1	1	1	1.0	0.000480512	0.000480512	0.000480512
+E_suite	E_suite_giac.tsv	Vandermonde's identity	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_giac.tsv	Wallis's product	1	1	1	1.0	0.00666518	0.00666518	0.00666518
+E_suite	E_suite_giac.tsv	sqrt(tan x)	1	1	1	1.0	0.00190412	0.00190412	0.00190412
+E_suite	E_suite_giac.tsv	tan sin - sin tan	1	1	1	1.0	0.000534894	0.000534894	0.000534894
+E_suite	E_suite_giac.tsv	zeta(4)	1	1	1	1.0	0.000781941	0.000781941	0.000781941
+E_suite	E_suite_symbolics.tsv	A Bessel function on the half-line	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A Bessel function, to Struve functions	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A Gaussian with a cosine	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A Jordan block	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A Jordan form	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A Laplace transform	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A Lyapunov equation	1	1	1	1.0	8.2737e-5	8.2737e-5	8.2737e-5
+E_suite	E_suite_symbolics.tsv	A Mersenne prime	1	1	1	1.0	0.000232644	0.000232644	0.000232644
+E_suite	E_suite_symbolics.tsv	A Riccati equation (LQR)	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A Riccati equation with Airy solutions	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A Smith normal form	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A Vandermonde determinant	1	1	1	1.0	0.0067481	0.0067481	0.0067481
+E_suite	E_suite_symbolics.tsv	A bounded oscillation	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A center manifold	1	1	1	1.0	0.00570602	0.00570602	0.00570602
+E_suite	E_suite_symbolics.tsv	A central binomial series	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A closed form in n	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A damped Bessel function	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A delayed step	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A dilogarithm value	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A discrete logarithm	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A forced Euler-Cauchy equation	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A forced initial-value problem	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A fourth root	1	1	1	1.0	0.0012399	0.0012399	0.0012399
+E_suite	E_suite_symbolics.tsv	A heptagon sum	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A hypergeometric function	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A matrix exponential	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A minimal polynomial	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A nonlinear autonomous equation	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A pendulum released from rest	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A pendulum's period	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A periodic continued fraction	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A polylogarithm value	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A power of sinc	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A quartic inequality	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A quintic denominator	1	1	1	1.0	0.00232133	0.00232133	0.00232133
+E_suite	E_suite_symbolics.tsv	A quintic solvable by radicals	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A ratio of Gamma functions	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A second-order term of e	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A sextic system	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A stability region	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A sum-of-squares certificate	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A symmetric septic	1	1	1	1.0	0.00255157	0.00255157	0.00255157
+E_suite	E_suite_symbolics.tsv	A symmetric system	1	1	1	1.0	0.065726	0.065726	0.065726
+E_suite	E_suite_symbolics.tsv	A symmetry trick	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A telescoping product	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	A trigonometric identity	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Absolute values	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Ahmed's integral	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Airy	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	An arctangent of a radical	1	1	1	1.0	0.00241006	0.00241006	0.00241006
+E_suite	E_suite_symbolics.tsv	An exponential solution (Kovacic)	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	An inverse Laplace transform	1	1	1	1.0	41.1526	41.1526	41.1526
+E_suite	E_suite_symbolics.tsv	An inverse Laplace transform to a Bessel function	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	An inverse cosine, with assumptions	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Arithmetic-geometric	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Bernoulli	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Bessel, order 1/2	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Bose-Einstein type	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Cancelling poles	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Chebyshev's pseudo-elliptic integral	1	1	1	1.0	0.00397136	0.00397136	0.00397136
+E_suite	E_suite_symbolics.tsv	Cyclotomic factors	1	1	1	1.0	0.00324868	0.00324868	0.00324868
+E_suite	E_suite_symbolics.tsv	Denesting	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Dirichlet beta(3)	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Duffing's oscillator from rest	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Euler's constant	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Every solution of cos x = 1/2	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Exponential and logarithm (Risch)	1	1	1	1.0	0.000495151	0.000495151	0.000495151
+E_suite	E_suite_symbolics.tsv	Factoring over Q(sqrt 2)	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Frullani's integral	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Gamma's reflection formula	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Gauss's 17-gon	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Harmonic numbers	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Implicitization	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Jacobian: Brusselator N=10 (build)	1	1	1	1.0	0.00180618	0.00180618	0.00180618
+E_suite	E_suite_symbolics.tsv	Jacobian: Brusselator N=10 (evaluate 1000 points)	1	1	1	1.0	0.132913	0.132913	0.132913
+E_suite	E_suite_symbolics.tsv	Jacobian: Brusselator N=50 (build)	1	1	1	1.0	0.0192247	0.0192247	0.0192247
+E_suite	E_suite_symbolics.tsv	Jacobian: Brusselator N=50 (evaluate 1000 points)	1	1	1	1.0	3.35064	3.35064	3.35064
+E_suite	E_suite_symbolics.tsv	Lambert's W	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Laplace's integral	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Log-sine	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Motzkin's polynomial	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Nested exponentials (Gruntz)	1	1	1	1.0	0.0710151	0.0710151	0.0710151
+E_suite	E_suite_symbolics.tsv	Partitions	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Parts, twice	1	1	1	1.0	0.00320955	0.00320955	0.00320955
+E_suite	E_suite_symbolics.tsv	Pell's equation	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Polynomial decomposition	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Quantifier elimination	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Ramanujan's denesting	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Riccati	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Serret's integral	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Stirling	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Symbolic eigenvalues	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	The Fermat number F7	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	The cyclic-6 system	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	The error function	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	The error function squared	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	The heat equation	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	The series of Lambert's W	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	The sine integral's Laplace transform	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	The transport equation	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	The unicycle's Lie algebra rank	1	1	1	1.0	7.2417e-5	7.2417e-5	7.2417e-5
+E_suite	E_suite_symbolics.tsv	Vandermonde's identity	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	Wallis's product	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	sqrt(tan x)	1	1	1	1.0	19.4592	19.4592	19.4592
+E_suite	E_suite_symbolics.tsv	tan sin - sin tan	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symbolics.tsv	zeta(4)	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A Bessel function on the half-line	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A Bessel function, to Struve functions	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A Gaussian with a cosine	1	1	1	1.0	0.0151028	0.0151028	0.0151028
+E_suite	E_suite_symj.tsv	A Jordan block	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A Jordan form	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A Laplace transform	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A Lyapunov equation	1	1	1	1.0	0.000119027	0.000119027	0.000119027
+E_suite	E_suite_symj.tsv	A Mersenne prime	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A Riccati equation (LQR)	1	1	1	1.0	0.0028075	0.0028075	0.0028075
+E_suite	E_suite_symj.tsv	A Riccati equation with Airy solutions	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A Smith normal form	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A Vandermonde determinant	1	1	1	1.0	0.00314448	0.00314448	0.00314448
+E_suite	E_suite_symj.tsv	A bounded oscillation	1	1	1	1.0	0.000266593	0.000266593	0.000266593
+E_suite	E_suite_symj.tsv	A center manifold	1	1	1	1.0	0.000534476	0.000534476	0.000534476
+E_suite	E_suite_symj.tsv	A central binomial series	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A closed form in n	1	1	1	1.0	0.00106673	0.00106673	0.00106673
+E_suite	E_suite_symj.tsv	A damped Bessel function	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A delayed step	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A dilogarithm value	1	1	1	1.0	0.0138098	0.0138098	0.0138098
+E_suite	E_suite_symj.tsv	A discrete logarithm	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A forced Euler-Cauchy equation	1	1	1	1.0	0.012208	0.012208	0.012208
+E_suite	E_suite_symj.tsv	A forced initial-value problem	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A fourth root	1	1	1	1.0	0.00119119	0.00119119	0.00119119
+E_suite	E_suite_symj.tsv	A heptagon sum	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A hypergeometric function	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A matrix exponential	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A minimal polynomial	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A nonlinear autonomous equation	1	1	1	1.0	0.00994296	0.00994296	0.00994296
+E_suite	E_suite_symj.tsv	A pendulum released from rest	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A pendulum's period	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A periodic continued fraction	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A polylogarithm value	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A power of sinc	1	1	1	1.0	0.000779662	0.000779662	0.000779662
+E_suite	E_suite_symj.tsv	A quartic inequality	1	1	1	1.0	0.000153248	0.000153248	0.000153248
+E_suite	E_suite_symj.tsv	A quintic denominator	1	1	1	1.0	0.00262075	0.00262075	0.00262075
+E_suite	E_suite_symj.tsv	A quintic solvable by radicals	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A ratio of Gamma functions	1	1	1	1.0	0.00564125	0.00564125	0.00564125
+E_suite	E_suite_symj.tsv	A second-order term of e	1	1	1	1.0	0.000600579	0.000600579	0.000600579
+E_suite	E_suite_symj.tsv	A sextic system	1	1	1	1.0	0.0436456	0.0436456	0.0436456
+E_suite	E_suite_symj.tsv	A stability region	1	1	1	1.0	0.000149459	0.000149459	0.000149459
+E_suite	E_suite_symj.tsv	A sum-of-squares certificate	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A symmetric septic	1	1	1	1.0	0.000614143	0.000614143	0.000614143
+E_suite	E_suite_symj.tsv	A symmetric system	1	1	1	1.0	0.00162593	0.00162593	0.00162593
+E_suite	E_suite_symj.tsv	A symmetry trick	1	1	1	1.0	0.0374151	0.0374151	0.0374151
+E_suite	E_suite_symj.tsv	A telescoping product	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	A trigonometric identity	1	1	1	1.0	0.0017698	0.0017698	0.0017698
+E_suite	E_suite_symj.tsv	Absolute values	1	1	1	1.0	0.00143141	0.00143141	0.00143141
+E_suite	E_suite_symj.tsv	Ahmed's integral	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Airy	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	An arctangent of a radical	1	1	1	1.0	0.00257749	0.00257749	0.00257749
+E_suite	E_suite_symj.tsv	An exponential solution (Kovacic)	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	An inverse Laplace transform	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	An inverse Laplace transform to a Bessel function	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	An inverse cosine, with assumptions	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Arithmetic-geometric	1	1	1	1.0	0.000115361	0.000115361	0.000115361
+E_suite	E_suite_symj.tsv	Bernoulli	1	1	1	1.0	0.0200878	0.0200878	0.0200878
+E_suite	E_suite_symj.tsv	Bessel, order 1/2	1	1	1	1.0	0.0036436	0.0036436	0.0036436
+E_suite	E_suite_symj.tsv	Bose-Einstein type	1	1	1	1.0	0.0244078	0.0244078	0.0244078
+E_suite	E_suite_symj.tsv	Cancelling poles	1	1	1	1.0	0.000257873	0.000257873	0.000257873
+E_suite	E_suite_symj.tsv	Chebyshev's pseudo-elliptic integral	1	1	1	1.0	0.0041734	0.0041734	0.0041734
+E_suite	E_suite_symj.tsv	Cyclotomic factors	1	1	1	1.0	0.0539447	0.0539447	0.0539447
+E_suite	E_suite_symj.tsv	Denesting	1	1	1	1.0	0.00153524	0.00153524	0.00153524
+E_suite	E_suite_symj.tsv	Dirichlet beta(3)	1	1	1	1.0	0.00771051	0.00771051	0.00771051
+E_suite	E_suite_symj.tsv	Duffing's oscillator from rest	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Euler's constant	1	1	1	1.0	0.0172742	0.0172742	0.0172742
+E_suite	E_suite_symj.tsv	Every solution of cos x = 1/2	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Exponential and logarithm (Risch)	1	1	1	1.0	0.000526198	0.000526198	0.000526198
+E_suite	E_suite_symj.tsv	Factoring over Q(sqrt 2)	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Frullani's integral	1	1	1	1.0	0.00250739	0.00250739	0.00250739
+E_suite	E_suite_symj.tsv	Gamma's reflection formula	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Gauss's 17-gon	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Harmonic numbers	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Implicitization	1	1	1	1.0	2.33994e-5	2.33994e-5	2.33994e-5
+E_suite	E_suite_symj.tsv	Jacobian: Brusselator N=10 (build)	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Jacobian: Brusselator N=10 (evaluate 1000 points)	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Jacobian: Brusselator N=50 (build)	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Jacobian: Brusselator N=50 (evaluate 1000 points)	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Lambert's W	1	1	1	1.0	0.00134068	0.00134068	0.00134068
+E_suite	E_suite_symj.tsv	Laplace's integral	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Log-sine	1	1	1	1.0	0.0238243	0.0238243	0.0238243
+E_suite	E_suite_symj.tsv	Motzkin's polynomial	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Nested exponentials (Gruntz)	1	1	1	1.0	0.00091436	0.00091436	0.00091436
+E_suite	E_suite_symj.tsv	Partitions	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Parts, twice	1	1	1	1.0	0.00275234	0.00275234	0.00275234
+E_suite	E_suite_symj.tsv	Pell's equation	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Polynomial decomposition	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Quantifier elimination	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Ramanujan's denesting	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Riccati	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Serret's integral	1	1	1	1.0	0.0128139	0.0128139	0.0128139
+E_suite	E_suite_symj.tsv	Stirling	1	1	1	1.0	0.00414967	0.00414967	0.00414967
+E_suite	E_suite_symj.tsv	Symbolic eigenvalues	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	The Fermat number F7	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	The cyclic-6 system	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	The error function	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	The error function squared	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	The heat equation	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	The series of Lambert's W	1	1	1	1.0	9.814e-6	9.814e-6	9.814e-6
+E_suite	E_suite_symj.tsv	The sine integral's Laplace transform	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	The transport equation	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	The unicycle's Lie algebra rank	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	Vandermonde's identity	1	1	1	1.0	0.00753059	0.00753059	0.00753059
+E_suite	E_suite_symj.tsv	Wallis's product	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_symj.tsv	sqrt(tan x)	1	1	1	1.0	0.00658099	0.00658099	0.00658099
+E_suite	E_suite_symj.tsv	tan sin - sin tan	1	1	1	1.0	0.00279796	0.00279796	0.00279796
+E_suite	E_suite_symj.tsv	zeta(4)	1	1	1	1.0	0.000738734	0.000738734	0.000738734
+E_suite	E_suite_sympy.tsv	A Bessel function on the half-line	1	1	1	1.0	0.00765117	0.00765117	0.00765117
+E_suite	E_suite_sympy.tsv	A Bessel function, to Struve functions	1	1	1	1.0	0.175578	0.175578	0.175578
+E_suite	E_suite_sympy.tsv	A Gaussian with a cosine	1	1	1	1.0	0.0545446	0.0545446	0.0545446
+E_suite	E_suite_sympy.tsv	A Jordan block	1	1	1	1.0	0.0190149	0.0190149	0.0190149
+E_suite	E_suite_sympy.tsv	A Jordan form	1	1	1	1.0	0.00959076	0.00959076	0.00959076
+E_suite	E_suite_sympy.tsv	A Laplace transform	1	1	1	1.0	0.171164	0.171164	0.171164
+E_suite	E_suite_sympy.tsv	A Lyapunov equation	1	1	1	1.0	0.00960646	0.00960646	0.00960646
+E_suite	E_suite_sympy.tsv	A Mersenne prime	1	1	1	1.0	0.00141712	0.00141712	0.00141712
+E_suite	E_suite_sympy.tsv	A Riccati equation (LQR)	1	1	1	1.0	0.0324441	0.0324441	0.0324441
+E_suite	E_suite_sympy.tsv	A Riccati equation with Airy solutions	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	A Smith normal form	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	A Vandermonde determinant	1	1	1	1.0	2.45769	2.45769	2.45769
+E_suite	E_suite_sympy.tsv	A bounded oscillation	1	1	1	1.0	0.0044557	0.0044557	0.0044557
+E_suite	E_suite_sympy.tsv	A center manifold	1	1	1	1.0	0.0185048	0.0185048	0.0185048
+E_suite	E_suite_sympy.tsv	A central binomial series	1	1	1	1.0	0.0695151	0.0695151	0.0695151
+E_suite	E_suite_sympy.tsv	A closed form in n	1	1	1	1.0	0.0151854	0.0151854	0.0151854
+E_suite	E_suite_sympy.tsv	A damped Bessel function	1	1	1	1.0	0.057438	0.057438	0.057438
+E_suite	E_suite_sympy.tsv	A delayed step	1	1	1	1.0	0.0171579	0.0171579	0.0171579
+E_suite	E_suite_sympy.tsv	A dilogarithm value	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	A discrete logarithm	1	1	1	1.0	0.00622341	0.00622341	0.00622341
+E_suite	E_suite_sympy.tsv	A forced Euler-Cauchy equation	1	1	1	1.0	0.209178	0.209178	0.209178
+E_suite	E_suite_sympy.tsv	A forced initial-value problem	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	A fourth root	1	1	1	1.0	0.229446	0.229446	0.229446
+E_suite	E_suite_sympy.tsv	A heptagon sum	1	1	1	1.0	0.0297314	0.0297314	0.0297314
+E_suite	E_suite_sympy.tsv	A hypergeometric function	1	1	1	1.0	0.012476	0.012476	0.012476
+E_suite	E_suite_sympy.tsv	A matrix exponential	1	1	1	1.0	0.030247	0.030247	0.030247
+E_suite	E_suite_sympy.tsv	A minimal polynomial	1	1	1	1.0	0.00817938	0.00817938	0.00817938
+E_suite	E_suite_sympy.tsv	A nonlinear autonomous equation	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	A pendulum released from rest	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	A pendulum's period	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	A periodic continued fraction	1	1	1	1.0	0.0198614	0.0198614	0.0198614
+E_suite	E_suite_sympy.tsv	A polylogarithm value	2	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	A power of sinc	1	1	1	1.0	0.021832	0.021832	0.021832
+E_suite	E_suite_sympy.tsv	A quartic inequality	1	1	1	1.0	0.0276403	0.0276403	0.0276403
+E_suite	E_suite_sympy.tsv	A quintic denominator	1	1	1	1.0	0.053534	0.053534	0.053534
+E_suite	E_suite_sympy.tsv	A quintic solvable by radicals	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	A ratio of Gamma functions	1	1	1	1.0	1.40903	1.40903	1.40903
+E_suite	E_suite_sympy.tsv	A second-order term of e	1	1	1	1.0	0.0475354	0.0475354	0.0475354
+E_suite	E_suite_sympy.tsv	A sextic system	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	A stability region	1	1	1	1.0	0.00900199	0.00900199	0.00900199
+E_suite	E_suite_sympy.tsv	A sum-of-squares certificate	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	A symmetric septic	1	1	1	1.0	0.026026	0.026026	0.026026
+E_suite	E_suite_sympy.tsv	A symmetric system	1	1	1	1.0	0.0149778	0.0149778	0.0149778
+E_suite	E_suite_sympy.tsv	A symmetry trick	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	A telescoping product	1	1	1	1.0	1.02357	1.02357	1.02357
+E_suite	E_suite_sympy.tsv	A trigonometric identity	1	1	1	1.0	0.0362831	0.0362831	0.0362831
+E_suite	E_suite_sympy.tsv	Absolute values	1	1	1	1.0	0.019833	0.019833	0.019833
+E_suite	E_suite_sympy.tsv	Ahmed's integral	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Airy	1	1	1	1.0	0.0332119	0.0332119	0.0332119
+E_suite	E_suite_sympy.tsv	An arctangent of a radical	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	An exponential solution (Kovacic)	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	An inverse Laplace transform	1	1	1	1.0	0.0226163	0.0226163	0.0226163
+E_suite	E_suite_sympy.tsv	An inverse Laplace transform to a Bessel function	1	1	1	1.0	0.0119777	0.0119777	0.0119777
+E_suite	E_suite_sympy.tsv	An inverse cosine, with assumptions	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Arithmetic-geometric	1	1	1	1.0	0.0382162	0.0382162	0.0382162
+E_suite	E_suite_sympy.tsv	Bernoulli	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Bessel, order 1/2	1	1	1	1.0	0.129158	0.129158	0.129158
+E_suite	E_suite_sympy.tsv	Bose-Einstein type	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Cancelling poles	1	1	1	1.0	0.0511944	0.0511944	0.0511944
+E_suite	E_suite_sympy.tsv	Chebyshev's pseudo-elliptic integral	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Cyclotomic factors	1	1	1	1.0	0.00577322	0.00577322	0.00577322
+E_suite	E_suite_sympy.tsv	Denesting	1	1	1	1.0	0.0015287	0.0015287	0.0015287
+E_suite	E_suite_sympy.tsv	Dirichlet beta(3)	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Duffing's oscillator from rest	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Euler's constant	1	1	1	1.0	0.161438	0.161438	0.161438
+E_suite	E_suite_sympy.tsv	Every solution of cos x = 1/2	1	1	1	1.0	0.0124108	0.0124108	0.0124108
+E_suite	E_suite_sympy.tsv	Exponential and logarithm (Risch)	1	1	1	1.0	0.0497278	0.0497278	0.0497278
+E_suite	E_suite_sympy.tsv	Factoring over Q(sqrt 2)	1	1	1	1.0	0.0122973	0.0122973	0.0122973
+E_suite	E_suite_sympy.tsv	Frullani's integral	1	1	1	1.0	0.87247	0.87247	0.87247
+E_suite	E_suite_sympy.tsv	Gamma's reflection formula	1	1	1	1.0	0.00460569	0.00460569	0.00460569
+E_suite	E_suite_sympy.tsv	Gauss's 17-gon	1	1	1	1.0	0.00346285	0.00346285	0.00346285
+E_suite	E_suite_sympy.tsv	Harmonic numbers	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Implicitization	1	1	1	1.0	0.00157102	0.00157102	0.00157102
+E_suite	E_suite_sympy.tsv	Jacobian: Brusselator N=10 (build)	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Jacobian: Brusselator N=10 (evaluate 1000 points)	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Jacobian: Brusselator N=50 (build)	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Jacobian: Brusselator N=50 (evaluate 1000 points)	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Lambert's W	1	1	1	1.0	0.0283437	0.0283437	0.0283437
+E_suite	E_suite_sympy.tsv	Laplace's integral	1	1	1	1.0	0.0444819	0.0444819	0.0444819
+E_suite	E_suite_sympy.tsv	Log-sine	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Motzkin's polynomial	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Nested exponentials (Gruntz)	1	1	1	1.0	0.0827352	0.0827352	0.0827352
+E_suite	E_suite_sympy.tsv	Partitions	1	1	1	1.0	7.4237e-5	7.4237e-5	7.4237e-5
+E_suite	E_suite_sympy.tsv	Parts, twice	1	1	1	1.0	0.110727	0.110727	0.110727
+E_suite	E_suite_sympy.tsv	Pell's equation	1	1	1	1.0	1.7438e-5	1.7438e-5	1.7438e-5
+E_suite	E_suite_sympy.tsv	Polynomial decomposition	1	1	1	1.0	0.0011324	0.0011324	0.0011324
+E_suite	E_suite_sympy.tsv	Quantifier elimination	1	1	1	1.0	0.00546771	0.00546771	0.00546771
+E_suite	E_suite_sympy.tsv	Ramanujan's denesting	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Riccati	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Serret's integral	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	Stirling	1	1	1	1.0	0.380555	0.380555	0.380555
+E_suite	E_suite_sympy.tsv	Symbolic eigenvalues	1	1	1	1.0	0.0162297	0.0162297	0.0162297
+E_suite	E_suite_sympy.tsv	The Fermat number F7	1	1	1	1.0	0.000235781	0.000235781	0.000235781
+E_suite	E_suite_sympy.tsv	The cyclic-6 system	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	The error function	1	1	1	1.0	0.165482	0.165482	0.165482
+E_suite	E_suite_sympy.tsv	The error function squared	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	The heat equation	0	0	0	NaN	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	The series of Lambert's W	1	1	1	1.0	0.0143877	0.0143877	0.0143877
+E_suite	E_suite_sympy.tsv	The sine integral's Laplace transform	1	1	1	1.0	0.278805	0.278805	0.278805
+E_suite	E_suite_sympy.tsv	The transport equation	1	1	1	1.0	0.0117373	0.0117373	0.0117373
+E_suite	E_suite_sympy.tsv	The unicycle's Lie algebra rank	1	1	1	1.0	0.0311755	0.0311755	0.0311755
+E_suite	E_suite_sympy.tsv	Vandermonde's identity	1	1	1	1.0	0.0892195	0.0892195	0.0892195
+E_suite	E_suite_sympy.tsv	Wallis's product	1	1	1	1.0	1.21446	1.21446	1.21446
+E_suite	E_suite_sympy.tsv	sqrt(tan x)	1	0	0	0.0	NaN	NaN	NaN
+E_suite	E_suite_sympy.tsv	tan sin - sin tan	1	1	1	1.0	0.140876	0.140876	0.140876
+E_suite	E_suite_sympy.tsv	zeta(4)	1	1	1	1.0	0.00785992	0.00785992	0.00785992
+F_integration	F_integration_fricas.tsv	integrate_text	639	222	222	0.3474178403755869	NaN	NaN	NaN
+F_integration	F_integration_giac.tsv	integrate_text	639	303	303	0.47417840375586856	NaN	NaN	NaN
+F_integration	F_integration_maxima.tsv	integrate_text	639	277	277	0.433489827856025	NaN	NaN	NaN
+F_integration	F_integration_sage_fricas.tsv	integrate_text	639	254	254	0.3974960876369327	NaN	NaN	NaN
+F_integration	F_integration_sage_giac.tsv	integrate_text	639	248	248	0.38810641627543035	NaN	NaN	NaN
+F_integration	F_integration_sage_maxima.tsv	integrate_text	639	215	215	0.3364632237871675	NaN	NaN	NaN
+F_integration	F_integration_sage_sympy.tsv	integrate_text	639	133	133	0.2081377151799687	NaN	NaN	NaN
+F_integration	F_integration_symbolics.tsv	integrate_text	639	271	271	0.4241001564945227	NaN	NaN	NaN
+F_integration	F_integration_symj.tsv	integrate_text	639	297	297	0.4647887323943662	NaN	NaN	NaN
+F_integration	F_integration_sympy.tsv	integrate_text	639	144	144	0.22535211267605634	NaN	NaN	NaN
+G_groebner	G_groebner_giac.tsv	groebner	32	32	32	1.0	0.007173365	0.0366644	0.2948735
+G_groebner	G_groebner_groebner.tsv	groebner	32	32	32	1.0	0.0024581625	0.007418625	0.0659852
+G_groebner	G_groebner_macaulay2.tsv	groebner	32	32	32	1.0	0.005118875	0.024235399999999997	1.75221
+G_groebner	G_groebner_msolve.tsv	groebner	32	32	32	1.0	0.0033483525000000004	0.009555545	0.083502875
+G_groebner	G_groebner_sage_giac.tsv	groebner	32	25	25	0.78125	0.00564361	0.00928974	0.123661
+G_groebner	G_groebner_sage_singular.tsv	groebner	32	29	29	0.90625	0.0027287	0.0165052	0.659245
+G_groebner	G_groebner_sympy.tsv	groebner	32	23	23	0.71875	0.28530750000000005	1.54636	18.98675
+H_osr	H_osr_fricas.tsv	integrate_text	641	32	32	0.0499219968798752	NaN	NaN	NaN
+H_osr	H_osr_giac.tsv	integrate_text	641	77	77	0.12012480499219969	NaN	NaN	NaN
+H_osr	H_osr_maxima.tsv	integrate_text	641	86	86	0.13416536661466458	NaN	NaN	NaN
+H_osr	H_osr_sage_fricas.tsv	integrate_text	641	35	35	0.054602184087363496	NaN	NaN	NaN
+H_osr	H_osr_sage_giac.tsv	integrate_text	641	31	31	0.0483619344773791	NaN	NaN	NaN
+H_osr	H_osr_sage_maxima.tsv	integrate_text	641	36	36	0.056162246489859596	NaN	NaN	NaN
+H_osr	H_osr_sage_sympy.tsv	integrate_text	641	26	26	0.0405616224648986	NaN	NaN	NaN
+I_scale	I_scale_giac.tsv	codegen_text	2	0	0	0.0	NaN	NaN	NaN
+I_scale	I_scale_giac.tsv	eval_text	3	3	3	1.0	0.020047005	0.036475	0.22678949999999998
+I_scale	I_scale_giac.tsv	expand_diff_text	1	1	1	1.0	0.188727	0.188727	0.188727
+I_scale	I_scale_giac.tsv	expand_text	4	4	4	1.0	0.031385355	0.08162275	0.148844
+I_scale	I_scale_giac.tsv	series_text	1	1	1	1.0	0.0157363	0.0157363	0.0157363
+I_scale	I_scale_giac.tsv	subs_text	3	2	2	0.6666666666666666	0.0206978	0.035035	0.0493722
+I_scale	I_scale_symbolics.tsv	codegen_text	2	2	2	1.0	0.9903974999999999	1.7599049999999998	2.5294125000000003
+I_scale	I_scale_symbolics.tsv	eval_text	3	0	0	0.0	NaN	NaN	NaN
+I_scale	I_scale_symbolics.tsv	expand_diff_text	1	0	0	0.0	NaN	NaN	NaN
+I_scale	I_scale_symbolics.tsv	expand_text	4	4	4	1.0	0.065773765	0.29167595	1.16800125
+I_scale	I_scale_symbolics.tsv	series_text	1	1	1	1.0	0.0133655	0.0133655	0.0133655
+I_scale	I_scale_symbolics.tsv	subs_text	3	2	2	0.6666666666666666	0.1537378	0.25804520000000003	0.3623526
+I_scale	I_scale_symengine.tsv	codegen_text	2	2	2	1.0	0.24950645000000002	0.4145223	0.5795381500000001
+I_scale	I_scale_symengine.tsv	eval_text	3	3	3	1.0	0.01418567	0.0249068	0.1468659
+I_scale	I_scale_symengine.tsv	expand_diff_text	1	1	1	1.0	0.00833659	0.00833659	0.00833659
+I_scale	I_scale_symengine.tsv	expand_text	4	4	4	1.0	0.00120102225	0.003134405	0.0063072549999999995
+I_scale	I_scale_symengine.tsv	series_text	1	1	1	1.0	0.00182197	0.00182197	0.00182197
+I_scale	I_scale_symengine.tsv	subs_text	3	3	3	1.0	0.01453806	0.0262896	0.2609788
+I_scale	I_scale_symj.tsv	codegen_text	2	2	2	1.0	0.353189	0.569386	0.7855829999999999
+I_scale	I_scale_symj.tsv	eval_text	3	3	3	1.0	1.2609868	2.47774	6.80597
+I_scale	I_scale_symj.tsv	expand_diff_text	1	1	1	1.0	18.7677	18.7677	18.7677
+I_scale	I_scale_symj.tsv	expand_text	4	4	4	1.0	0.00260261	0.002866795	0.003416055
+I_scale	I_scale_symj.tsv	series_text	1	0	0	0.0	NaN	NaN	NaN
+I_scale	I_scale_symj.tsv	subs_text	3	3	3	1.0	2.7014435	5.13221	11.995655000000001
+I_scale	I_scale_sympy.tsv	expand_diff_text	1	1	1	1.0	5.13288	5.13288	5.13288
+I_scale	I_scale_sympy.tsv	expand_text	4	4	4	1.0	0.21293769999999998	0.56647	1.14098975
+I_scale	I_scale_sympy.tsv	series_text	1	1	1	1.0	1.17638	1.17638	1.17638
+I_scale	I_scale_sympy.tsv	subs_text	2	2	2	1.0	1.297552	2.164858	3.032164

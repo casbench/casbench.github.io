@@ -33,7 +33,7 @@ PAPER = "JuliaCon Proceedings paper on Giac.jl (in preparation, 2027)"
 # bench key -> (title, one-line description)
 BENCHES = {
     "A_ffi": ("A. FFI overhead", "Microseconds per call through each dispatch level of Giac.jl, minimum over rounds."),
-    "B_cas": ("B. CAS operations", "expand, factor, integrate and simplify on fixed inputs; every answer verified."),
+    "B_cas": ("B. CAS operations", "expand, factor, integrate and simplify on fixed inputs, checked by the harness."),
     "C_ifactor": ("C. Integer factorisation", "Giac.ifactor, Primes.factor and LibPARI on Int64 values, smooth integers and semiprimes of 20 to 60 digits."),
     "D_coverage": ("D. Functional coverage", "One problem per capability: is the operation available, and is the answer right?"),
     "E_suite": ("E. Problem suite", "The problems of the fork notebook, in categories from arithmetic to transforms and modelling, plus four model-to-Jacobian tasks."),
@@ -243,7 +243,25 @@ def read_tsv(path):
 
 
 def etime(r):
-    return r["t_warm_s"] if not math.isnan(r["t_warm_s"]) else r["t_first_s"]
+    return r["t_warm_s"] if math.isfinite(r["t_warm_s"]) else r["t_first_s"]
+
+
+SOLVED_STATUSES = {"verified", "verified_numeric", "verified_symbolic"}
+
+
+def operation_metrics(rows):
+    """Statistics for one operation; failures count as attempted, never as times."""
+    attempted = [r for r in rows if r["status"] != "unavailable"]
+    solved = [r for r in attempted if r["status"] in SOLVED_STATUSES]
+    times = sorted(etime(r) for r in solved if math.isfinite(etime(r)) and etime(r) >= 0)
+    n, k = len(attempted), len(solved)
+    if not n or 2 * k < n or len(times) != k:
+        return n, k, None
+    def q(p):
+        x = (len(times) - 1) * p
+        lo, hi = math.floor(x), math.ceil(x)
+        return times[lo] + (times[hi] - times[lo]) * (x - lo)
+    return n, k, (q(.25), q(.5), q(.75))
 
 
 def fence(text):
@@ -723,17 +741,63 @@ class Site:
 
     def results_index(self):
         out = front("Results", 1)
-        out += "Counts per bench and system, from `results/<bench>_<system>.tsv`. Click a bench for every case, and a case for every answer.\n\n"
-        for key, systems in self.results.items():
+        out += "[Synthesis](synthesis/): verified counts and per-operation timings across systems.\n\n"
+        for key in self.results:
             title, desc = BENCHES.get(key, (key, ""))
             out += f"### [{title}]({key.lower()}/)\n\n{desc}\n\n"
-            statuses = [s for s in STATUSES if any(r["status"] == s for rows in systems.values() for r in rows)]
-            out += "| system | cases | " + " | ".join(statuses) + " | warm time, sum |\n|---|---|" + "---|" * (len(statuses) + 1) + "\n"
-            for system, rows in sorted(systems.items()):
-                counts = {s: sum(r["status"] == s for r in rows) for s in statuses}
-                tsum = sum(r["t_warm_s"] for r in rows if r["status"] == "verified" and not math.isnan(r["t_warm_s"]))
-                out += f"| {esc(system)} | {len(rows)} | " + " | ".join(str(counts[s]) for s in statuses) + f" | {fmt_time(tsum)} |\n"
-            out += "\n"
+        return out
+
+    def operation_groups(self, key, rows):
+        # Supervisor timeouts can have no op; recover only an unambiguous op.
+        op_by_idx = {}
+        for system_rows in self.results[key].values():
+            for r in system_rows:
+                if r["op"]:
+                    op_by_idx.setdefault(r["idx"], set()).add(r["op"])
+        groups = {}
+        for r in rows:
+            candidates = op_by_idx.get(r["idx"], set())
+            op = r["op"] or (next(iter(candidates)) if len(candidates) == 1 else "[unknown operation]")
+            groups.setdefault(op, []).append(r)
+        return groups
+
+    def synthesis_page(self):
+        out = front("Synthesis", 1)
+        out += self.data_stamp() + "\n\n"
+        out += ("A profile of the recorded runs, not a general verdict. Each fraction is verified / attempted; "
+                "unavailable operations are excluded, while timeouts and other non-solved outcomes count as attempted. "
+                "Times are medians with Q1 and Q3 for individual operations; no median is shown when fewer than half "
+                "the attempted cases were solved or a solved time is missing. Follow a cell for operation details. "
+                "Historical verified statuses include numeric checks. An unsolved or wrong case may hide a benchmark error.\n\n")
+        keys = list(BENCHES)
+        out += "| system | " + " | ".join(k.split("_", 1)[0] for k in keys) + " |\n"
+        out += "|---|" + "---|" * len(keys) + "\n"
+        aliases = {"Giac.jl ifactor": "Giac.jl"}
+        all_systems = {aliases.get(s, s) for ss in self.results.values() for s in ss}
+        for system in sorted(all_systems):
+            cells = []
+            for key in keys:
+                systems = self.results.get(key, {})
+                rows = systems.get(system) or next((v for s, v in systems.items() if aliases.get(s) == system), None)
+                if not rows:
+                    cells.append("not run")
+                    continue
+                n, k, _ = operation_metrics(rows)
+                groups = self.operation_groups(key, rows)
+                label = f"{k}/{n} verified" if n else "no attempts"
+                # Avoid a heterogeneous median; show compact per-operation timing
+                # only where a bench has a small number of operation families.
+                if len(groups) <= 6:
+                    for op, rr in sorted(groups.items()):
+                        op_n, op_k, q = operation_metrics(rr)
+                        if q is not None:
+                            label += f"; {op} {op_k}/{op_n}: {fmt_time(q[1])} [{fmt_time(q[0])}, {fmt_time(q[2])}]"
+                        elif op_n:
+                            label += f"; {op} {op_k}/{op_n}: median omitted"
+                else:
+                    label += "; operation details"
+                cells.append(f"[{esc(label)}](../{key.lower()}/)")
+            out += f"| {esc(system)} | " + " | ".join(cells) + " |\n"
         return out
 
     def bench_page(self, key, weight):
@@ -746,6 +810,19 @@ class Site:
                 "the single call), else the first call. Type to filter, click a heading to sort, click a case for every answer.\n\n")
         raw = ", ".join(f"[{esc(s)}](../../data/{self.reference}/{key}_{self.system_key(key, s)}.tsv)" for s in names)
         out += f"Raw data (TSV, one file per system): {raw}; [all benches](../../data/results.zip); [every file](../../data/).\n\n"
+        out += "## Operation metrics\n\nMedian [Q1, Q3] of verified times, shown only when at least half of attempted cases are verified and all verified times are available. Unavailable cases are excluded; other outcomes count as attempted.\n\n"
+        out += "| system | operation | verified / attempted | median [Q1, Q3] |\n|---|---|---|---|\n"
+        for system in names:
+            for op, rows in sorted(self.operation_groups(key, systems[system]).items()):
+                n, k, q = operation_metrics(rows)
+                timing = f"{fmt_time(q[1])} [{fmt_time(q[0])}, {fmt_time(q[2])}]" if q else "not shown: fewer than half solved or missing time" if n else "not shown: no attempts"
+                out += f"| {esc(system)} | {esc(op)} | {k}/{n} | {timing} |\n"
+        out += "\n<details><summary>Total warm time of verified cases (detail)</summary>\n\n"
+        out += "| system | total warm time |\n|---|---|\n"
+        for system in names:
+            times = [r["t_warm_s"] for r in systems[system] if r["status"] in SOLVED_STATUSES and math.isfinite(r["t_warm_s"])]
+            out += f"| {esc(system)} | {fmt_time(sum(times)) if times else 'no warm times'} |\n"
+        out += "\nTotals include only verified cases with a recorded warm time; they are sensitive to slow cases and differing solved counts.\n\n</details>\n\n"
         by_idx = self.by_case(key)
         if len(names) > 1:
             out += ("Every case's time for every system, on a log scale: a filled mark is a verified answer, a hollow one a "
@@ -1149,15 +1226,15 @@ class Site:
                 "- I: term counts and numerical evaluations appropriate to each operation, at fixed points. Sampling "
                 "and counts cannot prove full equivalence.\n\n"
                 "## Metrics\n\n"
-                "The planned synthesis reports solved counts and fractions by operation, with the median and first and "
+                "The synthesis reports solved counts and fractions by operation, with the median and first and "
                 "third quartiles of solved times. The median is the 50th percentile; Q1 and Q3 are the 25th and 75th "
                 "percentiles, computed by linear interpolation between ordered observations. `T_cap` is the per-case time "
                 "limit. A timeout is right-censored at that limit: it is counted as attempted but excluded from solved "
                 "times, not treated as a measured time equal to the cap. Unavailable operations are not attempted; other "
                 "non-solved outcomes count as attempted. Show a median and quartiles only when at least half of attempted "
-                "cases are solved; otherwise show the solved count and explain the omission. Zero attempts have no median "
-                "or fraction. Never combine heterogeneous operations in a single median. Existing pages still use their "
-                "historical metrics until the new synthesis is implemented.\n\n"
+                "cases are solved and every solved case has a finite time; otherwise show the solved count and explain the omission. Zero attempts have no median "
+                "or fraction. Never combine heterogeneous operations in a single median. Historical verified statuses include "
+                "numeric checks.\n\n"
                 "## This site\n\n"
                 f"Generated from the results files on every build by `tools/site/sitegen.py`, built with Hugo, Hextra and the "
                 f"site-kit module, which this site pins at `{esc(self.site_kit_tag() or 'unknown')}` (`site/go.mod`, "
@@ -1276,7 +1353,8 @@ def generate(root, out):
     check_home(site, home)
     write(c / "_index.md", home)
     write(c / "results" / "_index.md", site.results_index())
-    for w, key in enumerate(site.results, 1):
+    write(c / "results" / "synthesis" / "_index.md", site.synthesis_page())
+    for w, key in enumerate(site.results, 2):
         write(c / "results" / key.lower() / "_index.md", site.bench_page(key, w))
         for d, text in site.case_pages(key):
             write(c / "results" / key.lower() / d / "_index.md", text)
