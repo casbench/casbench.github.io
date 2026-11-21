@@ -110,8 +110,13 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("## Pipeline", meth)                                            # site-kit SPEC section 8
         self.assertIn("## What a result means", meth)
         self.assertIn("## Checks of the expected values", meth)
+        self.assertIn("## Metrics", meth)
+        self.assertIn("not yet implemented", meth)
+        self.assertIn("simplify(diff(F, x) - f) == 0", meth)
         self.assertIn("aliases: ['/workflow/']", meth)
         stp = (out / "content" / "docs" / "statuses" / "_index.md").read_text(encoding="utf-8")
+        for planned in ("verified_numeric", "verified_symbolic", "verify_timeout", "verify_unsolved"):
+            self.assertIn(planned, stp)
         for st in sitegen.STATUSES:
             self.assertIn(f'data-status="{st}"', stp)                                  # every word of a badge is defined
         self.assertTrue((out / "static" / "llms-full.txt").exists())
