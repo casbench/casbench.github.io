@@ -139,7 +139,16 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
     progress = out * ".progress"
     logfile = out * ".log"
     isfile(progress) && rm(progress)
-    start = 1
+    start = parse(Int, get(ENV, "BENCH_START_INDEX", "1"))
+    start >= 1 || error("BENCH_START_INDEX must be positive")
+    budgets = Dict{Int,Float64}()
+    for item in split(get(ENV, "BENCH_CASE_BUDGETS", ""), ','; keepempty=false)
+        parts = split(item, ':')
+        length(parts) == 2 || error("invalid BENCH_CASE_BUDGETS entry")
+        idx, budget = parse(Int, parts[1]), parse(Float64, parts[2])
+        budget > 0 || error("case budget must be positive")
+        budgets[idx] = budget
+    end
     if get(ENV, "BENCH_RESUME", "0") == "1" && isfile(out)
         open(readline, out) == HEADER || error("cannot resume a historical result file with a different header: $out")
         done = [r.idx for r in read_records(out)]
@@ -149,7 +158,7 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
     # A previous supervisor may have died between a request and its reply.
     # Resume reruns the unfinished case; a stale reply must never be attached
     # to a newly produced answer.
-    for suffix in (".numeric-request", ".numeric-request.tmp", ".verify-request", ".verify-response", ".verify-ready", ".verify-command", ".verify-worker-result")
+    for suffix in (".input-checkpoint", ".input-checkpoint.tmp", ".numeric-request", ".numeric-request.tmp", ".verify-request", ".verify-response", ".verify-ready", ".verify-command", ".verify-worker-result")
         rm(out * suffix; force=true)
     end
     while true
@@ -197,8 +206,10 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
                     process_running(proc) || break
                 end
             end
-            phase_timeout = !isempty(p) && progress_parts(p)[3] == "numeric" ?
-                parse(Float64, get(ENV, "BENCH_NUMERIC_VERIFY_TIMEOUT", "60")) : timeout
+            current = isempty(p) ? nothing : progress_parts(p)
+            phase_timeout = current !== nothing && current[3] == "numeric" ?
+                parse(Float64, get(ENV, "BENCH_NUMERIC_VERIFY_TIMEOUT", "60")) :
+                current === nothing ? timeout : get(budgets, current[1], timeout)
             phase_timeout > 0 || error("phase timeout must be positive")
             if !isempty(p) && time() - last_change > phase_timeout
                 elapsed = time() - last_change     # what the case had consumed when it was stopped (recorded as t_first)
@@ -230,6 +241,10 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
         wait(proc)
         if killed
             i, name, phase = progress_parts(last_progress)
+            case_budget = get(budgets, i, timeout)
+            case_op = bench == "G_groebner" && get(ENV, "BENCH_G_HARD", "0") == "1" ? "groebner_hard" : ""
+            checkpoint = out * ".input-checkpoint"
+            saved_input = isfile(checkpoint) ? read(checkpoint, String) : ""
             request = out * ".verify-request"
             pending = phase == "verify" && isfile(request) ? (try open(deserialize, request) catch; nothing end) : nothing
             if pending !== nothing
@@ -245,14 +260,15 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
                     append_record(out, Record(bench, system, i, name, "", "unverified", NaN, NaN, "", "numeric verification interrupted"))
                 end
             elseif why == "timeout"
-                append_record(out, Record(bench, system, i, name, "", "timeout", round(elapsed; digits = 2), NaN, "",
-                                          "stopped after $(round(elapsed; digits = 1)) s, limit $(timeout) s (t_first is the time consumed when stopped)"))
+                append_record(out, Record(bench, system, i, name, case_op, "timeout", round(elapsed; digits = 2), NaN, "",
+                                          "stopped after $(round(elapsed; digits = 1)) s, limit $(case_budget) s (t_first is the time consumed when stopped)", saved_input))
             else
-                append_record(out, Record(bench, system, i, name, "", "error", round(elapsed; digits = 2), NaN, "",
-                                          "stopped after $(round(elapsed; digits = 1)) s: $why (t_first is the time consumed when stopped)"))
+                append_record(out, Record(bench, system, i, name, case_op, "error", round(elapsed; digits = 2), NaN, "",
+                                          "stopped after $(round(elapsed; digits = 1)) s: $why; case budget $(case_budget) s (t_first is the time consumed when stopped)", saved_input))
             end
             rm(request; force=true)
             rm(out * ".numeric-request"; force=true)
+            rm(out * ".input-checkpoint"; force=true)
             rm(out * ".verify-response"; force=true)
             start = i + 1
             println("[supervise] $bench/$system: case $i ($name) stopped ($why); restarting at $(start)")
@@ -266,6 +282,9 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
                 return
             end
             i, name, phase = progress_parts(p)
+            case_op = bench == "G_groebner" && get(ENV, "BENCH_G_HARD", "0") == "1" ? "groebner_hard" : ""
+            checkpoint = out * ".input-checkpoint"
+            saved_input = isfile(checkpoint) ? read(checkpoint, String) : ""
             recs = read_records(out)
             if !any(r -> r.idx == i, recs)
                 # If the answer worker crashes while waiting for verification,
@@ -282,11 +301,12 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
                     numeric === nothing || append_record(out, numeric.record)
                     numeric === nothing && append_record(out, Record(bench, system, i, name, "", "unverified", NaN, NaN, "", "numeric verification interrupted"))
                 else
-                    append_record(out, Record(bench, system, i, name, "", "error", NaN, NaN, "", "worker exited with code $(proc.exitcode), signal $(proc.termsignal)"))
+                    append_record(out, Record(bench, system, i, name, case_op, "error", NaN, NaN, "", "worker exited with code $(proc.exitcode), signal $(proc.termsignal); case budget $(get(budgets, i, timeout)) s", saved_input))
                 end
             end
             rm(out * ".verify-request"; force=true)
             rm(out * ".numeric-request"; force=true)
+            rm(out * ".input-checkpoint"; force=true)
             rm(out * ".verify-response"; force=true)
             start = i + 1
             println("[supervise] $bench/$system: worker crashed on case $i ($name); restarting at $(start)")

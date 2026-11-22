@@ -10,7 +10,8 @@ const G_LABEL = Dict("giac" => "Giac.jl", "groebner" => "Groebner.jl", "msolve" 
                      "sage_singular" => "Sage/Singular", "sage_giac" => "Sage/Giac", "macaulay2" => "Macaulay2")
 
 function make_G()
-    data = Dict(s => read_records(joinpath(RESULTS, "G_groebner_$(s).tsv")) for s in G_SYSTEMS)
+    data = Dict(s => vcat(read_records(joinpath(RESULTS, "G_groebner_$(s).tsv")),
+                          read_records(joinpath(RESULTS, "G_groebner_hard_$(s).tsv"))) for s in G_SYSTEMS)
     any(!isempty, values(data)) || return
     cases = String[]
     for s in G_SYSTEMS, r in data[s]

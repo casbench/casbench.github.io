@@ -4,7 +4,15 @@ include(joinpath(@__DIR__, "lib", "metrics.jl"))
 using .BenchMetrics: operation_metrics
 
 let files = sort(filter(p -> endswith(p, ".tsv"), readdir(RESULTS; join=true)))
-    data = [(path=p, rows=read_records(p)) for p in files]
+    # A hard-tier G pass writes separate files but contributes to the same
+    # per-system operation profile when a base file exists.
+    merged = Dict{String,Vector{Record}}()
+    for p in files
+        base = replace(p, "G_groebner_hard_" => "G_groebner_")
+        target = base != p && isfile(base) ? base : p
+        append!(get!(merged, target, Record[]), read_records(p))
+    end
+    data = [(path=p, rows=merged[p]) for p in sort(collect(keys(merged)))]
     # The supervisor leaves op blank on timeout/crash. Recover it from another
     # system's record for the same bench and case when it is unambiguous.
     ops = Dict{Tuple{String,Int},Set{String}}()

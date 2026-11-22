@@ -80,7 +80,22 @@ const TIME_CALL_START = Ref{UInt64}(0)
 notify_answer(text, stamp) = ANSWER_CALLBACK[] === nothing ? nothing : ANSWER_CALLBACK[](String(text), stamp)
 
 const INPUT_LOG = String[]
-log_input!(s) = (push!(INPUT_LOG, String(string(s))); nothing)
+# An optional checkpoint protects a long-running case's exact command. The
+# time spent writing it is subtracted from the answer timing.
+const INPUT_CHECKPOINT = Ref{Any}(nothing)
+const INPUT_CHECKPOINT_NS = Ref{UInt64}(0)
+function log_input!(s)
+    push!(INPUT_LOG, String(string(s)))
+    if INPUT_CHECKPOINT[] !== nothing
+        t0 = time_ns()
+        try
+            INPUT_CHECKPOINT[]()
+        finally
+            INPUT_CHECKPOINT_NS[] += time_ns() - t0
+        end
+    end
+    nothing
+end
 
 clean(s) = replace(String(string(s)), '\t' => ' ', '\n' => ' ', '\r' => ' ')
 # Verification commands can be multiline and must round-trip exactly in TSV.
@@ -142,11 +157,12 @@ that the reported per-call time has microsecond resolution.
 """
 function time_call(f; repeats = 5, warm_budget = 10.0, between = () -> nothing, times = Float64[], answer_boundary = false)
     t0 = time_ns()
+    io0 = INPUT_CHECKPOINT_NS[]
     TIME_CALL_START[] = t0
     out = f()
     stamp(v) = answer_boundary && hasfield(typeof(v), :answer_ns) ? getfield(v, :answer_ns) : time_ns()
     end_first = stamp(out)
-    t_first = end_first >= t0 ? (end_first - t0) / 1e9 : NaN
+    t_first = end_first >= t0 ? (end_first - t0 - min(end_first - t0, INPUT_CHECKPOINT_NS[] - io0)) / 1e9 : NaN
     t_warm = NaN
     if t_first < warm_budget
         best = Inf
@@ -155,15 +171,18 @@ function time_call(f; repeats = 5, warm_budget = 10.0, between = () -> nothing, 
             if t_first < 1e-3 && !(answer_boundary && hasfield(typeof(out), :answer_ns))
                 n = 200
                 t0 = time_ns()
+                io0 = INPUT_CHECKPOINT_NS[]
                 for _ in 1:n
                     f()
                 end
-                dt = (time_ns() - t0) / 1e9 / n
+                elapsed = time_ns() - t0
+                dt = (elapsed - min(elapsed, INPUT_CHECKPOINT_NS[] - io0)) / 1e9 / n
             else
                 t0 = time_ns()
+                io0 = INPUT_CHECKPOINT_NS[]
                 value = f()
                 finish = stamp(value)
-                dt = finish >= t0 ? (finish - t0) / 1e9 : NaN
+                dt = finish >= t0 ? (finish - t0 - min(finish - t0, INPUT_CHECKPOINT_NS[] - io0)) / 1e9 : NaN
             end
             push!(times, dt)
             best = min(best, dt)

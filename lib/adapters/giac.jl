@@ -202,3 +202,39 @@ end
 VERIFY_INTEGRAL(answer::String, integrand::String, var::String) =
     string(geval(VERIFY_INTEGRAL_COMMAND(answer, integrand, var)))
 OPS[:VERIFY_INTEGRAL] = VERIFY_INTEGRAL
+
+isdefined(Main, :Poly) || include(joinpath(@__DIR__, "..", "poly.jl"))
+
+# Giac's gbasis(...,rur) returns a separating variable, elimination
+# polynomial, common denominator and one numerator per input variable.
+function RUR(polys::Vector{String}, vars::Vector{String})
+    expr = "gbasis([" * replace(join(polys, ","), "//" => "/") * "],[" * join(vars, ",") * "],rur)"
+    raw = elements(geval(expr))
+    length(raw) == length(vars) + 4 && string(raw[1]) == "rur" || error("unsupported RUR output")
+    variable = string(raw[2]); idx = findfirst(==(variable), vars)
+    idx === nothing && error("unsupported separating linear form")
+    function coeffs(e)
+        p = Poly.parse_poly(string(e), [variable])
+        degree = maximum((m[1] for m in keys(p)); init=0)
+        a = fill(big(0)//big(1), degree+1)
+        for (m,c) in p; a[m[1]+1] += c; end
+        a
+    end
+    elim, denom = coeffs(raw[3]), coeffs(raw[4])
+    params = [coeffs(e) for e in raw[5:end]]
+    # realroot gives [root,multiplicity] or [[lower,upper],multiplicity].
+    # Refine intervals before converting them to high-precision midpoints.
+    roottext = string(geval("evalf(realroot(" * string(raw[3]) * ",1/10^80),100)"))
+    number = raw"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?"
+    rootpat = Regex(raw"\[\[\s*(" * number * raw")\s*,\s*(" * number * raw")\s*\]\s*,\s*" * number * raw"\s*\]|\[\s*(" * number * raw")\s*,\s*" * number * raw"\s*\]")
+    matches = collect(eachmatch(rootpat, roottext))
+    isempty(replace(roottext, rootpat => "", r"[\[\],\s]" => "")) || error("unsupported realroot output")
+    evalcoeff(p, x) = foldr((a,v) -> BigFloat(a)+x*v, p; init=zero(x))
+    sols = setprecision(512) do
+        roots = [m.captures[3] === nothing ? (parse(BigFloat,m.captures[1])+parse(BigFloat,m.captures[2]))/2 :
+                 parse(BigFloat,m.captures[3]) for m in matches]
+        [[rationalize(BigInt, evalcoeff(p,t)/evalcoeff(denom,t); tol=0) for p in params] for t in roots]
+    end
+    (vars=vars, linear_form=String[], parameter_index=idx, elim=elim, denom=denom, param=params, solutions=sols)
+end
+OPS[:rur] = RUR

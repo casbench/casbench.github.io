@@ -56,3 +56,17 @@ end
     @test 0.04 <= warm_time < 0.3
     @test length(repeats) == 1 && repeats[1] == warm_time
 end
+
+@testset "input checkpoint does not enter timing" begin
+    f = () -> (log_input!("a long command"); 1)
+    time_call(f; repeats=0) # compile before testing the timing boundary
+    empty!(INPUT_LOG)
+    BenchCommon.INPUT_CHECKPOINT[] = () -> sleep(0.1)
+    try
+        _, first, _ = time_call(f; repeats=0)
+        @test first < 0.08
+        @test INPUT_LOG == ["a long command"]
+    finally
+        BenchCommon.INPUT_CHECKPOINT[] = nothing
+    end
+end

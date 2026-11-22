@@ -35,3 +35,17 @@ UNSOLVED(op, out) = out isa AbstractVector && isempty(out)
 CLEARCACHE() = nothing
 VERSIONS() = ["AlgebraicSolving" => string(pkgversion(AlgebraicSolving)), "Nemo" => string(pkgversion(Nemo)),
               "msolve_jll" => string(pkgversion(AlgebraicSolving.msolve_jll))]
+
+# RUR plus the real solutions isolated by msolve.  The checker independently
+# substitutes every reported real solution and checks the rational lifting map.
+function RUR(polys::Vector{String}, vars::Vector{String})
+    R, _ = polynomial_ring(Nemo.QQ, vars; internal_ordering = :degrevlex)
+    I = AlgebraicSolving.Ideal(build(R, polys, vars, 0))
+    solutions = AlgebraicSolving.real_solutions(I; precision=256)
+    r = I.rat_param
+    coeffs(p) = [BigInt(numerator(coeff(p, i))) // BigInt(denominator(coeff(p, i))) for i in 0:degree(p)]
+    (vars=string.(r.vars), linear_form=string.(r.cfs_lf), elim=coeffs(r.elim),
+     denom=coeffs(r.denom), param=[coeffs(p) for p in r.param],
+     solutions=[[BigInt(numerator(x)) // BigInt(denominator(x)) for x in sol] for sol in solutions])
+end
+OPS[:rur] = RUR

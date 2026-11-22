@@ -77,6 +77,29 @@ could not evaluate it), `unsolved` (returned unevaluated or incomplete, or
 the system declared that it cannot), `unavailable` (no operation of that kind
 in the system, as wired in `lib/adapters/<system>.jl`), `error`, `timeout`.
 
+## Gröbner hard tier and rational parametrizations
+
+The G base tier remains 32 cases. Run `julia run_all.jl G-hard` separately
+for cyclic8, cyclic9, katsura10, eco11 and eco12 over Q. Each hard case has
+its own supervisor budget: 600 s except cyclic9, which has 3600 s and is a
+long-run case. Results are written to separate files. For an interrupted hard
+case, the supervisor retains the last checkpointed command or the Julia
+arguments if execution had not reached the adapter command. Checkpoint I/O is
+excluded from recorded answer times. The parsed, canonical,
+reduced basis is checked by reducing the inputs to zero and comparing digests
+across systems. This does not establish that every basis element belongs to
+the input ideal; matching digests are corroboration, not a proof.
+
+J asks for an RUR and real solution isolation on fixed G systems. Its check
+substitutes each reported real solution in every input polynomial using
+256-bit BigFloat arithmetic, verifies the lifting coordinates, and checks
+exact polynomial divisibility of the rational lifting map by the elimination
+polynomial, with seeded pseudorandom evaluations of the identity. The current
+adapters isolate real roots only; the checker neither isolates
+complex roots nor proves the real list complete. Unsupported separating
+forms and results without real roots are unverified. See the J description in
+[Benches](benches.md) for the cases and implementation limits.
+
 ## Integration verification
 
 For F and H, six fixed real candidate points in (0, 1) are evaluated at

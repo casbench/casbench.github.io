@@ -16,7 +16,7 @@
 #   2. every input polynomial reduces to zero modulo the basis, computed over
 #      GF(2147483647) for the rational cases (the division algorithm).
 # What is not checked here: that the basis generates no more than the ideal
-# (the agreement of the digests between independent systems covers it).
+# (digest agreement between independent systems mitigates but does not prove it).
 
 isdefined(Main, :Poly) || include(joinpath(@__DIR__, "..", "lib", "poly.jl"))   # the adapters of the Julia packages include it too
 include(joinpath(@__DIR__, "inputs.jl"))
@@ -58,4 +58,18 @@ for sys in SYSTEMS, (field, p) in (("Q", 0), ("GF(p)", PRIME))
                      check = o -> check_gb(o, polys, vars, p),
                      note = "$(length(polys)) polynomials in $(length(vars)) variables, degrevlex, " *
                             (p == 0 ? "over Q" : "over GF($p)")))
+end
+
+# The base tier above stays unchanged. The hard tier runs in a separate pass
+# and retains distinct case indices, so it can be merged with base results.
+if get(ENV, "BENCH_G_HARD", "0") == "1"
+    include(joinpath(@__DIR__, "hard_inputs.jl"))
+    for sys in HARD_SYSTEMS
+        polys, vars = sys.polys, sys.vars
+        push!(PROBLEMS, (name = "$(sys.name) over Q (hard tier)", op = :groebner, budget = sys.budget,
+                         args = V -> (polys, vars, 0),
+                         check = o -> check_gb(o, polys, vars, 0),
+                         note = "hard tier; per-case budget $(sys.budget) s; " *
+                                "$(length(polys)) polynomials in $(length(vars)) variables, degrevlex, over Q"))
+    end
 end

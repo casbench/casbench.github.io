@@ -24,7 +24,7 @@ VERIFY_ENABLED && get(ENV, "BENCH_VERIFICATION_SUPERVISED", "0") != "1" &&
 include(joinpath(@__DIR__, "adapters", SYSTEM_KEY * ".jl"))
 include(joinpath(@__DIR__, "..", BENCH, "problems.jl"))
 
-if START == 1
+if START == 1 || (BENCH == "G_groebner" && get(ENV, "BENCH_G_HARD", "0") == "1" && START == 33)
     # the machine block goes next to the results file: results/<host>/machine.txt
     write_machine_info(joinpath(dirname(abspath(OUT)), "machine.txt"), [("bench", BENCH), ("system", SYSTEM), VERSIONS()...])
 end
@@ -34,10 +34,11 @@ START == 1 && append_record(OUT, Record(BENCH, SYSTEM, 0, "_load", "using", "ver
 const STOP = parse(Int, get(ENV, "BENCH_STOP", string(length(PROBLEMS))))   # last problem index to run (single-problem reruns)
 for i in START:STOP
     prob = PROBLEMS[i]
+    op_label = BENCH == "G_groebner" && hasproperty(prob, :budget) ? "groebner_hard" : string(prob.op)
     write(PROGRESS, string(i, '\t', prob.name))
     opf = get(OPS, prob.op, missing)
     if opf === missing
-        append_record(OUT, Record(BENCH, SYSTEM, i, prob.name, string(prob.op), "unavailable", NaN, NaN, "", prob.note))
+        append_record(OUT, Record(BENCH, SYSTEM, i, prob.name, op_label, "unavailable", NaN, NaN, "", prob.note))
         continue
     end
     load = loadavg()                       # the noise the case is measured in
@@ -46,7 +47,7 @@ for i in START:STOP
     numeric_request = OUT * ".numeric-request"
     numeric_started = Ref(false)
     function save_numeric_pending(answer, tf, tw=NaN)
-        pending = Record(BENCH, SYSTEM, i, prob.name, string(prob.op), "unverified", tf, tw,
+        pending = Record(BENCH, SYSTEM, i, prob.name, op_label, "unverified", tf, tw,
                          string(answer), "numeric verification interrupted",
                          isempty(INPUT_LOG) ? "" : join(unique(INPUT_LOG), " ⏎ "),
                          NaN, "", load, run_id())
@@ -61,6 +62,16 @@ for i in START:STOP
     rec = try
         args = prob.args(VAR)
         empty!(INPUT_LOG)
+        if BENCH == "G_groebner" && hasproperty(prob, :budget)
+            checkpoint = OUT * ".input-checkpoint"
+            write(checkpoint, "args: " * string(args))
+            BenchCommon.INPUT_CHECKPOINT[] = () -> begin
+                tmp = checkpoint * ".tmp"
+                write(tmp, join(unique(INPUT_LOG), " ⏎ "))
+                mv(tmp, checkpoint; force=true)
+                BenchCommon.INPUT_CHECKPOINT[] = nothing
+            end
+        end
         integration = BENCH in ("F_integration", "H_osr")
         if integration
             BenchCommon.ANSWER_CALLBACK[] = (answer, stamp) -> begin
@@ -72,6 +83,7 @@ for i in START:STOP
                       times = reps, answer_boundary = integration)
         finally
             BenchCommon.ANSWER_CALLBACK[] = nothing
+            BenchCommon.INPUT_CHECKPOINT[] = nothing
         end
         integration && save_numeric_pending(out, tf, tw)
         input = isempty(INPUT_LOG) ? "args: " * string(args) : join(unique(INPUT_LOG), " ⏎ ")
@@ -97,7 +109,10 @@ for i in START:STOP
         if status === :verified && !exact_boolean && BENCH in ("B_cas", "D_coverage", "E_suite", "I_scale")
             status = :verified_numeric
         end
-        record = Record(BENCH, SYSTEM, i, prob.name, string(prob.op), string(status), tf, tw, string(out), note, input,
+        if BENCH == "G_groebner" && get(ENV, "BENCH_G_HARD", "0") == "1" && hasproperty(prob, :budget)
+            note = "hard tier; per-case budget $(prob.budget) s; " * note
+        end
+        record = Record(BENCH, SYSTEM, i, prob.name, op_label, string(status), tf, tw, string(out), note, input,
                         twall, join((@sprintf("%.6g", t) for t in reps), ";"), load, run_id())
         if VERIFY_ENABLED && status === :verified_numeric
             verification_candidate = (system=SYSTEM_KEY, answer=string(out), integrand=String(args[1]),
@@ -106,9 +121,12 @@ for i in START:STOP
         record
     catch err
         msg = sprint(showerror, err)
+        if BENCH == "G_groebner" && get(ENV, "BENCH_G_HARD", "0") == "1" && hasproperty(prob, :budget)
+            msg = "hard tier; per-case budget $(prob.budget) s; " * msg
+        end
         # a system that says it cannot do the problem has not solved it; a crash is an error
         declined = occursin(r"NotImplemented|NotElementary|[Nn]ot implemented|cannot be solved|Cannot solve|Unable to solve|unsupported operation|no elementary antiderivative|no roots in radicals|no method for", msg)
-        Record(BENCH, SYSTEM, i, prob.name, string(prob.op), declined ? "unsolved" : "error", NaN, NaN, "", msg,
+        Record(BENCH, SYSTEM, i, prob.name, op_label, declined ? "unsolved" : "error", NaN, NaN, "", msg,
                isempty(INPUT_LOG) ? "" : join(unique(INPUT_LOG), " ⏎ "), NaN, "", load, run_id())
     end
     if verification_candidate !== nothing
@@ -134,5 +152,6 @@ for i in START:STOP
         append_record(OUT, rec)
     end
     rm(numeric_request; force=true)
+    rm(OUT * ".input-checkpoint"; force=true)
     GC.gc()
 end

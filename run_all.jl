@@ -53,7 +53,7 @@ envs = Dict("giac" => joinpath(ROOT, "envs", "giac"),
             "symengine" => joinpath(ROOT, "envs", "symengine"),
             "computeengine" => joinpath(ROOT, "envs", "subprocess"))
 
-benches = isempty(ARGS) ? ["A", "B", "C", "D", "E", "F", "G", "H", "I"] : ARGS
+benches = isempty(ARGS) ? ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"] : ARGS
 tB = get(ENV, "BENCH_TIMEOUT_B", "120")
 tD = get(ENV, "BENCH_TIMEOUT_D", "120")
 tC = get(ENV, "BENCH_TIMEOUT_C", "600")
@@ -109,6 +109,22 @@ for b in benches
             out = joinpath(RESULTS, "H_osr_$(sys).tsv")
             fresh(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "H_osr", sys, out, tH)
+        end
+    elseif b == "J"
+        for sys in ("msolve", "giac", "sage_singular")
+            out = joinpath(RESULTS, "J_rur_$(sys).tsv")
+            fresh(out)
+            supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "J_rur", sys, out, tG)
+        end
+    elseif b == "G-hard"
+        # Separate output and pass: never replace or extend the base-tier TSV.
+        withenv("BENCH_G_HARD" => "1", "BENCH_START_INDEX" => "33",
+                "BENCH_CASE_BUDGETS" => "33:600,34:3600,35:600,36:600,37:600") do
+            for sys in ("giac", "groebner", "msolve", "sympy", "sage_singular", "sage_giac", "macaulay2")
+                out = joinpath(RESULTS, "G_groebner_hard_$(sys).tsv")
+                fresh(out)
+                supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "G_groebner", sys, out, "3600")
+            end
         end
     elseif b == "G"
         for sys in ("giac", "groebner", "msolve", "sympy", "sage_singular", "sage_giac", "macaulay2")

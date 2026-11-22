@@ -405,6 +405,32 @@ class SiteGenTests(unittest.TestCase):
         with self.assertRaises(ValueError):                                            # a fifth tile
             sitegen.check_home(site, home.replace('</div>\n\n[Results]', '<a class="sk-stat" href="x"><strong>1</strong><span>x</span></a>\n</div>\n\n[Results]'))
 
+    def test_rur_page_and_synthesis_use_committed_rows(self):
+        root = self.make_root()
+        host = root / "results" / "testhost"
+        header = "bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput\n"
+        (host / "J_rur_msolve.tsv").write_text(header +
+            "J_rur\tmsolve (AlgebraicSolving.jl)\t1\tkatsura5 over Q\trur\tverified_numeric\t1\t0.5\tRUR output\treal solutions checked\tpolynomial input\n", encoding="utf-8")
+        site = sitegen.Site(root)
+        self.assertIn("J_rur", site.results)
+        self.assertIn("1/1 verified", site.synthesis_page())
+        self.assertTrue(any("RUR output" in text and "polynomial input" in text for _, text in site.case_pages("J_rur")))
+
+    def test_hard_tier_keeps_its_own_operation_and_budget(self):
+        root = self.make_root()
+        host = root / "results" / "testhost"
+        header = "bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput\n"
+        (host / "G_groebner_giac.tsv").write_text(header +
+            "G_groebner\tGiac.jl\t1\tbase\tgroebner\tverified\t1\t0.5\tbasis\tbase\tbase input\n", encoding="utf-8")
+        (host / "G_groebner_hard_giac.tsv").write_text(header +
+            "G_groebner\tGiac.jl\t33\tcyclic8 over Q (hard tier)\tgroebner_hard\tverified\t2\t1\tbasis\thard tier; per-case budget 600 s\thard input\n", encoding="utf-8")
+        site = sitegen.Site(root)
+        rows = site.results["G_groebner"]["Giac.jl"]
+        self.assertEqual(set(site.operation_groups("G_groebner", rows)), {"groebner", "groebner_hard"})
+        self.assertIn("G_groebner_hard_giac.tsv", site.bench_page("G_groebner", 3))
+        cases = dict(site.case_pages("G_groebner"))
+        self.assertTrue(any("per-case budget 600 s" in text and "hard input" in text for text in cases.values()))
+
     def test_bench_e_statements_follow_problems(self):
         """E_suite/statements.tsv has one row per problem of E_suite/problems.jl, in the same order and with the same
         name, since the pages look a statement up by position (two problems share a name)."""
