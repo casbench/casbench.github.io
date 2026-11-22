@@ -2,8 +2,8 @@
 #
 # Output: tables/H_osr.tex, one row per system: rules verified, among them the
 # rules proved over R whose answer agrees with the certified replacement,
-# those where it differs, then wrong, unsolved, unverified, error + timeout,
-# and the median warm time of the verified cases.
+# those where it differs, then wrong, unsolved, unverified and error + timeout.
+# Per-operation time quartiles are in operation_metrics.tsv.
 
 const H_SYSTEMS = ["giac", "symbolics", "sympy", "symj", "maxima", "fricas", "sage_giac", "sage_maxima", "sage_fricas", "sage_sympy", "computeengine"]
 const H_LABEL = Dict("giac" => "Giac.jl", "symbolics" => "Symbolics.jl", "sympy" => "SymPy", "symj" => "SymJ.jl",
@@ -19,24 +19,24 @@ function make_H()
         for s in systems
             rs = [r for r in data[s] if r.case != "_load"]
             cnt(st) = count(r -> r.status == st, rs)
-            agree = count(r -> r.status == "verified" && occursin("certified: agree", r.note), rs)
-            differ = count(r -> r.status == "verified" && occursin("certified: differ", r.note), rs)
-            tw = [isfinite(r.t_warm) ? r.t_warm : r.t_first for r in rs if r.status == "verified"]
-            println(io, H_LABEL[s], " & ", cnt("verified"), " & ", agree, " & ", differ, " & ", cnt("wrong"), " & ", cnt("unsolved"),
-                    " & ", cnt("unverified"), " & ", cnt("error") + cnt("timeout"), " & ", fmt_time(isempty(tw) ? NaN : median(tw)), " \\\\")
+            agree = count(r -> r.status in ("verified", "verified_numeric") && occursin("certified: agree", r.note), rs)
+            differ = count(r -> r.status in ("verified", "verified_numeric") && occursin("certified: differ", r.note), rs)
+            attempted = count(r -> r.status != "unavailable", rs)
+            println(io, H_LABEL[s], " & ", string(cnt("verified") + cnt("verified_numeric"), "/", attempted), " & ", agree, " & ", differ, " & ", cnt("wrong"), " & ", cnt("unsolved"),
+                    " & ", cnt("unverified"), " & ", cnt("error") + cnt("timeout"), " ", Char(92), Char(92))
         end
         println(io, "\\bottomrule")
     end
-    println(md, "## H: OSR rules (verified / certified agree / certified differ / wrong / unsolved / unverified / error+timeout / median warm)\n")
-    println(md, "| system | verified | agree | differ | wrong | unsolved | unverified | error+timeout | median warm |\n|---|---|---|---|---|---|---|---|---|")
+    println(md, "## H: OSR rules (verified / attempted and certificate agreement)\n")
+    println(md, "| system | verified / attempted | agree | differ | wrong | unsolved | unverified | error+timeout |\n|---|---|---|---|---|---|---|---|")
     for s in systems
         rs = [r for r in data[s] if r.case != "_load"]
         cnt(st) = count(r -> r.status == st, rs)
-        agree = count(r -> r.status == "verified" && occursin("certified: agree", r.note), rs)
-        differ = count(r -> r.status == "verified" && occursin("certified: differ", r.note), rs)
-        tw = [isfinite(r.t_warm) ? r.t_warm : r.t_first for r in rs if r.status == "verified"]
-        println(md, "| ", H_LABEL[s], " | ", cnt("verified"), " | ", agree, " | ", differ, " | ", cnt("wrong"), " | ", cnt("unsolved"), " | ",
-                cnt("unverified"), " | ", cnt("error") + cnt("timeout"), " | ", isempty(tw) ? "--" : @sprintf("%.3g s", median(tw)), " |")
+        agree = count(r -> r.status in ("verified", "verified_numeric") && occursin("certified: agree", r.note), rs)
+        differ = count(r -> r.status in ("verified", "verified_numeric") && occursin("certified: differ", r.note), rs)
+        attempted = count(r -> r.status != "unavailable", rs)
+        println(md, "| ", H_LABEL[s], " | ", string(cnt("verified") + cnt("verified_numeric"), "/", attempted), " | ", agree, " | ", differ, " | ", cnt("wrong"), " | ", cnt("unsolved"), " | ",
+                cnt("unverified"), " | ", cnt("error") + cnt("timeout"), " |")
     end
     println(md)
 end

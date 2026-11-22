@@ -15,12 +15,13 @@ checked to return the same printed result.
 
 **B, CAS operations** (`B_cas/problems.jl`; Giac.jl, Symbolics.jl, SymPy, SymEngine.jl,
 SymJ.jl). `expand`, `factor`, `integrate` and `simplify` on 34 fixed inputs.
-Each answer is verified, not only timed: expansion by numeric equality with
+Returned answers are checked as well as timed: expansion by numeric equality with
 the input at three fixed points and the expected number of terms;
 factorisation by the product of the returned factors and the number of
 irreducible factors over the rationals; integration by a central finite
 difference of the antiderivative against the integrand at three points;
-simplification by numeric equality and a bound on the printed size. Two
+simplification by numeric equality without a required printed form. Historical
+results used a printed-size bound. Two
 times are recorded: the first call in a fresh process (which includes
 compilation for the Julia packages, as in J. Verzani's comparisons) and the
 minimum of five repeated calls (SymPy's cache is cleared between repeats).
@@ -55,7 +56,8 @@ statements taken from that notebook (twelve categories: indefinite and
 definite integrals, sums and products, limits, equations and inequalities,
 polynomial algebra, simplification and algebraic numbers, differential
 equations, linear algebra, number theory, transforms and special functions,
-control), plus a "model to Jacobian" category in the style of its companion
+control), plus seven identity-difference and nonzero control cases, and a "model to
+Jacobian" category in the style of its companion
 `notebooks/cas_comparison.jl` (the Brusselator ring, N = 10 and 50: the
 Jacobian compiled to a function, then evaluated at 1000 points). Mathematica
 is not run; the Giac.jl measured is the released package without the fork's
@@ -66,14 +68,13 @@ Giac's `pari` command, as the notebook does; where nothing exists the task is
 improper integrals use Giac's signed `+infinity` (the unsigned `infinity`
 leaves a definite integral unevaluated), and the two infinite products, which
 neither evaluates as such, are asked as the limit of the partial product.
-Every answer is verified in plain Julia with the notebook's criteria (value
+Returned answers are checked in plain Julia using criteria from the notebook (value
 to a tolerance with exactness required, antiderivative by its derivative at
 points, solutions substituted and counted, ODE residuals with the constants
-set, regions tested at points, forms). The per-case limit is 60 s.
-`make_tables_E.jl` produces the category table (Giac.jl against SymPy:
-solved, both solved, faster, median time ratio), the four-system table
-(median ratio to the fastest system, answered, fastest) and the dot plot of
-every problem's time (`figures/E_times.tex`, pgfplots).
+set, and regions tested at points). Identity differences require an explicit
+zero and a high-precision numeric check; controls use certified intervals.
+The per-case limit is 60 s. `make_tables_E.jl` produces coverage tables and
+a dot plot of individual case times (`figures/E_times.tex`, pgfplots).
 
 **F, integration sample** (`F_integration/`; Giac.jl, Symbolics.jl and
 SymJ.jl through RischIntegrate.jl, SymPy; Maxima and FriCAS as subprocesses;
@@ -89,20 +90,12 @@ Maple-like text of the files is translated to each system's syntax by
 `lib/mapleish.jl`. Every answer is checked in plain Julia: the derivative of
 the answer, by a central finite difference of the system's own numeric
 evaluation of its answer, against the integrand evaluated in Julia (complex
-arithmetic, SpecialFunctions) at the points x = 0.31, 0.57, 0.83 where the
-integrand is real, with every parameter at a fixed value (a = 1.7, b = 0.6,
-c = 2.3, d = 1.1, ...). An answer whose real part is the antiderivative (a
-form derived on another domain) is verified with the note "real part only".
-Entries whose reference is `Unintegrable` are verified when the system
-returns the integral unevaluated, as in the 12000.org grading. The note
-carries the leaf counts of the answer and of the reference; the grade of
-those tests is A when the answer is right and at most twice the size of the
-reference, B when right but larger, F otherwise (the C grade, a right answer
-of lower quality, is not reproduced). The per-case limit is 30 s (3 min in
-the original). For context, the Summer 2024 edition scores Giac/Xcas 1.9.0-99
-at 57.5 % and SymPy 1.12 at 42.2 % over all 106 812 integrals; the sample
-here is small and the check is different, so the numbers are not comparable
-to those, only to each other.
+arithmetic, SpecialFunctions) at six candidate real points. At least four
+must be usable. A complex point is also checked for integrands recognised as
+entire by the conservative syntax check. The separate symbolic phase asks the
+answering system to simplify the derivative residual to zero. The note carries
+sampled numeric values and leaf counts; the per-case answer limit is 30 s.
+For historical runs the method and status meanings differ; see Methodology.
 
 **G, Gröbner bases** (`G_groebner/`; Giac.jl `gbasis`, Groebner.jl, msolve
 through AlgebraicSolving.jl, SymPy `groebner`; Singular and Giac through
@@ -116,7 +109,10 @@ over GF(1073741827). The printed basis is parsed and put in canonical form by
 unique, so correct answers have the same canonical form, whose digest is in
 the note and whose agreement between systems is in the table); it is checked
 to be reduced, and every input polynomial is reduced to zero modulo it by the
-division algorithm over a prime field. The per-case limit is 300 s.
+division algorithm over a prime field. This does not prove that each basis
+element belongs to the input ideal or independently check all S-polynomials;
+digest agreement is corroborating evidence, not a proof. The per-case limit
+is 300 s.
 Singular.jl does not precompile on Julia 1.13 at the pinned versions and is
 not included.
 
@@ -140,13 +136,8 @@ MathJSON, driven through Node.js, `lib/adapters/computeengine.jl`) joins
 benches F, H and I: the Maple-like text becomes MathJSON, the answer comes
 back as LaTeX with the numeric values the check needs. SymEngine.jl (the C++
 symengine core) joins here and in benches B and D, where most of its cells are *unavailable*: it has no
-integration, factorisation or solving. A finding of this bench: Symbolics.jl
-(7.49, SymbolicUtils 3) expands (x+y+z)^50 with wrong coefficients (the
-value at (1,1,1) is 6.33e20 instead of 3^50 = 7.18e23, while degree 20 is
-exact), the same defect as SymbolicUtils.jl issue 1195 (`expand` silently
-overflows Int64 coefficients of high powers, reported on 2026-11-16 with
-(x+y)^70, where Giac.jl and SymJ.jl serve as oracles); the derivative row of
-bench I is therefore *wrong* for it until that issue is fixed.
+integration, factorisation or solving. The case pages show the individual
+inputs, outputs and checks, including links to the measured data.
 
 **H, OSR rules** (`H_osr/`; the systems of bench F). The integration rules
 of [OpenSymbolicRules](https://opensymbolicrules.github.io/) v1
@@ -162,7 +153,7 @@ integrand, the answer is checked by differentiation as in bench F, and for a
 rule proved over R it is also compared with the certified replacement up to a
 constant (the note says `certified: agree` or `certified: differ`). Rules
 whose variable names are not among the parameter symbols the adapters know
-are skipped (113 of 1380); 409 usable rules are proved over R and 858 refuted.
+are skipped. The source records which rules are proved or refuted.
 Verdict semantics, as OSR states them: "proved over R / C" is a Lean proof
 that the rule as stated holds in the OSR fragment; "refuted over R" is a Lean
 counterexample to the rule as stated in that fragment (where `ln` is defined

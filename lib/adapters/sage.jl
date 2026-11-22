@@ -27,8 +27,9 @@ const CASE_LIMIT = get(ENV, "BENCH_CASE_TIMEOUT", "600")   # seconds; a subproce
 
 struct SageAnswer
     text::String
-    values::Dict{Float64,ComplexF64}
+    values::Dict{ComplexF64,ComplexF64}
     elapsed::Float64
+    answer_ns::UInt64
 end
 Base.string(a::SageAnswer) = a.text
 
@@ -41,7 +42,15 @@ Base.length(b::SageBasis) = length(b.polys)
 Base.iterate(b::SageBasis, st...) = iterate(b.polys, st...)
 Base.isempty(b::SageBasis) = isempty(b.polys)
 
-check_points() = (pts = Main.FPOINTS; h = 1e-5; [x0 + s * h for x0 in pts for s in (-1, 1)])
+function check_points(integrand)
+    h = 1e-5
+    xs = ComplexF64[x0 + s*h for x0 in Main.FPOINTS for s in (-1, 0, 1)]
+    if Main.entire_integrand(integrand)
+        append!(xs, (Main.FCOMPLEX_POINT - h, Main.FCOMPLEX_POINT + h))
+    end
+    xs
+end
+sage_point(z) = iszero(imag(z)) ? string(real(z)) : "CC(" * string(real(z)) * "," * string(imag(z)) * ")"
 
 # one Sage process per worker (lib/adapters/sage_server.py), fed the path of a script per case; restarted if it died
 const SAGE_PROC = Ref{Any}(nothing)
@@ -59,11 +68,12 @@ function sage_process()
     p
 end
 
-function run_sage(script::String)
+function run_sage(script::String; capture_answer=false)
     log_input!(script)
     path = tempname() * ".sage"
     write(path, script)
     out = IOBuffer()
+    answer_ns = UInt64(0)
     try
         p = sage_process()
         println(p, path); flush(p)
@@ -71,6 +81,11 @@ function run_sage(script::String)
             (eof(p) && !process_running(p)) && break
             l = readline(p)
             l == "<<END>>" && break
+            if answer_ns == 0 && startswith(l, "<<ANS>>")
+                answer_ns = time_ns()
+                answer = marker(l, "<<ANS>>")
+                answer === nothing || notify_answer(answer, answer_ns)
+            end
             println(out, l)
         end
     finally
@@ -78,7 +93,7 @@ function run_sage(script::String)
     end
     txt = String(take!(out))
     get(ENV, "BENCH_DEBUG", "0") == "1" && (println(stderr, "--- sage script\n", script, "--- sage output\n", txt); flush(stderr))
-    txt
+    capture_answer ? (txt, answer_ns) : txt
 end
 
 marker(txt, m) = (r = match(Regex(m * raw"\s*(.*)"), txt); r === nothing ? nothing : strip(r[1]))
@@ -124,24 +139,26 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
              "    print('<<' + 'TIME>>', walltime() - t0)",
              "    raise SystemExit(0)",
              "print('<<' + 'ANS>>', str(F))", "print('<<' + 'TIME>>', t1 - t0)"]
-    for (i, xv) in enumerate(check_points())
-        push!(lines, "try:\n    v = CC(F.subs({$var: $xv" * (isempty(pt) ? "" : ", " * pt) * "}))\n    print('<<' + 'V$i>>', str(v))\nexcept Exception as ex:\n    print('<<' + 'V$i>>', 'fail')")
+    xs = check_points(integrand)
+    for (i, xv) in enumerate(xs)
+        point = sage_point(xv)
+        push!(lines, "try:\n    v = CC(F.subs({$var: $point" * (isempty(pt) ? "" : ", " * pt) * "}))\n    print('<<' + 'V$i>>', str(v))\nexcept Exception as ex:\n    print('<<' + 'V$i>>', 'fail')")
     end
-    txt = run_sage(join(lines, "\n") * "\n")
+    txt, answer_ns = run_sage(join(lines, "\n") * "\n"; capture_answer=true)
     ans = marker(txt, "<<ANS>>")
     ans === nothing && error("sage gave no answer: " * last(strip(replace(txt, "\n" => " ")), 300))
     # an exception inside Sage is an error of the interface (e.g. the pexpect giac interface cannot parse an answer that
     # giac prints with a warning), unless the system declares that it cannot integrate (then the worker says unsolved)
     startswith(ans, "sage_error:") && !occursin(r"not implemented|NotImplemented|cannot|unable", ans) && error(ans)
-    vals = Dict{Float64,ComplexF64}()
-    for (i, xv) in enumerate(check_points())
+    vals = Dict{ComplexF64,ComplexF64}()
+    for (i, xv) in enumerate(xs)
         v = marker(txt, "<<V$i>>")
         (v === nothing || v == "fail") && continue
         c = parse_sage_complex(v)
         c === nothing || (vals[xv] = c)
     end
     t = marker(txt, "<<TIME>>")
-    SageAnswer(ans, vals, t === nothing ? NaN : parse(Float64, t))
+    SageAnswer(ans, vals, t === nothing ? NaN : parse(Float64, t), answer_ns)
 end
 
 function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
@@ -164,7 +181,7 @@ function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
 end
 
 const OPS = Dict{Symbol,Any}(:integrate_text => INTEGRATE_TEXT, :groebner => GROEBNER)
-EVAL(ex, vals) = ex isa SageAnswer ? get(ex.values, vals[:x], nothing) : (ex isa Number ? ex : nothing)
+EVAL(ex, vals) = ex isa SageAnswer ? get(ex.values, ComplexF64(vals[:x]), nothing) : (ex isa Number ? ex : nothing)
 NTERMS(ex) = 1
 NFACTORS(ex) = 1
 UNSOLVED(op, out) = out isa SageAnswer && occursin(r"integrate\(|sage_error: .*(not implemented|NotImplemented|cannot|unable)", out.text)
@@ -177,3 +194,33 @@ function VERSIONS()
     end
     ["SageMath" => first(v, 60), "sage_algorithm" => SAGE_ALGORITHM]
 end
+
+# Sage's adapters ask the underlying engine to simplify its own derivative
+# residual. Parsing or unsupported engine interfaces yield verify_unsolved.
+function VERIFY_INTEGRAL_COMMAND(answer::String, integrand::String, variable::String)
+    f = Mapleish.translate(integrand, :sage)
+    words = unique([m.match for m in eachmatch(r"\b[A-Za-z_][A-Za-z_0-9]*\b", f)
+                    if !occursin(Regex("\\b" * m.match * "\\("), f) && !(m.match in ("pi", "I", "e", "E"))])
+    symbols = join(unique([variable; words]), " ")
+    lines = ["var(" * repr(symbols) * ")", "f = SR(" * f * ")", "F = SR(" * answer * ")"]
+    if SAGE_ALGORITHM == "giac"
+        push!(lines, "r = giac('simplify(diff((' + str(giac(F)) + '),' + str(giac(" * variable * ")) + ')-(' + str(giac(f)) + '))')")
+    elseif SAGE_ALGORITHM == "maxima"
+        push!(lines, "r = (F._maxima_().diff(" * variable * "._maxima_()) - f._maxima_()).radcan().ratsimp()")
+    elseif SAGE_ALGORITHM == "fricas"
+        push!(lines, "r = (fricas(F).D(fricas(" * variable * ")) - fricas(f)).simplify()")
+    elseif SAGE_ALGORITHM == "sympy"
+        push!(lines, "import sympy as sp")
+        push!(lines, "r = sp.simplify(sp.diff(F._sympy_(), sp.Symbol(" * repr(variable) * ")) - f._sympy_())")
+    else
+        error("no integration self-check for this Sage engine")
+    end
+    push!(lines, "print('<<' + 'RES>>', str(r))")
+    join(lines, "\n") * "\n"
+end
+function VERIFY_INTEGRAL(answer::String, integrand::String, variable::String)
+    txt = run_sage(VERIFY_INTEGRAL_COMMAND(answer, integrand, variable))
+    value = marker(txt, "<<RES>>")
+    value === nothing ? "" : value
+end
+OPS[:VERIFY_INTEGRAL] = VERIFY_INTEGRAL

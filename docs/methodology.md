@@ -22,7 +22,9 @@ Every bench/system pair runs in its own Julia process with one thread, from
 its own environment under `envs/`, under `lib/supervise.jl`, which enforces a
 per-case time limit (`BENCH_TIMEOUT_<bench>`, read by `run_all.jl`; defaults B 120 s, C 600 s, D 120 s, E 60 s,
 F 30 s, G 300 s, H 30 s, I 300 s) and restarts the
-worker at the next case after a timeout or a crash. Results are appended to
+worker at the next case after a timeout or a crash. Choose a new `BENCH_HOST` for a new run: existing result files are never
+replaced. `BENCH_RESUME=1` can resume a file only when its header matches the
+current format; a legacy file must remain untouched. Results are appended to
 `results/<host>/<bench>_<system>.tsv` (one line per case: status, first-call
 time, warm time, textual result, note, input, wall time, repeated times, load
 average, run id), one directory per host (`BENCH_HOST`, else the hostname);
@@ -42,7 +44,7 @@ commit of the harness, whether the tree was dirty, the commits of the
 a calibration workload (two hundred million square roots in plain Julia, the
 minimum of three runs, `calibration_s`): a scale to compare machines and a
 detector of a perturbed run. Every record carries the run id (`run`), the
-harness's own wall time of the fastest measured call (`t_wall_s`, the same
+harness's own wall time of the minimum-duration measured call (`t_wall_s`, the same
 meaning for every system, process start-up included for a system run as one
 process per case; `t_warm_s` is the system's own time for those), every
 repeated time behind the minimum (`t_repeats_s`), and the 1-minute load
@@ -51,9 +53,11 @@ have ten or eleven columns and no run identity.
 Since 2026-11-20 every row also carries an `input` column: what the adapter
 sent to the system during the case, in that system's syntax (the strings
 evaluated by Giac, the text given to SymPy, the scripts of Maxima, FriCAS,
-Sage and Macaulay2; for the Julia-side task files, the arguments), truncated
-to 2 000 characters. It is there so that a status can be checked against the
-exact input: an unsolved or wrong case may be a command the benchmark
+Sage and Macaulay2; for the Julia-side task files, the arguments). Historical
+files truncate the input to 2,000 characters and the output to 200. New
+18-column files preserve input, output and check notes in full, using TSV
+backslash escapes for backslashes, newlines and tabs. The input is there so that a status can be
+checked against the actual command: an unsolved or wrong case may be a command the benchmark
 generated wrongly, not a limit of the system.
 A case index can appear twice in a file when the supervisor restarted a
 worker on it (its timeout record, then the restarted worker's record);
@@ -66,11 +70,41 @@ Julia and package versions, `versioninfo(verbose=true)`, `lscpu` and the
 flake and nixpkgs revisions. To rerun one problem of a suite:
 `BENCH_STOP=<idx> julia --project=envs/<system> lib/worker.jl E_suite <system> out.tsv <idx> progress`.
 
-The status vocabulary is the same in every bench: `verified` (returned and
-checked), `wrong` (the check failed), `unverified` (returned, but the check
+The status vocabulary is the same in every bench: historical `verified` includes
+numeric checks; new numeric checks use `verified_numeric` and `verified` is
+reserved for exact checks. `wrong` means the check failed, `unverified` (returned, but the check
 could not evaluate it), `unsolved` (returned unevaluated or incomplete, or
 the system declared that it cannot), `unavailable` (no operation of that kind
 in the system, as wired in `lib/adapters/<system>.jl`), `error`, `timeout`.
+
+## Integration verification
+
+For F and H, six fixed real candidate points in (0, 1) are evaluated at
+Float64 precision. The central difference uses `h = 1e-5`; the integrand must
+be finite and real at the point and both neighboring points, and at least
+four points must be usable. The tolerance is `2e-4 * max(abs(f), 1) + 1e-7`.
+For integrands recognised as entire by the conservative syntax check, the
+same comparison includes `0.57 + 0.125im`. Other integrands may also be
+analytic there; the syntax check does not establish that. Samples and domain
+checks cannot prove a global identity or settle branches. H also compares
+eligible Lean-certified antiderivatives up to a constant at sampled points.
+Numeric evaluation has a separate 60-second supervisor budget, configurable
+with `BENCH_NUMERIC_VERIFY_TIMEOUT`. If it is interrupted after an external
+system has returned an answer, that answer is retained as `unverified`.
+
+Under the supervisor, symbolic self-verification runs by default after a
+numerically verified answer in a separate process, with a 60-second budget.
+Set `BENCH_VERIFY_INTEGRALS=0` to disable it and `BENCH_VERIFY_TIMEOUT` to
+change the budget. Direct calls to `lib/worker.jl` leave the phase disabled.
+The command simplifies `diff(F, x) - f` in the answering system, following
+[Xcas chkint.cas](https://github.com/JuliaGiac/giac/blob/99439bb/check/chkint.cas).
+The answer times exclude this phase. `verify_status`, `verify_time_s`, and
+`verify_input` are appended to new TSV records; input, output, notes and the
+verification command escape backslashes, newlines and tabs so they can be reconstructed.
+`verified_symbolic` means the system returned exact zero; `verify_unsolved`
+and `verify_timeout` do not change the answer's numeric status. Historical
+files have no self-check columns. Unintegrable reference cases left unevaluated
+are now `unsolved`; older results may classify them as `verified`.
 
 ## Adapters
 

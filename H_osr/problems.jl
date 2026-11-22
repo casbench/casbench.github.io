@@ -69,10 +69,14 @@ let skipped = 0
         certified = r.real == "proved" ? r.result : nothing
         push!(PROBLEMS, (name = r.id * " " * first(r.integrand, 70), op = :integrate_text,
                          args = V -> (r.integrand, "x", params),
-                         check = o -> check_integral(o, r.integrand, ""; params = params, certified = certified),
+                         real_points = FPOINTS,
+                         complex_point = entire_integrand(r.integrand) ? FCOMPLEX_POINT : nothing,
+                         check = o -> check_integral(o, r.integrand, ""; params = params, certified = certified,
+                                                     real_points = FPOINTS,
+                                                     complex_point = entire_integrand(r.integrand) ? FCOMPLEX_POINT : nothing),
                          note = "int " * first(r.integrand, 100) * " dx; R: " * r.real * ", C: " * r.complex * "; " *
                                 join(["$k=$(v)" for (k, v) in sort!(collect(vals); by = kv -> string(kv[1]))], " ") *
-                                "; " * r.legacy,
+                                "; " * r.legacy * (entire_integrand(r.integrand) ? "; complex sample $(FCOMPLEX_POINT) (entire syntax)" : "; no complex analyticity asserted"),
                          accept_unsolved = false))
     end
     @info "bench H: $(length(PROBLEMS)) rules with admissible values, $skipped without"

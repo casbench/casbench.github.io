@@ -89,6 +89,32 @@ class SiteGenTests(unittest.TestCase):
         self.assertIsNone(sitegen.operation_metrics([row("verified", 1), row("timeout", 600), row("wrong", 1)])[2])
         self.assertIsNone(sitegen.operation_metrics([row("verified", float("nan"))])[2])
 
+    def test_integration_verification_is_separate(self):
+        root = self.make_root()
+        path = root / "results" / "testhost" / "F_integration_giac.tsv"
+        command = "α = 1\n\tresult = \\frac{x}{2}\n```"
+        encoded = command.replace("\\", "\\\\").replace("\t", "\\t").replace("\n", "\\n")
+        path.write_text("bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput\tverify_status\tverify_time_s\tverify_input\n"
+                        "F_integration\tGiac.jl\t1\tintegral\tintegrate_text\tverified_numeric\t1.0\t0.5\tx^2/2\tnumeric check\tintegrate(x,x)\tverified_symbolic\t4.2\t" + encoded + "\n", encoding="utf-8")
+        out = pathlib.Path(tempfile.mkdtemp())
+        sitegen.generate(root, out)
+        synthesis = (out / "content" / "results" / "synthesis" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("1/1; 1 checked; median 4.20 s", synthesis)
+        page = (out / "content" / "results" / "f_integration" / sitegen.slug(1, "integral") / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("verified_numeric", page)
+        self.assertIn("verified_symbolic", page)
+        self.assertIn("4.20 s", page)
+        self.assertIn(command, page)
+        self.assertIn("integrate(x,x)", page)
+
+    def test_self_verification_median_requires_half(self):
+        def row(status, time):
+            return {"status": "verified_numeric", "verify_status": status, "verify_time_s": time}
+        rows = [row("verified_symbolic", 1.0), row("verify_unsolved", 2.0), row("verify_timeout", 60.0)]
+        summary = sitegen.self_verification_summary(rows)
+        self.assertIn("1/3; 3 checked", summary)
+        self.assertIn("median omitted", summary)
+
     def test_numeric_identity_case_displays_evaluation(self):
         root = self.make_root()
         path = root / "results" / "testhost" / "D_coverage_giac.tsv"
@@ -167,7 +193,7 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("## What a result means", meth)
         self.assertIn("## Checks of the expected values", meth)
         self.assertIn("## Metrics", meth)
-        self.assertIn("not yet implemented", meth)
+        self.assertIn("separate process", meth)
         self.assertIn("simplify(diff(F, x) - f) == 0", meth)
         self.assertIn("aliases: ['/workflow/']", meth)
         stp = (out / "content" / "docs" / "statuses" / "_index.md").read_text(encoding="utf-8")
@@ -217,7 +243,7 @@ class SiteGenTests(unittest.TestCase):
         site = sitegen.generate(root, out)
         self.assertEqual(len(site.history), 2)
         page = (out / "content" / "history" / "_index.md").read_text(encoding="utf-8")
-        self.assertEqual(page.count('<svg class="viz-chart"'), 2)                 # verified and median time charts
+        self.assertEqual(page.count('<svg class="viz-chart"'), 1)                 # verified counts only
         self.assertIn('<g class="viz-pt" aria-label="2026-11-18 08:28: Giac.jl 22">', page)   # the label starts with the date
         self.assertIn('data-viz="dense"', page)
         self.assertIn("<table", page.replace("| date | host |", "<table"))             # the values are on the page
@@ -242,7 +268,7 @@ class SiteGenTests(unittest.TestCase):
         self.assertEqual(site.ncases(), 4)                                             # the tiles count the reference host only
         hosts = (out / "content" / "docs" / "hosts" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("| bench | system | `testhost` | `other` |", hosts)
-        self.assertIn("| D. Functional coverage | Giac.jl | 2/3 verified, 100.0 ms | 2/3 verified, 200.0 ms |", hosts)
+        self.assertIn("| D. Functional coverage | Giac.jl | 2/3 verified | 2/3 verified |", hosts)
         home = (out / "content" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("1 other host (`other`) ran the same benches", home)
         self.assertTrue((out / "static" / "data" / "other" / "D_coverage_giac.tsv").exists())

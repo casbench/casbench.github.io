@@ -14,31 +14,56 @@ const CASE_LIMIT = get(ENV, "BENCH_CASE_TIMEOUT", "600")   # seconds; a subproce
 
 struct FricasAnswer
     text::String
-    values::Dict{Float64,ComplexF64}
+    values::Dict{ComplexF64,ComplexF64}
+    answer_ns::UInt64
 end
 const REPEATS = 1                      # one process per case
 Base.string(a::FricasAnswer) = a.text
 
-check_points() = (pts = Main.FPOINTS; h = 1e-5; [x0 + s * h for x0 in pts for s in (-1, 1)])
+function check_points(integrand)
+    h = 1e-5
+    xs = ComplexF64[x0 + s*h for x0 in Main.FPOINTS for s in (-1, 0, 1)]
+    if Main.entire_integrand(integrand)
+        append!(xs, (Main.FCOMPLEX_POINT - h, Main.FCOMPLEX_POINT + h))
+    end
+    xs
+end
+fricas_point(z, cplx) = iszero(imag(z)) ? "($(real(z))$(cplx ? "::Complex Float" : "::Float"))" :
+    "complex($(real(z))::Float,$(imag(z))::Float)"
 # only the parameters the integrand uses (D is FriCAS's differentiation operator, F and others are fine as symbols)
 # values substituted as Complex Float, so that a logarithm or a root of a negative value evaluates instead of raising
 param_list(xv, integrand, params, cplx) = (ty = cplx ? "::Complex Float" : "::Float";
-    join([["$k = ($(v)$ty)" for (k, v) in params if occursin(Regex("\\b$k\\b"), integrand)]; "x = ($xv$ty)"], ", "))
+    join([["$k = ($(v)$ty)" for (k, v) in params if occursin(Regex("\\b$k\\b"), integrand)]; "x = $(fricas_point(xv, cplx))"], ", "))
 
 function run_fricas(script::String)
-    out = IOBuffer()
-    run(pipeline(`timeout -k 5 $CASE_LIMIT $FRICAS -nosman -eval ")read $(script) )quiet" -eval ")quit"`; stdout = out, stderr = devnull))
-    txt = String(take!(out))
+    cmd = pipeline(`timeout -k 5 $CASE_LIMIT $FRICAS -nosman -eval ")read $(script) )quiet" -eval ")quit"`; stderr=devnull)
+    io = open(cmd, "r")
+    lines = String[]
+    answer_ns = UInt64(0)
+    try
+        for line in eachline(io)
+            push!(lines, line)
+            if answer_ns == 0 && occursin("<<DONE>>", line)
+                answer_ns = time_ns()
+                answer = marker_text(join(lines, "\n"), "<<ANS>>")
+                answer === nothing || notify_answer(answer, answer_ns)
+            end
+        end
+    finally
+        close(io)
+    end
+    txt = join(lines, "\n")
     get(ENV, "BENCH_DEBUG", "0") == "1" && (println(stderr, "--- fricas script\n", read(script, String), "--- fricas output\n", txt); flush(stderr))
-    txt
+    txt, answer_ns
 end
 
 function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     f = Mapleish.translate(integrand, :fricas)
-    xs = check_points()
+    xs = check_points(integrand)
     lines = [")set message autoload off", ")set message type off", ")set output algebra off", ")set output length 245", ")set break resume",
              "f := $f", "resf := integrate(f, $var)",
-             "output(concat(\"<<ANS>>\", unparse(resf::InputForm)))"]
+             "output(concat(\"<<ANS>>\", unparse(resf::InputForm)))",
+             "output(concat(\"<<DO\", \"NE>>\"))", ")lisp (finish-output)"]
     for (i, xv) in enumerate(xs)
         # real values first (an Expression Integer evaluates cleanly), complex ones second (logarithms of negative values);
         # with )set break resume an error in one line does not stop the next
@@ -50,14 +75,14 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     path = tempname() * ".input"
     write(path, join(lines, "\n") * "\n")
     log_input!(join(lines, "\n"))
-    txt = try
+    txt, answer_ns = try
         run_fricas(path)
     finally
         rm(path; force = true)
     end
     ans = marker_text(txt, "<<ANS>>")
     ans === nothing && error("fricas gave no answer: " * last(strip(replace(txt, "\n" => " ")), 200))
-    vals = Dict{Float64,ComplexF64}()
+    vals = Dict{ComplexF64,ComplexF64}()
     for (i, xv) in enumerate(xs)
         for mk in ("<<V$i>>", "<<W$i>>")
             mv = marker_text(txt, mk)
@@ -68,7 +93,7 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
             break
         end
     end
-    FricasAnswer(ans, vals)
+    FricasAnswer(ans, vals, answer_ns)
 end
 
 # the text after a marker, with the continuation lines FriCAS indents joined to it
@@ -105,7 +130,7 @@ function parse_fricas_number(s::AbstractString)
 end
 
 const OPS = Dict{Symbol,Any}(:integrate_text => INTEGRATE_TEXT)
-EVAL(ex, vals) = ex isa FricasAnswer ? get(ex.values, vals[:x], nothing) : (ex isa Number ? ex : nothing)
+EVAL(ex, vals) = ex isa FricasAnswer ? get(ex.values, ComplexF64(vals[:x]), nothing) : (ex isa Number ? ex : nothing)
 NTERMS(ex) = 1
 NFACTORS(ex) = 1
 UNSOLVED(op, out) = out isa FricasAnswer && occursin(r"integral\(|integrate\(", out.text)
@@ -118,3 +143,22 @@ function VERSIONS()
     end
     ["FriCAS" => first(replace(v, "\n" => " "), 80)]
 end
+
+function VERIFY_INTEGRAL_COMMAND(answer::String, integrand::String, var::String)
+    f = Mapleish.translate(integrand, :fricas)
+    join([")set message autoload off", ")set message type off", ")set output algebra off",
+          ")set output length 245", ")set break resume", "f := " * f, "F := " * answer,
+          "r := simplify(D(F," * var * ")-f)", "output(concat(\"<<RES>>\",unparse(r::InputForm)))"], "\n") * "\n"
+end
+function VERIFY_INTEGRAL(answer::String, integrand::String, var::String)
+    path = tempname() * ".input"
+    write(path, VERIFY_INTEGRAL_COMMAND(answer, integrand, var))
+    try
+        txt, _ = run_fricas(path)
+        value = marker_text(txt, "<<RES>>")
+        value === nothing ? "" : strip(value)
+    finally
+        rm(path; force=true)
+    end
+end
+OPS[:VERIFY_INTEGRAL] = VERIFY_INTEGRAL

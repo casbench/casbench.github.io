@@ -71,7 +71,7 @@
             echo "nixpkgs_rev ${nixpkgs.rev}"
             julia --startup-file=no -e 'using InteractiveUtils; versioninfo(verbose=true)'
             lscpu
-          } > "results/$h/environment.txt" 2>&1
+          } >> "results/$h/environment.txt" 2>&1
           exec nice -n 10 julia --startup-file=no run_all.jl "$@"
         '';
       };

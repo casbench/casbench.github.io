@@ -15,29 +15,51 @@ const CASE_LIMIT = get(ENV, "BENCH_CASE_TIMEOUT", "600")   # seconds; a subproce
 
 struct MaximaAnswer
     text::String                       # the antiderivative as Maxima prints it (1D)
-    values::Dict{Float64,ComplexF64}   # x => numeric value of the answer at the check points
+    values::Dict{ComplexF64,ComplexF64}   # x => numeric value of the answer at the check points
     elapsed::Float64                   # seconds of the integrate call inside Maxima
+    answer_ns::UInt64                  # monotonic timestamp when answer was received
 end
 const REPEATS = 1                      # one process per case; the warm time is the in-process time
 Base.string(a::MaximaAnswer) = a.text
 
 # points of the check (FPOINTS, FPARAMS and h of F_integration/problems.jl, read at call time)
-check_points() = (pts = Main.FPOINTS; h = 1e-5; [x0 + s * h for x0 in pts for s in (-1, 1)])
+function check_points(integrand)
+    h = 1e-5
+    xs = ComplexF64[x0 + s*h for x0 in Main.FPOINTS for s in (-1, 0, 1)]
+    if Main.entire_integrand(integrand)
+        append!(xs, (Main.FCOMPLEX_POINT - h, Main.FCOMPLEX_POINT + h))
+    end
+    xs
+end
+maxima_point(z) = iszero(imag(z)) ? string(real(z)) : "(" * string(real(z)) * "+(" * string(imag(z)) * ")*%i)"
 # only the parameters the integrand uses
 param_list(integrand, params) = ["$k=$(v)" for (k, v) in params if occursin(Regex("\\b$k\\b"), integrand)]
 
 function run_maxima(script::String)
-    out = IOBuffer()
-    cmd = pipeline(`timeout -k 5 $CASE_LIMIT $MAXIMA --very-quiet --batch-string=$script`; stdout = out, stderr = devnull)
-    run(cmd)
-    txt = String(take!(out))
+    cmd = pipeline(`timeout -k 5 $CASE_LIMIT $MAXIMA --very-quiet --batch-string=$script`; stderr=devnull)
+    io = open(cmd, "r")
+    lines = String[]
+    answer_ns = UInt64(0)
+    try
+        for line in eachline(io)
+            push!(lines, line)
+            if answer_ns == 0 && occursin("<<ANS>>", line)
+                answer_ns = time_ns()
+                m = match(r"<<ANS>>\s*(.*)", line)
+                m === nothing || notify_answer(strip(m[1]), answer_ns)
+            end
+        end
+    finally
+        close(io)
+    end
+    txt = join(lines, "\n")
     get(ENV, "BENCH_DEBUG", "0") == "1" && (println(stderr, "--- maxima output\n", txt); flush(stderr))
-    txt
+    txt, answer_ns
 end
 
 function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     f = Mapleish.translate(integrand, :maxima)
-    xs = check_points()
+    xs = check_points(integrand)
     # the batch echoes its input: the markers are assembled by concat so that they only occur in the output
     plist = param_list(integrand, params)
     # the sign of each parameter is assumed as its fixed value has it (a > 0, or m < 0 for a negative candidate value)
@@ -56,17 +78,17 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     lines = ["display2d:false\$", "ratprint:false\$", "linel:1000000\$", oracle..., assumptions, "t0_: elapsed_real_time()\$",
              "res_: errcatch(integrate($f, $var))\$", "res_: if length(res_) = 0 then 'maxima_error else first(res_)\$",
              "print(concat(\"<<T\", \"IME>>\"), string(float(elapsed_real_time() - t0_)))\$",
-             "print(concat(\"<<AN\", \"S>>\"), string(res_))\$"]
+             "print(concat(\"<<AN\", \"S>>\"), string(res_))\$", ":lisp (finish-output)"]
     for (i, xv) in enumerate(xs)
-        args = join(["$var=$xv"; plist; "numer"], ",")
+        args = join(["$var=$(maxima_point(xv))"; plist; "numer"], ",")
         push!(lines, "print(concat(\"<<V\", $i, \">>\"), string(float(rectform(ev(res_, $args)))))\$")
     end
     log_input!(join(lines, "\n"))
-    txt = run_maxima(join(lines, "\n"))
+    txt, answer_ns = run_maxima(join(lines, "\n"))
     m = match(r"<<ANS>>\s*(.*)", txt)
     m === nothing && error("maxima gave no answer: " * first(txt, 200))
     ans = strip(m[1])
-    vals = Dict{Float64,ComplexF64}()
+    vals = Dict{ComplexF64,ComplexF64}()
     for (i, xv) in enumerate(xs)
         mv = match(Regex("<<V$i>>\\s*(.*)"), txt)
         mv === nothing && continue
@@ -74,7 +96,7 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
         v === nothing || (vals[xv] = v)
     end
     mt = match(r"<<TIME>>\s*([0-9.eE+-]+)", txt)
-    MaximaAnswer(ans, vals, mt === nothing ? NaN : parse(Float64, mt[1]))
+    MaximaAnswer(ans, vals, mt === nothing ? NaN : parse(Float64, mt[1]), answer_ns)
 end
 
 # "1.234", "-5.6e-3", "1.2*%i+3.4", "3.4-1.2*%i", "%i*1.2"
@@ -95,7 +117,7 @@ function parse_maxima_number(s::AbstractString)
 end
 
 const OPS = Dict{Symbol,Any}(:integrate_text => INTEGRATE_TEXT)
-EVAL(ex, vals) = ex isa MaximaAnswer ? get(ex.values, vals[:x], nothing) : (ex isa Number ? ex : nothing)
+EVAL(ex, vals) = ex isa MaximaAnswer ? get(ex.values, ComplexF64(vals[:x]), nothing) : (ex isa Number ? ex : nothing)
 NTERMS(ex) = 1
 NFACTORS(ex) = 1
 UNSOLVED(op, out) = out isa MaximaAnswer && occursin(r"integrate\(|'integrate|maxima_error", out.text)
@@ -108,3 +130,16 @@ function VERSIONS()
     end
     ["Maxima" => replace(v, r"^Maxima\s*" => "")]
 end
+
+function VERIFY_INTEGRAL_COMMAND(answer::String, integrand::String, var::String)
+    f = Mapleish.translate(integrand, :maxima)
+    join(["display2d:false\$", "linel:1000000\$",
+          "res_:ratsimp(radcan(diff((" * answer * ")," * var * ")-(" * f * ")))\$",
+          "print(concat(\"<<RE\",\"S>>\"),string(res_))\$"], "\n")
+end
+function VERIFY_INTEGRAL(answer::String, integrand::String, var::String)
+    txt, _ = run_maxima(VERIFY_INTEGRAL_COMMAND(answer, integrand, var))
+    m = match(r"<<RES>>\s*(.*)", txt)
+    m === nothing ? "" : strip(m[1])
+end
+OPS[:VERIFY_INTEGRAL] = VERIFY_INTEGRAL

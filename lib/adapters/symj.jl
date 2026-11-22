@@ -122,3 +122,16 @@ catch
 end
 VERSIONS() = ["SymJ" => string(pkgversion(SymJ)), "GruntzLimit" => string(pkgversion(GruntzLimit)),
               "RischIntegrate" => string(pkgversion(RischIntegrate))]
+
+function VERIFY_INTEGRAL_COMMAND(answer::String, integrand::String, var::String)
+    "simplify(diff(exact_sym_from_text(" * repr(answer) * "),VAR[:" * var * "])-exact_sym_from_text(" * repr(integrand) * "))"
+end
+function exact_sym_from_text(text::String)
+    expr = exact_verify_expr(text)
+    bindings = Expr(:block, (Expr(:(=), name, value) for (name, value) in VAR if name != :pi)...)
+    sym(Core.eval(Main, Expr(:let, bindings, expr)))
+end
+function VERIFY_INTEGRAL(answer::String, integrand::String, var::String)
+    string(simplify(diff(exact_sym_from_text(answer), VAR[Symbol(var)]) - exact_sym_from_text(integrand)))
+end
+OPS[:VERIFY_INTEGRAL] = VERIFY_INTEGRAL

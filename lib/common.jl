@@ -12,7 +12,8 @@ using Printf
 
 export Record, HEADER, append_record, read_records, write_machine_info, INPUT_LOG, log_input!,
        time_call, truncate_str, clean, numeq, POINTS, POINTS_POS,
-       run_id, host_slug, results_dir, git_info, loadavg, calibrate
+       run_id, host_slug, results_dir, git_info, loadavg, calibrate, with_verification,
+       ANSWER_CALLBACK, TIME_CALL_START, notify_answer
 
 const ROOT = normpath(joinpath(@__DIR__, ".."))
 
@@ -40,41 +41,67 @@ struct Record
     status::String
     t_first::Float64   # seconds, first call in a fresh process (includes compilation)
     t_warm::Float64    # seconds, minimum over repeated calls (NaN if not measured)
-    result::String     # truncated textual result
+    result::String     # textual result; new-format records preserve it in full
     note::String
-    input::String      # what was sent to the system (its own syntax), truncated; "" in files written before 2026-11-20
+    input::String      # full input in new-format records; older files may be truncated
     # the four columns below exist in files written from 2026-11-20 (harness with run identity):
     t_wall::Float64    # seconds, the harness's own wall time of the fastest measured call, whatever the system
                        # (for a system run as one process per case this includes the process start-up)
     repeats::String    # every repeated wall time in seconds, ";"-separated (the dispersion behind t_warm); "" if none
     load::Float64      # 1-minute load average of the machine just before the case (NaN if unknown)
     run::String        # run identifier: <date>_<host>[-dirty], the same in machine.txt (run_id)
+    verify_status::String  # separate verification phase, empty when not run
+    verify_time::Float64   # seconds spent in verification, never included in t_first/t_warm
+    verify_input::String   # exact command sent to the verifier, when recorded
 end
+Record(bench, system, idx, case, op, status, t_first, t_warm, result, note, input, t_wall, repeats, load, run) =
+    Record(bench, system, idx, case, op, status, t_first, t_warm, result, note, input, t_wall, repeats, load, run, "", NaN, "")
 Record(bench, system, idx, case, op, status, t_first, t_warm, result, note) =
     Record(bench, system, idx, case, op, status, t_first, t_warm, result, note, "")
 Record(bench, system, idx, case, op, status, t_first, t_warm, result, note, input) =
     Record(bench, system, idx, case, op, status, t_first, t_warm, result, note, input, NaN, "", NaN, run_id())
 
-const HEADER = "bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput\tt_wall_s\tt_repeats_s\tload_avg\trun"
+# Create a new immutable record without touching the measured answer times.
+with_verification(r::Record, status, seconds, command) =
+    Record(r.bench, r.system, r.idx, r.case, r.op, r.status, r.t_first, r.t_warm,
+           r.result, r.note, r.input, r.t_wall, r.repeats, r.load, r.run, status, seconds, command)
+
+const HEADER = "bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput\tt_wall_s\tt_repeats_s\tload_avg\trun\tverify_status\tverify_time_s\tverify_input"
 
 # what the adapters send to their system during one case, in that system's syntax: the adapters call
 # log_input! with every command, script or expression text; the worker clears it before each case and
 # records it, so that a status can be checked against the exact input (a wrongly generated command is
 # an error of the benchmark, not of the system)
+# A subprocess adapter can announce its answer before it starts numeric
+# evaluations. The worker uses this boundary to protect a completed answer
+# if the later checking phase is interrupted.
+const ANSWER_CALLBACK = Ref{Any}(nothing)
+const TIME_CALL_START = Ref{UInt64}(0)
+notify_answer(text, stamp) = ANSWER_CALLBACK[] === nothing ? nothing : ANSWER_CALLBACK[](String(text), stamp)
+
 const INPUT_LOG = String[]
 log_input!(s) = (push!(INPUT_LOG, String(string(s))); nothing)
 
 clean(s) = replace(String(string(s)), '\t' => ' ', '\n' => ' ', '\r' => ' ')
+# Verification commands can be multiline and must round-trip exactly in TSV.
+escape_verify(s) = replace(String(s), "\\" => "\\\\", "\t" => "\\t", "\n" => "\\n", "\r" => "\\r")
 truncate_str(s, n = 200) = (s = clean(s); length(s) > n ? first(s, n) * "..." : s)
 
 function append_record(path::AbstractString, r::Record)
     new = !isfile(path) || filesize(path) == 0
+    # Appending new-width rows to a legacy file would silently corrupt it.
+    # Keep historical files intact and require a new destination instead.
+    if !new
+        existing = open(readline, path)
+        existing == HEADER || error("cannot append the new record format to historical results: $path")
+    end
     open(path, "a") do io
         new && println(io, HEADER)
         println(io, join([r.bench, r.system, string(r.idx), clean(r.case), r.op, r.status,
                           @sprintf("%.6g", r.t_first), @sprintf("%.6g", r.t_warm),
-                          truncate_str(r.result), truncate_str(r.note, 300), truncate_str(r.input, 2000),
-                          @sprintf("%.6g", r.t_wall), r.repeats, @sprintf("%.3g", r.load), r.run], '\t'))
+                          escape_verify(r.result), escape_verify(r.note), escape_verify(r.input),
+                          @sprintf("%.6g", r.t_wall), r.repeats, @sprintf("%.3g", r.load), r.run,
+                          clean(r.verify_status), @sprintf("%.6g", r.verify_time), escape_verify(r.verify_input)], '\t'))
     end
 end
 
@@ -84,11 +111,14 @@ function read_records(path::AbstractString)
     for (i, line) in enumerate(eachline(path))
         i == 1 && continue
         f = split(line, '\t'; keepempty = true)
-        length(f) in (10, 11, 15) || continue
+        length(f) in (10, 11, 15, 17, 18) || continue
         push!(out, Record(f[1], f[2], parse(Int, f[3]), f[4], f[5], f[6],
-                          parse(Float64, f[7]), parse(Float64, f[8]), f[9], f[10], length(f) >= 11 ? f[11] : "",
-                          length(f) == 15 ? parse(Float64, f[12]) : NaN, length(f) == 15 ? f[13] : "",
-                          length(f) == 15 ? parse(Float64, f[14]) : NaN, length(f) == 15 ? f[15] : ""))
+                          parse(Float64, f[7]), parse(Float64, f[8]), length(f) >= 18 ? unescape_string(f[9]) : f[9], length(f) >= 18 ? unescape_string(f[10]) : f[10],
+                          length(f) >= 18 ? unescape_string(f[11]) : length(f) >= 11 ? f[11] : "",
+                          length(f) >= 15 ? parse(Float64, f[12]) : NaN, length(f) >= 15 ? f[13] : "",
+                          length(f) >= 15 ? parse(Float64, f[14]) : NaN, length(f) >= 15 ? f[15] : "",
+                          length(f) >= 17 ? f[16] : "", length(f) >= 17 && !isempty(f[17]) ? parse(Float64, f[17]) : NaN,
+                          length(f) >= 18 ? unescape_string(f[18]) : ""))
     end
     out
 end
@@ -110,16 +140,19 @@ repeated time is pushed to `times` (the dispersion behind the minimum).
 Calls that take less than a millisecond are re-timed in a loop of `n` calls so
 that the reported per-call time has microsecond resolution.
 """
-function time_call(f; repeats = 5, warm_budget = 10.0, between = () -> nothing, times = Float64[])
+function time_call(f; repeats = 5, warm_budget = 10.0, between = () -> nothing, times = Float64[], answer_boundary = false)
     t0 = time_ns()
+    TIME_CALL_START[] = t0
     out = f()
-    t_first = (time_ns() - t0) / 1e9
+    stamp(v) = answer_boundary && hasfield(typeof(v), :answer_ns) ? getfield(v, :answer_ns) : time_ns()
+    end_first = stamp(out)
+    t_first = end_first >= t0 ? (end_first - t0) / 1e9 : NaN
     t_warm = NaN
     if t_first < warm_budget
         best = Inf
         for _ in 1:repeats
             between()
-            if t_first < 1e-3
+            if t_first < 1e-3 && !(answer_boundary && hasfield(typeof(out), :answer_ns))
                 n = 200
                 t0 = time_ns()
                 for _ in 1:n
@@ -128,8 +161,9 @@ function time_call(f; repeats = 5, warm_budget = 10.0, between = () -> nothing, 
                 dt = (time_ns() - t0) / 1e9 / n
             else
                 t0 = time_ns()
-                f()
-                dt = (time_ns() - t0) / 1e9
+                value = f()
+                finish = stamp(value)
+                dt = finish >= t0 ? (finish - t0) / 1e9 : NaN
             end
             push!(times, dt)
             best = min(best, dt)

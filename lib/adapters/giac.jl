@@ -191,3 +191,14 @@ VERSIONS() = ["Giac.jl" => string(pkgversion(Giac)),
               "GIAC_jll" => string(pkgversion(Giac.GIAC_jll)),
               "libgiac_julia_jll" => string(pkgversion(Giac.libgiac_julia_jll)),
               "giac_version" => string(geval("version()"))]
+
+# Symbolic self-verification runs in a separate supervised process. The exact
+# command is generated before execution so a timeout can still record it.
+function VERIFY_INTEGRAL_COMMAND(answer::String, integrand::String, var::String)
+    f = Mapleish.translate(integrand, :giac)
+    f = replace(f, r"\be\b" => "ee", r"\bi\b" => "ii")
+    "simplify(diff((" * answer * ")," * var * ")-(" * f * "))"
+end
+VERIFY_INTEGRAL(answer::String, integrand::String, var::String) =
+    string(geval(VERIFY_INTEGRAL_COMMAND(answer, integrand, var)))
+OPS[:VERIFY_INTEGRAL] = VERIFY_INTEGRAL

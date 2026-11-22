@@ -65,8 +65,7 @@ SOURCES = [
      "reference only; no text or collection copied", "the near-integer control in bench E; its interval is computed independently with directed MPFR rounding."),
     ("SymJ.jl's bench/cas comparison", "MIT", "the structure of the adapters and of the supervisor follows it."),
 ]
-NOT_REPRODUCED = ("Third-party numbers quoted on the Methodology page (the 12000.org scores of the Summer 2024 edition) "
-                  "come with their caveats and are not rerun here. Systems not run: Reduce (not in nixpkgs), Rubi (it needs "
+NOT_REPRODUCED = ("Third-party 12000.org scores from the Summer 2024 edition are not rerun here. Systems not run: Reduce (not in nixpkgs), Rubi (it needs "
                   "Mathematica), Mathematica and Maple (proprietary); Singular.jl does not precompile on Julia 1.13 at the "
                   "pinned versions, so Singular runs through SageMath.")
 STATUSES = ("verified", "verified_numeric", "wrong", "unverified", "unsolved", "unavailable", "error", "timeout")
@@ -79,6 +78,9 @@ STATUS_HELP = {
     "unavailable": "no operation of that kind in the system, as wired in its adapter",
     "error": "the call raised, or the worker crashed",
     "timeout": "over the per-case limit",
+    "verified_symbolic": "the system simplified the derivative residual to zero",
+    "verify_timeout": "the separate symbolic verification exceeded its budget",
+    "verify_unsolved": "the separate symbolic verification did not establish zero",
 }
 FIXED_KEYS = {"host", "kernel", "cpu", "memory_GiB", "julia", "julia_threads", "bench"}
 # the supervisor records a timeout or a crash under the system key, not the label
@@ -129,7 +131,8 @@ PROVENANCE = ("An AI assistant wrote the harness, the adapters, the task files o
               "not by the assistant. A person decides what is reported upstream.")
 # status word -> site-kit tone (SPEC 0.4, section 5): one tone per word across the site
 BADGE_TONES = {"verified": "good", "verified_numeric": "good", "wrong": "bad", "unverified": "info", "unsolved": "alt-dashed",
-               "unavailable": "neutral-dashed", "error": "warn-dashed", "timeout": "warn"}
+               "unavailable": "neutral-dashed", "error": "warn-dashed", "timeout": "warn",
+               "verified_symbolic": "good", "verify_timeout": "warn", "verify_unsolved": "alt-dashed"}
 
 WORKFLOW = """
 Every bench follows the same path from fixed inputs to the pages of this site. The diagrams are the
@@ -144,6 +147,8 @@ flowchart LR
     W["lib/worker.jl: loads the adapter and the problem file"] --> A
     A["lib/adapters/SYSTEM.jl: OPS, EVAL, UNSOLVED, VERSIONS"] --> C
     C{"check in plain Julia, system-neutral"} -->|verified, wrong, unverified| R
+    W --> V["optional integration self-check in a separate supervised process"]
+    V --> R
     A -->|missing operation| U[unavailable] --> R
     A -->|declined or unevaluated| N[unsolved] --> R
     S -->|time or memory limit, signal| T[timeout or error] --> R
@@ -238,7 +243,23 @@ def read_tsv(path):
     rows = []
     with open(path, newline="", encoding="utf-8") as f:
         for r in csv.DictReader(f, delimiter="\t", quoting=csv.QUOTE_NONE):
+            full_text = "verify_input" in r
             r.setdefault("input", "")
+            r.setdefault("verify_status", "")
+            r.setdefault("verify_input", "")
+            # Backslash escapes in the TSV preserve newlines and tabs without
+            # flattening the command or corrupting Unicode.
+            escapes = {"n": "\n", "r": "\r", "t": "\t", "\\": "\\"}
+            decode = lambda value: re.sub(r"\\([nrt\\])", lambda m: escapes[m.group(1)], value or "")
+            r["verify_input"] = decode(r["verify_input"])
+            if full_text:
+                r["input"] = decode(r["input"])
+                r["result"] = decode(r.get("result", ""))
+                r["note"] = decode(r.get("note", ""))
+            try:
+                r["verify_time_s"] = float(r.get("verify_time_s") or "nan")
+            except ValueError:
+                r["verify_time_s"] = math.nan
             try:
                 r["idx"] = int(r["idx"])
                 r["t_first_s"] = float(r["t_first_s"])
@@ -271,9 +292,30 @@ def operation_metrics(rows):
     return n, k, (q(.25), q(.5), q(.75))
 
 
+def self_verification_summary(rows):
+    solved = [r for r in rows if r["status"] in SOLVED_STATUSES]
+    measured = [r for r in solved if r.get("verify_status") in {"verified_symbolic", "verify_timeout", "verify_unsolved"}]
+    if not measured:
+        return "not measured"
+    passed = [r for r in measured if r["verify_status"] == "verified_symbolic"]
+    times = sorted(r.get("verify_time_s", math.nan) for r in passed if math.isfinite(r.get("verify_time_s", math.nan)))
+    result = f"{len(passed)}/{len(solved)}; {len(measured)} checked"
+    if times and len(times) == len(passed) and 2 * len(passed) >= len(solved):
+        def q(p):
+            x = (len(times) - 1) * p
+            lo, hi = math.floor(x), math.ceil(x)
+            return times[lo] + (times[hi] - times[lo]) * (x - lo)
+        result += f"; median {fmt_time(q(.5))} [{fmt_time(q(.25))}, {fmt_time(q(.75))}]"
+    else:
+        result += "; median omitted (fewer than half verified or missing time)"
+    return result
+
+
 def fence(text):
     """A text code block that cannot be broken by backticks in the content."""
-    return "```text\n" + text.replace("```", "'''") + "\n```\n"
+    longest = max((len(m.group()) for m in re.finditer(r"`+", text)), default=0)
+    marker = "`" * max(3, longest + 1)
+    return marker + "text\n" + text + "\n" + marker + "\n"
 
 
 # colours of the dot plot of the bench pages (one per system); the history charts use site-kit's validated pair
@@ -775,10 +817,12 @@ class Site:
                 "unavailable operations are excluded, while timeouts and other non-solved outcomes count as attempted. "
                 "Times are medians with Q1 and Q3 for individual operations; no median is shown when fewer than half "
                 "the attempted cases were solved or a solved time is missing. Follow a cell for operation details. "
-                "Historical verified statuses include numeric checks. An unsolved or wrong case may hide a benchmark error.\n\n")
+                "Historical verified statuses include numeric checks. Self-check fractions use all solved cases as the denominator, "
+                "with the number actually checked shown separately; median times cover successful self-checks only. "
+                "An unsolved or wrong case may hide a benchmark error.\n\n")
         keys = list(BENCHES)
-        out += "| system | " + " | ".join(k.split("_", 1)[0] for k in keys) + " |\n"
-        out += "|---|" + "---|" * len(keys) + "\n"
+        out += "| system | " + " | ".join(k.split("_", 1)[0] for k in keys) + " | F self-check | H self-check |\n"
+        out += "|---|" + "---|" * (len(keys) + 2) + "\n"
         aliases = {"Giac.jl ifactor": "Giac.jl"}
         all_systems = {aliases.get(s, s) for ss in self.results.values() for s in ss}
         for system in sorted(all_systems):
@@ -787,7 +831,7 @@ class Site:
                 systems = self.results.get(key, {})
                 rows = systems.get(system) or next((v for s, v in systems.items() if aliases.get(s) == system), None)
                 if not rows:
-                    cells.append("not run")
+                    cells.append(f"[not run](../{key.lower()}/)" if key in self.results else "not run")
                     continue
                 n, k, _ = operation_metrics(rows)
                 groups = self.operation_groups(key, rows)
@@ -804,6 +848,10 @@ class Site:
                 else:
                     label += "; operation details"
                 cells.append(f"[{esc(label)}](../{key.lower()}/)")
+            for key in ("F_integration", "H_osr"):
+                rows = self.results.get(key, {}).get(system)
+                value = self_verification_summary(rows) if rows else "not run"
+                cells.append(f"[{value}](../{key.lower()}/)" if key in self.results else value)
             out += f"| {esc(system)} | " + " | ".join(cells) + " |\n"
         return out
 
@@ -839,8 +887,10 @@ class Site:
             out += "\n"
         out += '<div class="filterable">\n\n'
         cat = key == "E_suite" and self.categories
-        out += "| # | case |" + (" category |" if cat else "") + " op | " + " | ".join(esc(s) for s in names) + " |\n"
-        out += "|---|---|" + ("---|" if cat else "") + "---|" + "---|" * len(names) + "\n"
+        verification = key in ("F_integration", "H_osr")
+        headers = [h for s in names for h in ([esc(s), esc(s) + " self-check"] if verification else [esc(s)])]
+        out += "| # | case |" + (" category |" if cat else "") + " op | " + " | ".join(headers) + " |\n"
+        out += "|---|---|" + ("---|" if cat else "") + "---|" + "---|" * len(headers) + "\n"
         for i in sorted(by_idx):
             e = by_idx[i]
             cells = []
@@ -853,6 +903,10 @@ class Site:
                 else:
                     t = fmt_time(etime(r)) if r["status"] in SOLVED_STATUSES | {"wrong", "unverified", "unsolved"} else ""
                     cells.append(badge(r["status"]) + (f" {t}" if t else ""))
+                if verification:
+                    vs = r.get("verify_status", "") if r else ""
+                    vt = r.get("verify_time_s", math.nan) if r else math.nan
+                    cells.append(badge(vs) + (f" {fmt_time(vt)}" if math.isfinite(vt) else "") if vs else "not measured")
             out += (f"| {i} | [{esc(e['case'])}]({slug(i, e['case'])}/) |" + (f" {esc(self.categories.get(i, ''))} |" if cat else "")
                     + f" `{esc(e['op'])}` | " + " | ".join(cells) + " |\n")
         out += "\n</div>\n"
@@ -878,10 +932,16 @@ class Site:
             asked = [n for n, _ in __import__("collections").Counter(notes).most_common(1)]
             if asked:
                 out += f"**What is asked.** {esc(asked[0])}\n\n"
-            out += "| system | status | first call | warm |\n|---|---|---|---|\n"
+            verification = key in ("F_integration", "H_osr")
+            out += "| system | status | first call | warm |" + (" self-check | verification time |" if verification else "") + "\n"
+            out += "|---|---|---|---|" + ("---|---|" if verification else "") + "\n"
             for s in systems:
                 r = e[s]
-                out += f"| {esc(s)} | {badge(r['status'])} | {fmt_time(r['t_first_s'])} | {fmt_time(r['t_warm_s'])} |\n"
+                extra = ""
+                if verification:
+                    vs, vt = r.get("verify_status", ""), r.get("verify_time_s", math.nan)
+                    extra = f" {badge(vs) if vs else 'not measured'} | {fmt_time(vt) if math.isfinite(vt) else '--'} |"
+                out += f"| {esc(s)} | {badge(r['status'])} | {fmt_time(r['t_first_s'])} | {fmt_time(r['t_warm_s'])} |{extra}\n"
             out += "\n## Problem\n\n"
             tex = self.statement_tex(key, i, name)
             if tex:
@@ -912,6 +972,8 @@ class Site:
                     out += "*(nothing returned)*\n\n"
                 if r["note"]:
                     out += f"*Check: {esc(r['note'])}*\n\n"
+                if verification and r.get("verify_input"):
+                    out += "#### Self-verification command\n\n" + fence(r["verify_input"]) + "\n"
             pages.append((slug(i, name), out))
         return pages
 
@@ -923,18 +985,21 @@ class Site:
                 "| badge | word | meaning | tone |\n|---|---|---|---|\n")
         for st in STATUSES:
             out += f"| {badge(st)} | `{st}` | {esc(STATUS_HELP[st])} | {BADGE_TONES[st]} |\n"
+        out += "\n## Verification phase\n\n| badge | word | meaning | tone |\n|---|---|---|---|\n"
+        for st in ("verified_symbolic", "verify_timeout", "verify_unsolved"):
+            out += f"| {badge(st)} | `{st}` | {esc(STATUS_HELP[st])} | {BADGE_TONES[st]} |\n"
         out += ("\nA timeout row records, as its first-call time, the time the case had consumed when it was stopped; a case "
                 "stopped because its process tree passed the memory limit of the supervisor is an *error* whose note names "
                 "the limit. *unavailable* is a property of the adapter as wired, not necessarily of the system: corrections "
                 "are welcome.\n")
         out += ("\n## Verification vocabulary\n\n"
                 "Historical `verified` includes numeric checks. New runs of B, D, E and I use `verified_numeric` "
-                "for numeric checks and reserve `verified` for exact checks; F and H still use the historical status "
-                "until their new integration verification is implemented. For integration, "
+                "for numeric checks and reserve `verified` for exact checks. New F and H numeric checks also use "
+                "`verified_numeric`. For integration, "
                 "`verified_symbolic` means that the answering system simplified the derivative residual to zero in a "
                 "separately timed self-check. `verify_timeout` means that phase exceeded its own budget; "
                 "`verify_unsolved` means it did not establish zero. Neither makes the answer wrong, and neither is an "
-                "answer-phase timeout or unsolved status. Integration self-check statuses are not yet recorded.\n")
+                "answer-phase timeout or unsolved status. Historical files have no self-check data.\n")
         return out
 
     def docs_index(self):
@@ -1076,7 +1141,7 @@ class Site:
         return out
 
     def hosts_page(self):
-        """The same benches on every host: verified counts and median warm times side by side."""
+        """The same benches on every host: verified and attempted counts side by side."""
         out = front("Hosts", 5, aliases=["/hosts/"])
         hosts = [self.reference] + [h for h in self.hosts if h != self.reference]
         out += (f"One directory per host under `results/`; the published numbers are those of `{esc(self.reference)}` "
@@ -1089,7 +1154,7 @@ class Site:
             out += (f"| `{esc(h)}` | {esc(s.get('cpu', ''))} | {esc(s.get('memory_GiB', ''))} | {esc(s.get('julia', ''))} | "
                     f"{esc(s.get('calibration_s', ''))} | `{esc(str(s.get('harness_commit', ''))[:12])}`"
                     f"{' (dirty)' if str(s.get('harness_dirty', '')) == 'true' else ''} |\n")
-        out += "\n## Verified cases and median warm time per host\n\n"
+        out += "\n## Verified and attempted cases per host\n\n"
         out += "| bench | system | " + " | ".join(f"`{esc(h)}`" for h in hosts) + " |\n|---|---|" + "---|" * len(hosts) + "\n"
         pairs = sorted({(b, s) for h in hosts for b, systems in self.hosts[h].items() for s in systems})
         for b, s in pairs:
@@ -1100,9 +1165,8 @@ class Site:
                     cells.append("")
                     continue
                 ok = [r for r in rows if r["status"] in SOLVED_STATUSES]
-                times = sorted(etime(r) for r in ok if etime(r) == etime(r))
-                med = times[len(times) // 2] if times else float("nan")
-                cells.append(f"{len(ok)}/{len(rows)} verified, {fmt_time(med)}" if times else f"{len(ok)}/{len(rows)} verified")
+                attempted = sum(r["status"] != "unavailable" for r in rows)
+                cells.append(f"{len(ok)}/{attempted} verified")
             out += f"| {esc(BENCHES.get(b, (b, ''))[0])} | {esc(s)} | " + " | ".join(cells) + " |\n"
         return out
 
@@ -1111,8 +1175,10 @@ class Site:
         out += (self.data_stamp() + "\n\n"
                 "Every run of every bench and system on every host, from `results/history.tsv` (one row per host, bench, system and run date; "
                 "appended by `make_tables.jl`, backfilled from the git history by `tools/history_backfill.py`). "
-                "Verified counts and median warm times over the verified cases. Hover a chart, or focus it and use the arrow "
-                "keys, for the values at a date; every value is also in the runs table under the charts.\n\n")
+                "Verified counts are shown below. **2026-11-22 change:** synthesis times now use per-operation "
+                "medians and quartiles with a solved-count threshold; earlier runs are comparable on old metrics only. "
+                "Historical aggregate timing fields remain in the raw data and are not presented as current metrics. "
+                "Hover a chart, or focus it and use the arrow keys, for the values at a date.\n\n")
         if not self.history:
             return out + "*No history yet.*\n"
         benches = [b for b in BENCHES if any(r["bench"] == b for r in self.history)] + \
@@ -1126,12 +1192,10 @@ class Site:
             out += f"## {esc(title)}\n\n"
             out += viz_chart({lab(s, h): [(r["date"], r["verified"]) for r in rows if r["system"] == s and r["host"] == h] for s, h in series},
                              f"{title}: verified cases per run", "verified")
-            out += viz_chart({lab(s, h): [(r["date"], r["t_warm_median"]) for r in rows if r["system"] == s and r["host"] == h] for s, h in series},
-                             f"{title}: median warm time of the verified cases", "seconds", log=True)
-            out += "<details><summary>runs (the values of the charts)</summary>\n\n| date | host | system | n | verified | wrong | unverified | unsolved | unavailable | error | timeout | median warm | source |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|\n"
+            out += "<details><summary>runs (the values of the charts)</summary>\n\n| date | host | system | n | verified | wrong | unverified | unsolved | unavailable | error | timeout | source |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n"
             for r in rows:
                 out += (f"| {esc(r['date'][:16].replace('T', ' '))} | {esc(r['host'])} | {esc(SYSTEM_LABELS.get(r['system'], r['system']))} | {r['n']} | {r['verified']} | {r['wrong']} | {r['unverified']} | "
-                        f"{r['unsolved']} | {r['unavailable']} | {r['error']} | {r['timeout']} | {fmt_time(r['t_warm_median'])} | `{esc(r['source'])}` |\n")
+                        f"{r['unsolved']} | {r['unavailable']} | {r['error']} | {r['timeout']} | `{esc(r['source'])}` |\n")
             out += "\n</details>\n\n"
         return out
 
@@ -1171,7 +1235,9 @@ class Site:
         out += (self.data_stamp() + "\n\n"
                 "Every number of this site comes from these files, republished as they are in the repository: one directory "
                 "per host with one TSV per bench and system (columns `bench, system, idx, case, op, status, t_first_s, "
-                "t_warm_s, result, note`, then `input` in the runs from 2026-11-20, then `t_wall_s, t_repeats_s, load_avg, run` "
+                "t_warm_s, result, note`, then `input` in the runs from 2026-11-20, then `t_wall_s, t_repeats_s, load_avg, run`; "
+                "new files append `verify_status, verify_time_s, verify_input`; input, output, notes and the verification command "
+                "are full text using TSV backslash escapes. Historical input and output may be truncated. "
                 "in the runs with a run identity: the harness's own wall time, every repeated time, the load average before "
                 "the case, the run id; times in seconds, `result`, `note` and `input` truncated to 200, 300 and 2 000 "
                 "characters), its machine and environment records, plus the history of the runs on every host, the summary "
@@ -1202,8 +1268,8 @@ class Site:
                 "reserved for exact or symbolic checks in new runs. A symbolic self-check is performed by the answering "
                 "system, not an independent proof. For F and H, `verified_symbolic` in 4.2 s will mean that the system "
                 "simplified `diff(F, x) - f` to zero in a separate 4.2-second verification phase after producing its "
-                "antiderivative F of f. Verification time is not answer time. Integration self-check statuses and timings are planned "
-                "and are not present in the historical results. A failed or timed-out self-check does not make an answer "
+                "antiderivative F of f. Verification time is not answer time. Integration self-check statuses and timings "
+                "are absent from the historical results. A failed or timed-out self-check does not make an answer "
                 "wrong. An unsolved or wrong case may instead hide a benchmark error; each case page shows the input next "
                 "to the output. See [Statuses](../docs/statuses/).\n\n"
                 "## Checks of the expected values\n\n"
@@ -1226,14 +1292,22 @@ class Site:
                 "expressions, the Giac and SymPy adapters request 80 digits; other E adapters report unverified. "
                 "Near-zero residuals that are not "
                 "reduced to zero remain unsolved.\n"
-                "- F and H: tier 1 currently uses central finite differences of the system's numeric evaluation of its "
-                "antiderivative at up to three real points, requiring at least two; it can accept the real part alone. "
-                "For a reference marked unintegrable, returning an unevaluated integral is instead counted as verified. "
-                "This is neither a proof nor a global branch check. H additionally compares eligible Lean-certified "
-                "antiderivatives up to a constant at sampled points; that comparison is reported in the note. Tier 2, "
-                "planned but not yet implemented, is the system's `simplify(diff(F, x) - f) == 0` self-check, following "
-                "the method in Xcas `check/chkint.cas`; its planned budget is 60 seconds, separate from answer timing. "
-                "Failure to establish zero is not evidence that the answer is wrong.\n"
+                "- F and H: tier 1 compares central differences of the system's own numeric evaluation of F with f "
+                "at six candidate real points (0.21, 0.31, 0.43, 0.57, 0.71, 0.83), with step 1e-5 in Float64. "
+                "It requires at least four usable points, rejects non-finite or non-real integrand values at the "
+                "stencil, and uses tolerance `2e-4 * max(abs(f), 1) + 1e-7`. For expressions recognised as entire "
+                "from nonnegative integer powers and entire elementary operations, it also checks 0.57 + 0.125i. "
+                "This conservative syntax test omits many locally analytic expressions. Unavailable evaluations are "
+                "unverified; finite samples do not prove an identity or settle branches globally. F cases whose "
+                "reference says unintegrable remain unsolved when returned unevaluated. Historical files used "
+                "three real points, sometimes only the real part, and the historical `verified` status. H also "
+                "compares eligible Lean-certified antiderivatives up to a constant at sampled real points; its result "
+                "is recorded independently in the note. Tier 2 asks the same system for "
+                "`simplify(diff(F, x) - f) == 0`, following [Xcas chkint.cas](https://github.com/JuliaGiac/giac/blob/99439bb/check/chkint.cas). "
+                "The supervisor runs it in a separate process with a 60-second default budget after numeric checking; "
+                "its command, status and time are separate from answer times. Use `BENCH_VERIFY_INTEGRALS=0` to "
+                "disable it or `BENCH_VERIFY_TIMEOUT` to change its budget. Failure to establish zero does not make "
+                "the numeric answer wrong.\n"
                 "- G: the printed basis is parsed, canonicalised and checked reduced; every input is reduced modulo the "
                 "basis (for rational inputs, modulo a prime), and digests are compared across systems. This does not "
                 "prove that each basis element belongs to the input ideal; agreement mitigates but does not remove the "

@@ -42,10 +42,14 @@ end
 function summary_row(date, host, bench, system, recs, versions, source)
     rs = [r for r in recs if r.case != "_load"]
     cnt(st) = count(r -> r.status == st, rs)
+    solved = count(r -> r.status in ("verified", "verified_numeric", "verified_symbolic"), rs)
+    attempted = count(r -> r.status != "unavailable", rs)
+    ops = unique(r.op for r in rs if !isempty(r.op))
     tw = [r.t_warm for r in rs if r.status in ("verified", "verified_numeric", "verified_symbolic") && isfinite(r.t_warm)]
+    eligible = length(ops) == 1 && attempted > 0 && 2 * solved >= attempted && length(tw) == solved
     join([date, host, bench, system, string(length(rs)), string(cnt("verified") + cnt("verified_numeric") + cnt("verified_symbolic")), string(cnt("wrong")), string(cnt("unverified")),
           string(cnt("unsolved")), string(cnt("unavailable")), string(cnt("error")), string(cnt("timeout")),
-          @sprintf("%.6g", sum(tw; init = 0.0)), isempty(tw) ? "NaN" : @sprintf("%.6g", median(tw)), versions, source], '\t')
+          @sprintf("%.6g", sum(tw; init = 0.0)), eligible ? @sprintf("%.6g", median(tw)) : "NaN", versions, source], '\t')
 end
 
 hosts() = sort([h for h in readdir(RESULTS_ROOT) if isdir(joinpath(RESULTS_ROOT, h)) && isfile(joinpath(RESULTS_ROOT, h, "machine.txt"))])

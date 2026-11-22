@@ -53,17 +53,25 @@ def run_dates(machine_text):
 def summarize(text):
     rows = [r for r in csv.DictReader(io.StringIO(text), delimiter="\t", quoting=csv.QUOTE_NONE) if r.get("case") != "_load"]
     label = rows[0]["system"] if rows else ""
-    counts = {s: sum(r["status"] == s for r in rows) for s in STATUSES}
+    solved = {"verified", "verified_numeric", "verified_symbolic"}
+    counts = {s: sum(r["status"] in solved if s == "verified" else r["status"] == s for r in rows) for s in STATUSES}
     tw = []
     for r in rows:
-        if r["status"] == "verified":
+        if r["status"] in solved:
             try:
                 v = float(r["t_warm_s"])
                 if v == v:
                     tw.append(v)
             except ValueError:
                 pass
-    return label, len(rows), counts, sum(tw), (statistics.median(tw) if tw else float("nan"))
+    # Legacy snapshots retain their original metric. New-format snapshots
+    # never aggregate heterogeneous operations into one median.
+    modern = bool(rows) and "verify_status" in rows[0]
+    ops = {r.get("op", "") for r in rows if r.get("op", "")}
+    attempted = sum(r["status"] != "unavailable" for r in rows)
+    eligible = (not modern or (len(ops) == 1 and attempted > 0 and
+                2 * counts["verified"] >= attempted and len(tw) == counts["verified"]))
+    return label, len(rows), counts, sum(tw), (statistics.median(tw) if tw and eligible else float("nan"))
 
 
 def main():

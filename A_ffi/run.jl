@@ -85,13 +85,14 @@ cases = [
     Case("expand(poly)", :expand, expand_pool, nothing, nothing, nothing),
 ]
 
+isfile(OUT) && error("refusing to replace existing results $OUT; choose a new BENCH_HOST")
+
 write_machine_info(joinpath(dirname(abspath(OUT)), "machine.txt"),
                    ["bench" => "A_ffi", "Giac.jl" => string(pkgversion(Giac)),
                     "GIAC_jll" => string(pkgversion(Giac.GIAC_jll)),
                     "libgiac_julia_jll" => string(pkgversion(Giac.libgiac_julia_jll)),
                     "giac_version" => string(giac_eval("version()"))])
 
-isfile(OUT) && rm(OUT)
 for (ci, c) in enumerate(cases)
     gens = [Giac._get_gen_or_eval(e) for e in c.pool]
     strs = c.extra === nothing ? [string(c.cmd, "(", string(e), ")") for e in c.pool] :

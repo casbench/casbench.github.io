@@ -13,8 +13,13 @@ const T_LOAD0 = time()
 include(joinpath(@__DIR__, "common.jl"))
 using .BenchCommon
 using Printf: @sprintf
+using Serialization
 
 const BENCH, SYSTEM_KEY, OUT, START, PROGRESS = ARGS[1], ARGS[2], ARGS[3], parse(Int, ARGS[4]), ARGS[5]
+const VERIFY_DEFAULT = get(ENV, "BENCH_VERIFICATION_SUPERVISED", "0") == "1" ? "1" : "0"
+const VERIFY_ENABLED = get(ENV, "BENCH_VERIFY_INTEGRALS", VERIFY_DEFAULT) == "1" && BENCH in ("F_integration", "H_osr")
+VERIFY_ENABLED && get(ENV, "BENCH_VERIFICATION_SUPERVISED", "0") != "1" &&
+    error("integration self-verification requires lib/supervise.jl")
 
 include(joinpath(@__DIR__, "adapters", SYSTEM_KEY * ".jl"))
 include(joinpath(@__DIR__, "..", BENCH, "problems.jl"))
@@ -37,10 +42,38 @@ for i in START:STOP
     end
     load = loadavg()                       # the noise the case is measured in
     reps = Float64[]
+    verification_candidate = nothing
+    numeric_request = OUT * ".numeric-request"
+    numeric_started = Ref(false)
+    function save_numeric_pending(answer, tf, tw=NaN)
+        pending = Record(BENCH, SYSTEM, i, prob.name, string(prob.op), "unverified", tf, tw,
+                         string(answer), "numeric verification interrupted",
+                         isempty(INPUT_LOG) ? "" : join(unique(INPUT_LOG), " ⏎ "),
+                         NaN, "", load, run_id())
+        tmp = numeric_request * ".tmp"
+        open(io -> serialize(io, (record=pending,)), tmp, "w")
+        mv(tmp, numeric_request; force=true)
+        if !numeric_started[]
+            numeric_started[] = true
+            write(PROGRESS, string(i, '\t', prob.name, '\t', "numeric"))
+        end
+    end
     rec = try
         args = prob.args(VAR)
         empty!(INPUT_LOG)
-        out, tf, tw = time_call(() -> opf(args...); between = CLEARCACHE, repeats = isdefined(Main, :REPEATS) ? REPEATS : 5, times = reps)
+        integration = BENCH in ("F_integration", "H_osr")
+        if integration
+            BenchCommon.ANSWER_CALLBACK[] = (answer, stamp) -> begin
+                numeric_started[] || save_numeric_pending(answer, (stamp - BenchCommon.TIME_CALL_START[]) / 1e9)
+            end
+        end
+        out, tf, tw = try
+            time_call(() -> opf(args...); between = CLEARCACHE, repeats = isdefined(Main, :REPEATS) ? REPEATS : 5,
+                      times = reps, answer_boundary = integration)
+        finally
+            BenchCommon.ANSWER_CALLBACK[] = nothing
+        end
+        integration && save_numeric_pending(out, tf, tw)
         input = isempty(INPUT_LOG) ? "args: " * string(args) : join(unique(INPUT_LOG), " ⏎ ")
         twall = isempty(reps) ? tf : minimum(reps)   # the harness's own wall time, the same meaning for every system
         # a subprocess system reports its own compute time as the warm time (the first-call time includes its start-up)
@@ -64,8 +97,13 @@ for i in START:STOP
         if status === :verified && !exact_boolean && BENCH in ("B_cas", "D_coverage", "E_suite", "I_scale")
             status = :verified_numeric
         end
-        Record(BENCH, SYSTEM, i, prob.name, string(prob.op), string(status), tf, tw, string(out), note, input,
-               twall, join((@sprintf("%.6g", t) for t in reps), ";"), load, run_id())
+        record = Record(BENCH, SYSTEM, i, prob.name, string(prob.op), string(status), tf, tw, string(out), note, input,
+                        twall, join((@sprintf("%.6g", t) for t in reps), ";"), load, run_id())
+        if VERIFY_ENABLED && status === :verified_numeric
+            verification_candidate = (system=SYSTEM_KEY, answer=string(out), integrand=String(args[1]),
+                                      variable=String(args[2]), record=record)
+        end
+        record
     catch err
         msg = sprint(showerror, err)
         # a system that says it cannot do the problem has not solved it; a crash is an error
@@ -73,6 +111,28 @@ for i in START:STOP
         Record(BENCH, SYSTEM, i, prob.name, string(prob.op), declined ? "unsolved" : "error", NaN, NaN, "", msg,
                isempty(INPUT_LOG) ? "" : join(unique(INPUT_LOG), " ⏎ "), NaN, "", load, run_id())
     end
-    append_record(OUT, rec)
+    if verification_candidate !== nothing
+        request = OUT * ".verify-request"
+        response = OUT * ".verify-response"
+        tmp = request * ".tmp"
+        open(io -> serialize(io, verification_candidate), tmp, "w")
+        mv(tmp, request; force=true)
+        write(PROGRESS, string(i, '\t', prob.name, '\t', "verify"))
+        while !isfile(response)
+            sleep(0.05)
+        end
+        v = try
+            open(deserialize, response)
+        catch
+            (status="verify_unsolved", time=NaN, command="")
+        end
+        rec = with_verification(rec, v.status, v.time, v.command)
+        append_record(OUT, rec)
+        rm(request; force=true)
+        rm(response; force=true)
+    else
+        append_record(OUT, rec)
+    end
+    rm(numeric_request; force=true)
     GC.gc()
 end

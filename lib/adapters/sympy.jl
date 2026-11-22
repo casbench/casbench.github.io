@@ -165,3 +165,15 @@ NFACTORS(ex) = ex isa Sym && Bool(ex.is_Mul) ? length(ex.args) : 1
 IS_EXACT(ex) = occursin("pi", string(ex)) && !occursin(r"\d\.\d", string(ex))
 CLEARCACHE() = S.core.cache.clear_cache()
 VERSIONS() = ["SymPy" => string(S.__version__), "SymPyPythonCall" => string(pkgversion(SymPyPythonCall))]
+
+function VERIFY_INTEGRAL_COMMAND(answer::String, integrand::String, var::String)
+    f = Mapleish.translate(integrand, :sympy)
+    a = replace(answer, "^" => "**")
+    "simplify(diff(sympify(" * repr(a) * "),Symbol(" * repr(var) * "))-sympify(" * repr(f) * "))"
+end
+function VERIFY_INTEGRAL(answer::String, integrand::String, var::String)
+    f = Mapleish.translate(integrand, :sympy)
+    a = replace(answer, "^" => "**")
+    string(S.simplify(S.diff(S.sympify(a), S.Symbol(var)) - S.sympify(f)))
+end
+OPS[:VERIFY_INTEGRAL] = VERIFY_INTEGRAL

@@ -70,10 +70,11 @@ end
 
 struct CEAnswer
     text::String                       # LaTeX of the result
-    values::Dict{Float64,ComplexF64}   # x => value at the check points (when requested)
+    values::Dict{ComplexF64,ComplexF64}   # x => value at the check points (when requested)
     number::Union{Nothing,ComplexF64}  # the value for op eval
     cvalues::Vector{Float64}           # values of the compiled function (op codegen)
     elapsed::Float64
+    answer_ns::UInt64
 end
 Base.string(a::CEAnswer) = a.text
 
@@ -86,10 +87,15 @@ function request(json::String)
     p = ce_process()
     println(p, json); flush(p)
     lines = String[]
+    answer_ns = UInt64(0)
     while true
         (eof(p) && !process_running(p)) && break
         l = readline(p)
         l == "<<END>>" && break
+        if answer_ns == 0 && startswith(l, "<<ANS>> ")
+            answer_ns = time_ns()
+            notify_answer(strip(l[length("<<ANS>> ")+1:end]), answer_ns)
+        end
         push!(lines, l)
     end
     get(ENV, "BENCH_DEBUG", "0") == "1" && (println(stderr, "--- ce request\n", json, "\n--- ce answer\n", join(lines, "\n")); flush(stderr))
@@ -98,7 +104,7 @@ function request(json::String)
     ans === nothing && error("compute engine gave no answer: " * first(join(lines, " "), 200))
     startswith(ans, "ce_error:") && error(ans)
     t = marker("<<TIME>>")
-    vals = Dict{Float64,ComplexF64}()
+    vals = Dict{ComplexF64,ComplexF64}()
     for l in lines
         m = match(r"^<<V(\d+)>> (.*)$", l)
         m === nothing && continue
@@ -114,22 +120,26 @@ function request(json::String)
     end
     ct = marker("<<CTIME>>")
     CEAnswer(ans, vals, n === nothing ? nothing : parse_num(n), cvals,
-             ct !== nothing ? parse(Float64, ct) : (t === nothing || t == "nan" ? NaN : parse(Float64, t)))
+             ct !== nothing ? parse(Float64, ct) : (t === nothing || t == "nan" ? NaN : parse(Float64, t)), answer_ns)
 end
 
 # the six points of the integration check (F, H): x0 ± h for the three x0 of lib/integration_check.jl
-const CHECK_XS = Float64[]
-function points_json(params)
+const CHECK_XS = ComplexF64[]
+function points_json(params, integrand)
     empty!(CHECK_XS)
-    for x0 in Main.FPOINTS, s in (-1, 1)
+    for x0 in Main.FPOINTS, s in (-1, 0, 1)
         push!(CHECK_XS, x0 + s * 1e-5)
     end
-    "[" * join(["{" * join(["\"$k\": $v" for (k, v) in params] ∪ ["\"x\": $xv"], ", ") * "}" for xv in CHECK_XS], ", ") * "]"
+    if Main.entire_integrand(integrand)
+        append!(CHECK_XS, (Main.FCOMPLEX_POINT - 1e-5, Main.FCOMPLEX_POINT + 1e-5))
+    end
+    value(z) = iszero(imag(z)) ? string(real(z)) : "[\"Complex\",$(real(z)),$(imag(z))]"
+    "[" * join(["{" * join(["\"$k\": $v" for (k, v) in params] ∪ ["\"x\": $(value(xv))"], ", ") * "}" for xv in CHECK_XS], ", ") * "]"
 end
 
 function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     used = Dict(k => v for (k, v) in params if occursin(Regex("\\b$k\\b"), integrand))
-    request("{\"op\": \"integrate\", \"expr\": " * to_mathjson(integrand) * ", \"var\": " * jsonstr(var) * ", \"points_eval\": " * points_json(used) * "}")
+    request("{\"op\": \"integrate\", \"expr\": " * to_mathjson(integrand) * ", \"var\": " * jsonstr(var) * ", \"points_eval\": " * points_json(used, integrand) * "}")
 end
 # the numeric check of bench I evaluates the answer at IPOINT (or at (1.1, 0.7, 1.3) for the derivative): one point
 function ipoint_json(pt)
@@ -159,7 +169,7 @@ const OPS = Dict{Symbol,Any}(
     :eval_text => EVAL_TEXT, :codegen_text => CODEGEN_TEXT,
     :series_text => missing,                    # no Taylor series
 )
-EVAL(ex, vals) = ex isa CEAnswer ? get(ex.values, vals[:x], nothing) : (ex isa Number ? ex : nothing)
+EVAL(ex, vals) = ex isa CEAnswer ? get(ex.values, ComplexF64(vals[:x]), nothing) : (ex isa Number ? ex : nothing)
 NTERMS(ex) = ex isa CEAnswer ? count("+", ex.text) + 1 : 1     # terms of a LaTeX sum (the engine prints a flat sum)
 NFACTORS(ex) = 1
 UNSOLVED(op, out) = out isa CEAnswer && occursin(r"\\int|\\mathrm\{d\}|\\operatorname\{D\}|ce_error", out.text)
@@ -173,3 +183,12 @@ function VERSIONS()
     n = try strip(read(`$NODE --version`, String)) catch; "unknown" end
     ["compute-engine" => v, "node" => n]
 end
+
+function VERIFY_INTEGRAL_COMMAND(answer::String, integrand::String, var::String)
+    "{\"op\":\"verify_integral\",\"expr\":" * to_mathjson(integrand) *
+    ",\"answer\":" * jsonstr(answer) * ",\"var\":" * jsonstr(var) * "}"
+end
+function VERIFY_INTEGRAL(answer::String, integrand::String, var::String)
+    string(request(VERIFY_INTEGRAL_COMMAND(answer, integrand, var)))
+end
+OPS[:VERIFY_INTEGRAL] = VERIFY_INTEGRAL

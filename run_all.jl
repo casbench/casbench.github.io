@@ -12,6 +12,8 @@
 #   BENCH_RUN_ID                       identifier of the run (default: <date>_<host>, generated here)
 #   BENCH_RESUME=1                     keep the existing results files and resume each one after its last case
 #   BENCH_MEM_LIMIT_GIB                resident memory a case's worker tree may reach before it is stopped (default 5)
+#   BENCH_VERIFY_INTEGRALS=0           disable symbolic self-checks in F and H (enabled by default under supervisor)
+#   BENCH_VERIFY_TIMEOUT               symbolic check limit in seconds (default 60, independent of answer time)
 #   JULIA_CONDAPKG_BACKEND / JULIA_PYTHONCALL_EXE  forwarded to the SymPy environment
 #
 # Each bench/system pair runs in its own process under lib/supervise.jl, with
@@ -71,11 +73,17 @@ end
 const RESUME = get(ENV, "BENCH_RESUME", "0") == "1"
 supervise(env, worker, bench, system, out, timeout) =
     run(`$JULIA --startup-file=no -t 1 $(joinpath(ROOT, "lib", "supervise.jl")) $env $worker $bench $system $out $timeout`)
-fresh(out) = RESUME || (isfile(out) && rm(out); true)
+function fresh(out)
+    if !RESUME && isfile(out)
+        error("refusing to replace existing results $out; choose a new BENCH_HOST or explicitly resume a compatible run")
+    end
+    true
+end
 
 for b in benches
     if b == "A"
         out = joinpath(RESULTS, "A_ffi_giac.tsv")
+        isfile(out) && error("bench A cannot resume an existing result file; choose a new BENCH_HOST")
         run(`$JULIA --startup-file=no -t 1 --project=$(envs["giac"]) $(joinpath(ROOT, "A_ffi", "run.jl")) $out`)
     elseif b in ("B", "D", "E")
         bench = b == "B" ? "B_cas" : b == "D" ? "D_coverage" : "E_suite"

@@ -169,3 +169,18 @@ VERSIONS() = ["Symbolics" => string(pkgversion(Symbolics)), "SymbolicUtils" => s
               "Nemo" => string(pkgversion(Nemo)), "Groebner" => string(pkgversion(Groebner)),
               "GruntzLimit" => string(pkgversion(GruntzLimit)), "RischIntegrate" => string(pkgversion(RischIntegrate)),
               "Primes" => string(pkgversion(Primes))]
+
+function VERIFY_INTEGRAL_COMMAND(answer::String, integrand::String, var::String)
+    "Symbolics.simplify(Symbolics.expand_derivatives(Symbolics.Differential(VAR[:" * var * "])(exact_num_from_text(" * repr(answer) * ")))-exact_num_from_text(" * repr(integrand) * "))"
+end
+function exact_num_from_text(text::String)
+    expr = exact_verify_expr(text)
+    bindings = Expr(:block, (Expr(:(=), name, value) for (name, value) in VAR if name != :pi)...)
+    Num(Core.eval(Main, Expr(:let, bindings, expr)))
+end
+function VERIFY_INTEGRAL(answer::String, integrand::String, var::String)
+    F = exact_num_from_text(answer)
+    f = exact_num_from_text(integrand)
+    string(Symbolics.simplify(Symbolics.expand_derivatives(Symbolics.Differential(VAR[Symbol(var)])(F)) - f))
+end
+OPS[:VERIFY_INTEGRAL] = VERIFY_INTEGRAL

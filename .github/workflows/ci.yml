@@ -36,5 +36,18 @@ jobs:
         run: |
           julia --startup-file=no test/simplify.jl
           julia --startup-file=no test/zero_recognition.jl
-      - name: Site generator tests
-        run: python3 -I tools/site/test_sitegen.py
+      - name: Record compatibility tests
+        run: |
+          julia --startup-file=no test/records.jl
+          julia --startup-file=no test/verify_supervisor.jl
+          julia --startup-file=no test/adapter_syntax.jl
+      - name: Numeric integration checks
+        run: |
+          julia --startup-file=no --project=envs/subprocess -e 'using Pkg; Pkg.instantiate()'
+          julia --startup-file=no --project=envs/subprocess test/integration_numeric.jl
+          julia --startup-file=no --project=envs/subprocess test/integration_task_interface.jl F_integration
+          julia --startup-file=no --project=envs/subprocess test/integration_task_interface.jl H_osr
+      - name: Site and history tests
+        run: |
+          python3 -I tools/site/test_sitegen.py
+          python3 -I tools/test_history_backfill.py
