@@ -8,7 +8,8 @@ r = Record(bench, system, 1, "case", "integrate_text", "verified_numeric", 1.25,
 if get(ENV, "BENCH_FAKE_NUMERIC_HANG", "0") == "1"
     pending = Record(bench, system, 1, "case", "integrate_text", "unverified", 1.25, NaN, "x^2/2", "numeric verification interrupted", "integrate(x,x)")
     open(io -> serialize(io, (record=pending,)), out * ".numeric-request", "w")
-    write(progress, "1\tcase\tnumeric")
+    get(ENV, "BENCH_FAKE_BEFORE_NUMERIC", "0") == "1" || write(progress, "1\tcase\tnumeric")
+    get(ENV, "BENCH_FAKE_APPEND_BEFORE_HANG", "0") == "1" && append_record(out, r)
     sleep(30)
 end
 if get(ENV, "BENCH_VERIFY_INTEGRALS", "0") == "1"

@@ -94,11 +94,23 @@ J asks for an RUR and real solution isolation on fixed G systems. Its check
 substitutes each reported real solution in every input polynomial using
 256-bit BigFloat arithmetic, verifies the lifting coordinates, and checks
 exact polynomial divisibility of the rational lifting map by the elimination
-polynomial, with seeded pseudorandom evaluations of the identity. The current
-adapters isolate real roots only; the checker neither isolates
-complex roots nor proves the real list complete. Unsupported separating
-forms and results without real roots are unverified; Sage/Singular reports
-non-shape-position systems as unsolved. See the J description in
+polynomial, with seeded pseudorandom evaluations of the identity. Separately,
+a deterministic Aberth iteration approximates every root of the elimination
+polynomial; each complex root is lifted and substituted into every input at
+256-bit precision. This numerical method is restricted to squarefree
+polynomials of degree at most 96 and 1000 iterations. Root residuals must be
+at most `2^-130` times the coefficient-based scale, and roots must be separated
+by more than `2^-100` times their magnitude scale. Lifted solution residuals
+must be at most `2^-70` times the sum-of-terms scale. Apparent real roots have
+imaginary part at most `2^-70` times their magnitude scale; each reported real
+solution must match a distinct apparent real root within `2^-50` times its
+magnitude scale. These numerical thresholds do not provide a root-isolation
+certificate or prove that the reported real list is complete. Nonconvergence,
+unsupported separating forms and mismatched apparent real-solution counts are unverified;
+Sage/Singular reports non-shape-position systems as unsolved. The J check
+has the separate numeric-verification budget (`BENCH_NUMERIC_VERIFY_TIMEOUT`,
+60 s by default); if interrupted, the computed answer is retained as
+`unverified` and its recorded calculation time remains separate. See the J description in
 [Benches](benches.md) for the cases and implementation limits.
 
 ## Integration verification

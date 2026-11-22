@@ -41,7 +41,7 @@ BENCHES = {
     "G_groebner": ("G. Gröbner bases", "Reduced Gröbner bases of classical systems (katsura, cyclic, eco, noon) over Q and a prime field."),
     "H_osr": ("H. OSR rules", "The integration rules of OpenSymbolicRules v1 as problems: every integrand, checked by differentiation and against the Lean-certified replacement."),
     "I_scale": ("I. Throughput at scale", "How the time grows with the size of the expression: dense expansion, a large derivative, a series, substitution, evaluation and code generation on random trees of up to a hundred thousand leaves."),
-    "J_rur": ("J. Rational univariate representations", "Polynomial system solving over Q, with real-solution substitution and checks of the lifting map."),
+    "J_rur": ("J. Rational univariate representations", "Polynomial system solving over Q, with high-precision real and complex substitution and checks of the lifting map."),
 }
 OSR = "https://opensymbolicrules.github.io/"
 # third-party material (site-kit SPEC section 3): (source, licence, how it is used)
@@ -1329,9 +1329,12 @@ class Site:
                 "limitation, and the check does not independently test all S-polynomials.\n"
                 "- I: term counts and numerical evaluations appropriate to each operation, at fixed points. Sampling "
                 "and counts cannot prove full equivalence.\n"
-                "- J: substitute every reported real solution at 256-bit precision, check the lifting map and exact "
-                "polynomial identities. The current adapters do not isolate complex roots, and these checks do not "
-                "prove the real solution list complete or establish equality of ideals.\n\n"
+                "- J: substitute every reported real solution at 256-bit precision; approximate all complex roots of "
+                "the elimination polynomial independently, lift and substitute them at the same precision; check the "
+                "lifting map and exact polynomial identities. The numerical root method covers squarefree polynomials "
+                "of degree at most 96 with up to 1000 iterations. Failure to converge is unverified. The check has a "
+                "separate 60-second default budget; an interrupted check retains the answer and its calculation time. These checks are "
+                "not a root-isolation certificate and do not prove the real solution list complete or establish equality of ideals.\n\n"
                 "## Metrics\n\n"
                 "The synthesis reports solved counts and fractions by operation, with the median and first and "
                 "third quartiles of solved times. The median is the 50th percentile; Q1 and Q3 are the 25th and 75th "

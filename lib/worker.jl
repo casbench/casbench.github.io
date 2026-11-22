@@ -47,21 +47,23 @@ for i in START:STOP
     verification_candidate = nothing
     numeric_request = OUT * ".numeric-request"
     numeric_started = Ref(false)
-    function save_numeric_pending(answer, tf, tw=NaN)
+    pending_input = Ref("")
+    function save_numeric_pending(answer, tf, tw=NaN; advance=true)
         pending = Record(BENCH, SYSTEM, i, prob.name, op_label, "unverified", tf, tw,
-                         string(answer), "numeric verification interrupted",
-                         isempty(INPUT_LOG) ? "" : join(unique(INPUT_LOG), " ⏎ "),
+                         string(answer), "warm timing or numeric verification interrupted",
+                         isempty(INPUT_LOG) ? pending_input[] : join(unique(INPUT_LOG), " ⏎ "),
                          NaN, "", load, run_id())
         tmp = numeric_request * ".tmp"
         open(io -> serialize(io, (record=pending,)), tmp, "w")
         mv(tmp, numeric_request; force=true)
-        if !numeric_started[]
+        if advance && !numeric_started[]
             numeric_started[] = true
             write(PROGRESS, string(i, '\t', prob.name, '\t', "numeric"))
         end
     end
     rec = try
         args = prob.args(VAR)
+        pending_input[] = "args: " * string(args)
         empty!(INPUT_LOG)
         if BENCH == "G_groebner" && hasproperty(prob, :budget)
             checkpoint = OUT * ".input-checkpoint"
@@ -74,23 +76,32 @@ for i in START:STOP
             end
         end
         integration = BENCH in ("F_integration", "H_osr")
+        numeric_check = integration || BENCH == "J_rur"
         if integration
             BenchCommon.ANSWER_CALLBACK[] = (answer, stamp) -> begin
                 numeric_started[] || save_numeric_pending(answer, (stamp - BenchCommon.TIME_CALL_START[]) / 1e9)
             end
         end
+        first_answer = (answer, elapsed) -> begin
+            if numeric_check
+                declined = answer === nothing || (answer isa Tuple && !isempty(answer) && answer[1] === nothing) ||
+                           (UNSOLVED(prob.op, answer) && !get(prob, :accept_unsolved, false))
+                !declined && save_numeric_pending(answer, elapsed; advance=false)
+            end
+        end
         out, tf, tw = try
             time_call(() -> opf(args...); between = CLEARCACHE, repeats = isdefined(Main, :REPEATS) ? REPEATS : 5,
-                      times = reps, answer_boundary = integration)
+                      times = reps, answer_boundary = integration, after_first = first_answer)
         finally
             BenchCommon.ANSWER_CALLBACK[] = nothing
             BenchCommon.INPUT_CHECKPOINT[] = nothing
         end
-        integration && save_numeric_pending(out, tf, tw)
+        # A subprocess reports its own compute time as the warm time. Store
+        # it before checkpointing, so an interrupted check retains that time.
+        hasfield(typeof(out), :elapsed) && isfinite(out.elapsed) && (tw = out.elapsed)
+        numeric_check && save_numeric_pending(out, tf, tw)
         input = isempty(INPUT_LOG) ? "args: " * string(args) : join(unique(INPUT_LOG), " ⏎ ")
         twall = isempty(reps) ? tf : minimum(reps)   # the harness's own wall time, the same meaning for every system
-        # a subprocess system reports its own compute time as the warm time (the first-call time includes its start-up)
-        hasfield(typeof(out), :elapsed) && isfinite(out.elapsed) && (tw = out.elapsed)
         note = prob.note
         status = if out === nothing || (out isa Tuple && !isempty(out) && out[1] === nothing) || (UNSOLVED(prob.op, out) && !get(prob, :accept_unsolved, false))
             :unsolved

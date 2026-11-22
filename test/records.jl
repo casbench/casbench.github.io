@@ -70,3 +70,15 @@ end
         BenchCommon.INPUT_CHECKPOINT[] = nothing
     end
 end
+
+@testset "first answer checkpoint is outside measured time" begin
+    f = () -> 42
+    time_call(f; repeats=0)
+    saved = Ref(false)
+    _, first, warm = time_call(f; repeats=1, after_first=(answer, elapsed) -> begin
+        saved[] = answer == 42 && isfinite(elapsed)
+        sleep(0.1)
+    end)
+    @test saved[]
+    @test first < 0.08 && warm < 0.08
+end

@@ -130,14 +130,20 @@ AlgebraicSolving.jl and Singular through SageMath). It reuses the fixed
 katsura5, cyclic5, eco7 and noon5 systems from G. The operation computes a
 rational parametrization and isolates real solutions: msolve and Sage/Singular
 request 256-bit precision; Giac refines intervals to 10^-80 and evaluates
-them to 100 decimal digits. In plain Julia, the checker
-substitutes every reported real solution at 256-bit precision, checks the
-lifting coordinates, and checks the substituted input polynomials modulo the
-elimination polynomial with exact rational arithmetic, including deterministic
-pseudorandom evaluations of the polynomial identity. A singular denominator,
-unsupported separating form, or absence of reported real solutions is
-`unverified`. The adapters do not isolate complex roots; these checks do not
-prove completeness of the reported real solutions or equality of ideals.
+them to 100 decimal digits. In plain Julia, the checker substitutes every
+reported real solution at 256-bit precision. It independently approximates
+all complex roots of the elimination polynomial with deterministic Aberth
+iteration, lifts each root through the returned map and substitutes it into
+the input polynomials at 256-bit precision. The checker also verifies the
+lifting identities modulo the elimination polynomial using exact rational
+arithmetic and seeded pseudorandom evaluations. The numerical root method is
+limited to squarefree polynomials of degree at most 96 and 1000 iterations;
+failed convergence, a singular denominator, an unsupported separating form, or a mismatch in the apparent number of real
+solutions is `unverified`. Approximation is not a
+root-isolation certificate, and these checks do not prove completeness of the
+reported real solution list or equality of ideals. The verification phase has
+a separate 60-second default limit; an interrupted check retains the computed
+answer as unverified.
 The Sage/Singular adapter requires the last input variable to be separating;
 otherwise it reports `unsolved` rather than attempting a change of variables.
 

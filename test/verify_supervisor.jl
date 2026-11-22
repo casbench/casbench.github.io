@@ -39,6 +39,29 @@ include(joinpath(@__DIR__, "..", "lib", "supervise.jl"))
         @test (numeric.status, numeric.t_first, numeric.result) == ("unverified", 1.25, "x^2/2")
         @test isempty(numeric.verify_status)
         @test !isfile(numeric_out * ".numeric-request")
+        rur_out = joinpath(dir, "rur-interrupted.tsv")
+        withenv("BENCH_FAKE_NUMERIC_HANG" => "1", "BENCH_NUMERIC_VERIFY_TIMEOUT" => "0.3",
+                "BENCH_VERIFY_INTEGRALS" => "0", "BENCH_RESUME" => "0") do
+            supervise(@__DIR__, worker, "J_rur", "mock", rur_out, 10.0, String[])
+        end
+        rur = only(read_records(rur_out))
+        @test (rur.status, rur.t_first, rur.result) == ("unverified", 1.25, "x^2/2")
+        @test !isfile(rur_out * ".numeric-request")
+        warm_out = joinpath(dir, "rur-warm-interrupted.tsv")
+        withenv("BENCH_FAKE_NUMERIC_HANG" => "1", "BENCH_FAKE_BEFORE_NUMERIC" => "1",
+                "BENCH_VERIFY_INTEGRALS" => "0", "BENCH_RESUME" => "0") do
+            supervise(@__DIR__, worker, "J_rur", "mock", warm_out, 0.3, String[])
+        end
+        warm = only(read_records(warm_out))
+        @test (warm.status, warm.t_first, warm.result) == ("unverified", 1.25, "x^2/2")
+        appended = joinpath(dir, "rur-already-recorded.tsv")
+        withenv("BENCH_FAKE_NUMERIC_HANG" => "1", "BENCH_FAKE_APPEND_BEFORE_HANG" => "1",
+                "BENCH_NUMERIC_VERIFY_TIMEOUT" => "0.3", "BENCH_VERIFY_INTEGRALS" => "0", "BENCH_RESUME" => "0") do
+            supervise(@__DIR__, worker, "J_rur", "mock", appended, 10.0, String[])
+        end
+        appended_rows = read_records(appended)
+        @test length(appended_rows) == 1
+        @test only(appended_rows).status == "verified_numeric"
         # A stale response from a previous interrupted run must not be
         # attached to the answer produced on resume.
         resumed = joinpath(dir, "resumed.tsv")

@@ -156,7 +156,8 @@ repeated time is pushed to `times` (the dispersion behind the minimum).
 Calls that take less than a millisecond are re-timed in a loop of `n` calls so
 that the reported per-call time has microsecond resolution.
 """
-function time_call(f; repeats = 5, warm_budget = 10.0, between = () -> nothing, times = Float64[], answer_boundary = false)
+function time_call(f; repeats = 5, warm_budget = 10.0, between = () -> nothing, times = Float64[], answer_boundary = false,
+                   after_first = (out, elapsed) -> nothing)
     t0 = time_ns()
     io0 = INPUT_CHECKPOINT_NS[]
     TIME_CALL_START[] = t0
@@ -164,6 +165,7 @@ function time_call(f; repeats = 5, warm_budget = 10.0, between = () -> nothing, 
     stamp(v) = answer_boundary && hasfield(typeof(v), :answer_ns) ? getfield(v, :answer_ns) : time_ns()
     end_first = stamp(out)
     t_first = end_first >= t0 ? (end_first - t0 - min(end_first - t0, INPUT_CHECKPOINT_NS[] - io0)) / 1e9 : NaN
+    after_first(out, t_first)
     t_warm = NaN
     if t_first < warm_budget
         best = Inf

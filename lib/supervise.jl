@@ -247,12 +247,17 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
             saved_input = isfile(checkpoint) ? read(checkpoint, String) : ""
             request = out * ".verify-request"
             pending = phase == "verify" && isfile(request) ? (try open(deserialize, request) catch; nothing end) : nothing
-            if pending !== nothing
+            already_recorded = any(r -> r.idx == i, read_records(out))
+            if already_recorded
+                # The worker may have appended its answer just before it was stopped.
+                # Never append a second row for the same case.
+                nothing
+            elseif pending !== nothing
                 response = out * ".verify-response"
                 v = isfile(response) ? (try open(deserialize, response) catch; nothing end) : nothing
                 v === nothing && (v = (status="verify_unsolved", time=NaN, command=""))
                 append_record(out, with_verification(pending.record, v.status, v.time, v.command))
-            elseif phase == "numeric" && isfile(out * ".numeric-request")
+            elseif phase in ("answer", "numeric") && bench in ("F_integration", "H_osr", "J_rur") && isfile(out * ".numeric-request")
                 numeric = try open(deserialize, out * ".numeric-request") catch; nothing end
                 if numeric !== nothing
                     append_record(out, numeric.record)
@@ -296,7 +301,7 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
                     v = isfile(response) ? (try open(deserialize, response) catch; nothing end) : nothing
                     v === nothing && (v = (status="verify_unsolved", time=NaN, command=""))
                     append_record(out, with_verification(pending.record, v.status, v.time, v.command))
-                elseif phase == "numeric" && isfile(out * ".numeric-request")
+                elseif phase in ("answer", "numeric") && bench in ("F_integration", "H_osr", "J_rur") && isfile(out * ".numeric-request")
                     numeric = try open(deserialize, out * ".numeric-request") catch; nothing end
                     numeric === nothing || append_record(out, numeric.record)
                     numeric === nothing && append_record(out, Record(bench, system, i, name, "", "unverified", NaN, NaN, "", "numeric verification interrupted"))
