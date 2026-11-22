@@ -212,7 +212,12 @@ function RUR(polys::Vector{String}, vars::Vector{String})
     raw = elements(geval(expr))
     length(raw) == length(vars) + 4 && string(raw[1]) == "rur" || error("unsupported RUR output")
     variable = string(raw[2]); idx = findfirst(==(variable), vars)
-    idx === nothing && error("unsupported separating linear form")
+    if idx === nothing
+        # Preserve the representation and leave interpretation to the checker.
+        return (vars=vars, linear_form=[variable], elim=Rational{BigInt}[],
+                denom=Rational{BigInt}[], param=Vector{Rational{BigInt}}[],
+                solutions=Vector{Rational{BigInt}}[], raw=string(raw))
+    end
     function coeffs(e)
         p = Poly.parse_poly(string(e), [variable])
         degree = maximum((m[1] for m in keys(p)); init=0)
