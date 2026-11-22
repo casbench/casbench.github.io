@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import sitegen  # noqa: E402
+import check_assets  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 
@@ -55,6 +56,22 @@ class SiteGenTests(unittest.TestCase):
             "Al Roe\t\tnone\tother\tnone\tno relation to any system compared\n"
             "Jo Doe\t0000-0000-0000-0001\tSome Assistant\tAI assistance\tused to draft the adapters\treviewed by the contributor\n", encoding="utf-8")
         return d
+
+    def test_stylesheets_use_the_site_base_and_exist(self):
+        root = pathlib.Path(tempfile.mkdtemp())
+        (root / "css").mkdir()
+        (root / "css" / "site.css").write_text("body {}", encoding="utf-8")
+        page = root / "index.html"
+        page.write_text('<link rel="stylesheet" href="/css/site.css">', encoding="utf-8")
+        self.assertEqual(check_assets.check_stylesheets(root, "https://casbench.github.io/"), 1)
+        page.write_text('<link rel="stylesheet" href="/computer-algebra-system-benchmarks/css/site.css">', encoding="utf-8")
+        with self.assertRaises(ValueError):
+            check_assets.check_stylesheets(root, "https://casbench.github.io/")
+        page.write_text('<link rel="stylesheet" href="/preview/css/site.css">', encoding="utf-8")
+        self.assertEqual(check_assets.check_stylesheets(root, "https://example.org/preview/"), 1)
+        page.write_text('<link rel="stylesheet" href="/preview/css/missing.css">', encoding="utf-8")
+        with self.assertRaises(ValueError):
+            check_assets.check_stylesheets(root, "https://example.org/preview/")
 
     def test_site_addresses_follow_canonical_and_preview_base(self):
         root = self.make_root()

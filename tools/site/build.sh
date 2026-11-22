@@ -14,4 +14,6 @@ rm -rf "$out/public"
 HUGO_RESOURCEDIR="$out/resources" "$hugo" --source "$root/site" --contentDir "$out/content" \
   --destination "$out/public" --minify ${HUGO_BASEURL:+--baseURL "$HUGO_BASEURL"}
 cp -r "$out/static/." "$out/public/"
+base_url=${HUGO_BASEURL:-$(sed -n 's/^baseURL: //p' "$root/site/hugo.yaml")}
+python3 -I "$root/tools/site/check_assets.py" "$out/public" "$base_url"
 echo "site: $out/public"
