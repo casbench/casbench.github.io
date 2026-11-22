@@ -1,4 +1,4 @@
-module github.com/s-celles/computer-algebra-system-benchmarks/site
+module github.com/casbench/casbench.github.io/site
 
 go 1.25.5
 

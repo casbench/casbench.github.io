@@ -2,8 +2,8 @@
 
 ![CAS benchmarks: computer algebra systems compared; reproducible, verified, dated](assets/brand/casbench-banner.svg)
 
-[![CI](https://github.com/s-celles/computer-algebra-system-benchmarks/actions/workflows/ci.yml/badge.svg)](https://github.com/s-celles/computer-algebra-system-benchmarks/actions/workflows/ci.yml)
-[![Site](https://github.com/s-celles/computer-algebra-system-benchmarks/actions/workflows/site.yml/badge.svg)](https://s-celles.github.io/computer-algebra-system-benchmarks/)
+[![CI](https://github.com/casbench/casbench.github.io/actions/workflows/ci.yml/badge.svg)](https://github.com/casbench/casbench.github.io/actions/workflows/ci.yml)
+[![Site](https://github.com/casbench/casbench.github.io/actions/workflows/site.yml/badge.svg)](https://casbench.github.io/)
 
 Reproducible, verified and dated benchmarks of computer algebra systems:
 Julia packages (Giac.jl, Symbolics.jl, SymJ.jl, Groebner.jl, Primes.jl,
@@ -18,7 +18,7 @@ sample of the 12000.org integration tests, Gröbner bases, the integration
 rules of OpenSymbolicRules, and throughput at scale. Bench J adds rational
 univariate representations; no run for it is committed yet.
 
-**Results, per case and per system: https://s-celles.github.io/computer-algebra-system-benchmarks/**
+**Results, per case and per system: https://casbench.github.io/**
 
 > [!IMPORTANT]
 > An individual, non-commercial project. The numbers are dated: they were
@@ -41,7 +41,7 @@ univariate representations; no run for it is committed yet.
 > with an AI assistant; earlier changes were reviewed by the contributor and
 > the current reorientation awaits contributor review. Measurements come
 > from the scripts). Rendered with the relation to every system:
-> https://s-celles.github.io/computer-algebra-system-benchmarks/disclosures/
+> https://casbench.github.io/disclosures/
 > See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 They are the reproduced numbers of the JuliaCon Proceedings paper on Giac.jl
@@ -59,7 +59,7 @@ Giac.jl/ osr/       git submodules pinned to the commits measured
 ## Quick start
 
 ```sh
-git clone --recurse-submodules https://github.com/s-celles/computer-algebra-system-benchmarks
+git clone --recurse-submodules https://github.com/casbench/casbench.github.io
 nix run .#bench            # every bench, then the tables (Julia 1.13, SymPy, Maxima, FriCAS, Sage, Macaulay2 from nixpkgs)
 nix run .#bench -- A G     # a subset
 ```

@@ -1,7 +1,7 @@
 # Project site, deployed to GitHub Pages by .github/workflows/site.yml.
 # Content is generated outside the repository by tools/site/sitegen.py from
 # the results files; build with tools/site/build.sh OUT.
-baseURL: https://s-celles.github.io/computer-algebra-system-benchmarks/
+baseURL: https://casbench.github.io/
 title: Computer algebra system benchmarks
 languageCode: en
 enableRobotsTXT: true
@@ -41,7 +41,7 @@ menu:
       pageRef: /docs
       weight: 5
     - name: GitHub
-      url: https://github.com/s-celles/computer-algebra-system-benchmarks
+      url: https://github.com/casbench/casbench.github.io
       weight: 6
       params:
         icon: github

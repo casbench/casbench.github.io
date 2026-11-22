@@ -2,11 +2,13 @@
 """Checks for the site generator. Run with python3 -I tools/site/test_sitegen.py."""
 import csv
 import math
+import os
 import pathlib
 import re
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import sitegen  # noqa: E402
@@ -53,6 +55,19 @@ class SiteGenTests(unittest.TestCase):
             "Al Roe\t\tnone\tother\tnone\tno relation to any system compared\n"
             "Jo Doe\t0000-0000-0000-0001\tSome Assistant\tAI assistance\tused to draft the adapters\treviewed by the contributor\n", encoding="utf-8")
         return d
+
+    def test_site_addresses_follow_canonical_and_preview_base(self):
+        root = self.make_root()
+        site = sitegen.Site(root, base_url="https://preview.example/branch")
+        self.assertIn("https://preview.example/branch/results/", site.llms())
+        self.assertIn("https://preview.example/branch/data/history.tsv", site.data_page([]))
+        self.assertIn("https://github.com/casbench/casbench.github.io", site.llms())
+        with patch.dict(os.environ, {"HUGO_BASEURL": "https://casbench.github.io/preview/"}):
+            preview = sitegen.Site(root)
+            self.assertIn("https://casbench.github.io/preview/results/", preview.llms())
+        with patch.dict(os.environ, {"HUGO_BASEURL": ""}):
+            canonical = sitegen.Site(root)
+            self.assertIn("https://casbench.github.io/results/", canonical.llms())
 
     def test_committed_operation_metrics_match_site(self):
         table = ROOT / "tables" / "operation_metrics.tsv"

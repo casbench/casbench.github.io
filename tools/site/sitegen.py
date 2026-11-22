@@ -16,6 +16,7 @@ import csv
 import datetime
 import html
 import math
+import os
 import pathlib
 import re
 import shutil
@@ -26,7 +27,8 @@ import zipfile
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import latexify  # noqa: E402
 
-REPO = "https://github.com/s-celles/computer-algebra-system-benchmarks"
+REPO = "https://github.com/casbench/casbench.github.io"
+DEFAULT_SITE = "https://casbench.github.io/"
 BLOB = REPO + "/blob/main"
 PAPER = "JuliaCon Proceedings paper on Giac.jl (in preparation, 2027)"
 
@@ -474,8 +476,10 @@ def svg_dotplot(by_idx, systems, categories=None, title="", width=760):
 
 
 class Site:
-    def __init__(self, root):
+    def __init__(self, root, base_url=None):
         self.root = pathlib.Path(root)
+        # Match the same override used by Hugo when building previews.
+        self.base_url = (base_url or os.environ.get("HUGO_BASEURL") or DEFAULT_SITE).rstrip("/") + "/"
         res = self.root / "results"
         ref = res / "REFERENCE"
         self.reference = ref.read_text(encoding="utf-8").strip() if ref.exists() else ""
@@ -1248,19 +1252,18 @@ class Site:
                 "per host with one TSV per bench and system (columns `bench, system, idx, case, op, status, t_first_s, "
                 "t_warm_s, result, note`, then `input` in the runs from 2026-11-20, then `t_wall_s, t_repeats_s, load_avg, run`; "
                 "new files append `verify_status, verify_time_s, verify_input`; input, output, notes and the verification command "
-                "are full text using TSV backslash escapes. Historical input and output may be truncated. "
-                "in the runs with a run identity: the harness's own wall time, every repeated time, the load average before "
-                "the case, the run id; times in seconds, `result`, `note` and `input` truncated to 200, 300 and 2 000 "
-                "characters), its machine and environment records, plus the history of the runs on every host, the summary "
+                "are full text using TSV backslash escapes. Historical input, output and notes may be truncated. "
+                "Times are in seconds; the remaining files include machine and environment records, "
+                "the history of the runs on every host, the summary "
                 "and the fixed inputs. Each bench page also offers its table as CSV, filtered and sorted as shown.\n\n"
                 "- [results.zip](../../data/results.zip): everything below in one archive.\n")
         for name, size in files:
             out += f"- [{esc(name)}](../../data/{name}) ({size // 1024 + 1} kB)\n"
         out += ("\n## Reading them\n\n```python\nimport pandas as pd\n"
-                f"df = pd.read_csv('https://s-celles.github.io/computer-algebra-system-benchmarks/data/{self.reference}/E_suite_giac.tsv', sep='\\t')\n"
-                "df[df.status == 'verified'].t_warm_s.describe()\n```\n\n"
+                f"df = pd.read_csv('{self.base_url}data/{self.reference}/E_suite_giac.tsv', sep='\\t')\n"
+                "df[df.status.isin(['verified', 'verified_numeric'])].t_warm_s.describe()\n```\n\n"
                 "```julia\nusing CSV, DataFrames\n"
-                "df = CSV.read(download(\"https://s-celles.github.io/computer-algebra-system-benchmarks/data/history.tsv\"), DataFrame)\n```\n")
+                f"df = CSV.read(download(\"{self.base_url}data/history.tsv\"), DataFrame)\n```\n")
         out += f"\nLicence of the data: CC BY 4.0 (cite the repository and the run date). Source files: [`results/`]({BLOB}/results).\n"
         return out
 
@@ -1362,7 +1365,7 @@ class Site:
         return out + "\n\n---\n\n".join(parts)
 
     def llms(self):
-        base = REPO.replace("github.com/s-celles/", "s-celles.github.io/") + "/"
+        base = self.base_url
         pages = [("Results", "results/"), ("History", "history/"), ("Methodology", "methodology/"), ("Disclosures", "disclosures/"),
                  ("Statuses", "docs/statuses/"), ("Data", "docs/data/"), ("Systems", "docs/systems/"),
                  ("Environment", "docs/environment/"), ("Hosts", "docs/hosts/")]

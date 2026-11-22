@@ -7,8 +7,8 @@ authors:
     given-names: Sébastien
     orcid: "https://orcid.org/0000-0001-9987-4338"
     affiliation: "IUT de Poitiers, Université de Poitiers"
-repository-code: "https://github.com/s-celles/computer-algebra-system-benchmarks"
-url: "https://s-celles.github.io/computer-algebra-system-benchmarks/"
+repository-code: "https://github.com/casbench/casbench.github.io"
+url: "https://casbench.github.io/"
 license:
   - MIT
   - CC-BY-4.0
