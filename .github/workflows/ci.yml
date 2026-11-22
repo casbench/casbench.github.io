@@ -32,5 +32,9 @@ jobs:
           git diff --exit-code results/summary.md results/history.tsv
       - name: Robust statistics tests
         run: julia --startup-file=no test/metrics.jl
+      - name: Simplification checks
+        run: |
+          julia --startup-file=no test/simplify.jl
+          julia --startup-file=no test/zero_recognition.jl
       - name: Site generator tests
         run: python3 -I tools/site/test_sitegen.py

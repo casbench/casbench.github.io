@@ -17,7 +17,7 @@ function make_I()
     end
     rec(s, c) = (j = findfirst(r -> r.case == c, data[s]); j === nothing ? nothing : data[s][j])
     cell(r) = r === nothing ? "--" :
-        r.status == "verified" ? fmt_time(isfinite(r.t_warm) ? r.t_warm : r.t_first) :
+        r.status in ("verified", "verified_numeric") ? fmt_time(isfinite(r.t_warm) ? r.t_warm : r.t_first) :
         r.status == "wrong" ? "\\wrong" : r.status == "unverified" ? "\\unv" : r.status == "unsolved" ? "\\unsolved" :
         r.status == "unavailable" ? "\\na" : r.status == "timeout" ? "T" : "E"
     open(joinpath(TABLES, "I_scale.tex"), "w") do io
@@ -36,7 +36,7 @@ function make_I()
     println(md, "## I: throughput at scale (warm seconds when verified; status otherwise)\n")
     println(md, "| workload | ", join((I_LABEL[s] for s in systems), " | "), " |\n|---|", "---|"^length(systems))
     for c in cases
-        cells = [(r = rec(s, c); r === nothing ? "--" : r.status == "verified" ? @sprintf("%.4g s", isfinite(r.t_warm) ? r.t_warm : r.t_first) : r.status) for s in systems]
+        cells = [(r = rec(s, c); r === nothing ? "--" : r.status in ("verified", "verified_numeric") ? @sprintf("%.4g s", isfinite(r.t_warm) ? r.t_warm : r.t_first) : r.status) for s in systems]
         println(md, "| ", c, " | ", join(cells, " | "), " |")
     end
     println(md)

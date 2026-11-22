@@ -46,8 +46,8 @@ OSR = "https://opensymbolicrules.github.io/"
 # third-party material (site-kit SPEC section 3): (source, licence, how it is used)
 SOURCES = [
     ("The comparison notebooks of a fork of Giac.jl (kahliburke/Giac.jl, ergonomics branch, commit da3d2f1a)", "GPL-3.0",
-     "bench E is derived from them: their 103 problems and statements, with four model-to-Jacobian tasks added and a task "
-     "file per system."),
+     "bench E is derived from them: their 103 problems and statements, with four model-to-Jacobian tasks and seven "
+     "identity-difference and control cases added, and a task file per system."),
     ("The 12000.org independent integration tests (Nasser M. Abbasi, Summer 2024 edition)",
      "no licence stated; their problems come from the Rubi test suite (MIT) and the collections it cites",
      "bench F quotes 639 of their entries, with the file and line of each, translated to each system's syntax."),
@@ -57,15 +57,22 @@ SOURCES = [
     (f"[OpenSymbolicRules]({OSR}) v1 integration rules", "MIT",
      "bench H is derived from them: every rule's integrand and conditions, its Lean verdict and certified antiderivative, "
      "pinned as the git submodule osr/Integration (also written by the author: see Disclosures)."),
+    ("B. Parisse, external review of this benchmark, 2026-11-21", "review; no external problem collection copied",
+     "the radical difference and the zero-recognition formulation in bench E."),
+    ("[B. C. Berndt, Ramanujan's Notebooks, Part IV, Chapter 23](https://link.springer.com/book/10.1007/978-1-4612-0879-2)",
+     "reference only; no text or collection copied", "classical context for radical identities and near-integers; the added simple radicals are checked algebraically."),
+    ("[B. Green, The Ramanujan constant](https://people.maths.ox.ac.uk/greenbj/papers/ramanujanconstant.pdf)",
+     "reference only; no text or collection copied", "the near-integer control in bench E; its interval is computed independently with directed MPFR rounding."),
     ("SymJ.jl's bench/cas comparison", "MIT", "the structure of the adapters and of the supervisor follows it."),
 ]
 NOT_REPRODUCED = ("Third-party numbers quoted on the Methodology page (the 12000.org scores of the Summer 2024 edition) "
                   "come with their caveats and are not rerun here. Systems not run: Reduce (not in nixpkgs), Rubi (it needs "
                   "Mathematica), Mathematica and Maple (proprietary); Singular.jl does not precompile on Julia 1.13 at the "
                   "pinned versions, so Singular runs through SageMath.")
-STATUSES = ("verified", "wrong", "unverified", "unsolved", "unavailable", "error", "timeout")
+STATUSES = ("verified", "verified_numeric", "wrong", "unverified", "unsolved", "unavailable", "error", "timeout")
 STATUS_HELP = {
-    "verified": "returned and checked by a system-neutral test",
+    "verified": "historical check passed, or an exact or symbolic check passed",
+    "verified_numeric": "answer passed its numeric check",
     "wrong": "returned, and the check failed",
     "unverified": "returned, but the check could not evaluate it",
     "unsolved": "returned unevaluated or incomplete, or the system declared that it cannot",
@@ -118,10 +125,10 @@ DISCLAIMER = ("These benchmarks are an individual, non-commercial project. They 
 PROVENANCE = ("An AI assistant wrote the harness, the adapters, the task files of benches B, D and F to I, the checks, the site "
               "generator and the documentation, and ran the benches on the measuring machine. The task files of bench E come "
               "from a fork of Giac.jl by an external contributor, and the problems of benches F, G and H from third parties "
-              "(Sources, below). The author reviewed every change; the statuses and the times are produced by the scripts, "
+              "(Sources, below). Earlier changes were reviewed by the author; the current reorientation awaits contributor review. The statuses and times are produced by the scripts, "
               "not by the assistant. A person decides what is reported upstream.")
 # status word -> site-kit tone (SPEC 0.4, section 5): one tone per word across the site
-BADGE_TONES = {"verified": "good", "wrong": "bad", "unverified": "info", "unsolved": "alt-dashed",
+BADGE_TONES = {"verified": "good", "verified_numeric": "good", "wrong": "bad", "unverified": "info", "unsolved": "alt-dashed",
                "unavailable": "neutral-dashed", "error": "warn-dashed", "timeout": "warn"}
 
 WORKFLOW = """
@@ -371,8 +378,8 @@ def viz_chart(series, title, ylabel, log=False):
 def svg_dotplot(by_idx, systems, categories=None, title="", width=760):
     """A dot plot: one row per case, time on a log x axis, one marker per system; filled when verified,
     hollow when the system returned something it did not solve, absent when it has no such operation."""
-    solved = ("verified",)
-    shown = ("verified", "wrong", "unverified", "unsolved", "error", "timeout")
+    solved = SOLVED_STATUSES
+    shown = SOLVED_STATUSES | {"wrong", "unverified", "unsolved", "error", "timeout"}
     rows = sorted(by_idx)
     times = [etime(r) for i in rows for s in systems if (r := by_idx[i].get(s)) and r["status"] in shown and etime(r) == etime(r) and etime(r) > 0]
     if not times:
@@ -844,7 +851,7 @@ class Site:
                 elif r["status"] == "unavailable":
                     cells.append(badge("unavailable"))
                 else:
-                    t = fmt_time(etime(r)) if r["status"] in ("verified", "wrong", "unverified", "unsolved") else ""
+                    t = fmt_time(etime(r)) if r["status"] in SOLVED_STATUSES | {"wrong", "unverified", "unsolved"} else ""
                     cells.append(badge(r["status"]) + (f" {t}" if t else ""))
             out += (f"| {i} | [{esc(e['case'])}]({slug(i, e['case'])}/) |" + (f" {esc(self.categories.get(i, ''))} |" if cat else "")
                     + f" `{esc(e['op'])}` | " + " | ".join(cells) + " |\n")
@@ -920,13 +927,14 @@ class Site:
                 "stopped because its process tree passed the memory limit of the supervisor is an *error* whose note names "
                 "the limit. *unavailable* is a property of the adapter as wired, not necessarily of the system: corrections "
                 "are welcome.\n")
-        out += ("\n## Vocabulary planned for new runs\n\n"
-                "Historical `verified` includes numeric checks. New runs will reserve `verified` for exact or symbolic "
-                "checks and use `verified_numeric` when the numeric check passes. For integration, "
+        out += ("\n## Verification vocabulary\n\n"
+                "Historical `verified` includes numeric checks. New runs of B, D, E and I use `verified_numeric` "
+                "for numeric checks and reserve `verified` for exact checks; F and H still use the historical status "
+                "until their new integration verification is implemented. For integration, "
                 "`verified_symbolic` means that the answering system simplified the derivative residual to zero in a "
                 "separately timed self-check. `verify_timeout` means that phase exceeded its own budget; "
                 "`verify_unsolved` means it did not establish zero. Neither makes the answer wrong, and neither is an "
-                "answer-phase timeout or unsolved status. These new statuses are not yet recorded.\n")
+                "answer-phase timeout or unsolved status. Integration self-check statuses are not yet recorded.\n")
         return out
 
     def docs_index(self):
@@ -1091,7 +1099,7 @@ class Site:
                 if not rows:
                     cells.append("")
                     continue
-                ok = [r for r in rows if r["status"] == "verified"]
+                ok = [r for r in rows if r["status"] in SOLVED_STATUSES]
                 times = sorted(etime(r) for r in ok if etime(r) == etime(r))
                 med = times[len(times) // 2] if times else float("nan")
                 cells.append(f"{len(ok)}/{len(rows)} verified, {fmt_time(med)}" if times else f"{len(ok)}/{len(rows)} verified")
@@ -1194,7 +1202,7 @@ class Site:
                 "reserved for exact or symbolic checks in new runs. A symbolic self-check is performed by the answering "
                 "system, not an independent proof. For F and H, `verified_symbolic` in 4.2 s will mean that the system "
                 "simplified `diff(F, x) - f` to zero in a separate 4.2-second verification phase after producing its "
-                "antiderivative F of f. Verification time is not answer time. These new statuses and timings are planned "
+                "antiderivative F of f. Verification time is not answer time. Integration self-check statuses and timings are planned "
                 "and are not present in the historical results. A failed or timed-out self-check does not make an answer "
                 "wrong. An unsolved or wrong case may instead hide a benchmark error; each case page shows the input next "
                 "to the output. See [Statuses](../docs/statuses/).\n\n"
@@ -1203,14 +1211,21 @@ class Site:
                 "- A: string equality with `giac_eval` for each dispatch level. Agreement with the reference call does not "
                 "independently prove its mathematical answer.\n"
                 "- B: numeric comparison at fixed points; expand and factor also require term or factor counts, integrate "
-                "uses finite differences, and simplify also imposes a length bound. Sampling and form requirements can "
+                "uses finite differences, and simplify compares numeric values without a length bound in new runs. Historical "
+                "results used a length bound. Sampling and form requirements can "
                 "misclassify valid equivalent answers.\n"
                 "- C: factors multiply to the input and are tested prime by Primes.jl and Giac. This relies on those "
                 "primality implementations.\n"
                 "- D: fixed-point value, solution, factor-count, series and list checks as appropriate. Finite samples and "
                 "form requirements do not establish general correctness or completeness.\n"
                 "- E: per-problem numeric values, substitutions, residuals, counts or form checks. Finite sampling and "
-                "expected-form requirements can miss errors or reject equivalent answers.\n"
+                "expected-form requirements can miss errors or reject equivalent answers. Boolean tasks compare the returned "
+                "boolean with the expected value; they do not independently check a proof certificate. The new identity differences "
+                "require an explicit zero and a high-precision evaluation; nonzero controls are compared to directed MPFR "
+                "reference intervals. Exact integer and rational outputs are evaluated in Julia at 256 bits. For other "
+                "expressions, the Giac and SymPy adapters request 80 digits; other E adapters report unverified. "
+                "Near-zero residuals that are not "
+                "reduced to zero remain unsolved.\n"
                 "- F and H: tier 1 currently uses central finite differences of the system's numeric evaluation of its "
                 "antiderivative at up to three real points, requiring at least two; it can accept the real part alone. "
                 "For a reference marked unintegrable, returning an unevaluated integral is instead counted as verified. "
@@ -1278,7 +1293,7 @@ class Site:
                     r = e.get(sname)
                     if r is None:
                         continue
-                    t = fmt_time(etime(r)) if r["status"] in ("verified", "wrong", "unverified", "unsolved") else ""
+                    t = fmt_time(etime(r)) if r["status"] in SOLVED_STATUSES | {"wrong", "unverified", "unsolved"} else ""
                     cells.append(f"{sname} {r['status']}" + (f" {t}" if t else ""))
                 out.append(f"- {i}. {e['case']} [{e['op']}]: " + "; ".join(cells))
         return "\n".join(out) + "\n"

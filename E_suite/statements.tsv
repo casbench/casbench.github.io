@@ -107,3 +107,10 @@ Jacobian: Brusselator N=10 (build)	J = \frac{\partial f}{\partial u},\quad \dot 
 Jacobian: Brusselator N=50 (build)	J = \frac{\partial f}{\partial u} \text{ of the Brusselator ring, } N = 50 \text{ (200 equations), compiled to a function}
 Jacobian: Brusselator N=10 (evaluate 1000 points)	J(u, v) \text{ of the Brusselator ring, } N = 10, \text{ evaluated at } 10^3 \text{ points}
 Jacobian: Brusselator N=50 (evaluate 1000 points)	J(u, v) \text{ of the Brusselator ring, } N = 50, \text{ evaluated at } 10^3 \text{ points}
+Zero identity: nested square root	\sqrt{3+2\sqrt{2}}-1-\sqrt{2}=0
+Zero identity: nested cube root	\sqrt[3]{7+5\sqrt{2}}-1-\sqrt{2}=0
+Zero identity: logarithms on positive reals	\log 2+\log 3-\log 6=0
+Zero identity: exponential of a logarithm	\exp(\log 2)-2=0
+Zero identity: sine at pi over six	\sin(\pi/6)-1/2=0
+Nonzero control: rational residual	\sqrt{2}^{\,2}-2+10^{-30}=10^{-30}
+Nonzero control: near integer	\exp(\pi\sqrt{163})-262537412640768744<0

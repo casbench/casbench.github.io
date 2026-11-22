@@ -124,14 +124,14 @@ end)
 task!("Implicitization", () -> ge("resultant(x-t^2+1,y-t^3+t,t)"))
 TASKS["Polynomial decomposition"] = missing     # no polynomial decomposition in Giac
 # ---- 7 simplification and algebraic numbers
-task!("Denesting", () -> ge("simplify(sqrt(5+2*sqrt(6)))"))
-task!("Ramanujan's denesting", () -> ge("simplify((2^(1/3)-1)^(1/3))"))
+task!("Denesting", () -> ge("simplify(sqrt(5+2*sqrt(6))-sqrt(2)-sqrt(3))"))
+task!("Ramanujan's denesting", () -> ge("simplify((2^(1/3)-1)^(1/3)-(1/9)^(1/3)+(2/9)^(1/3)-(4/9)^(1/3))"))
 # the exact value of an algebraic number through its minimal polynomial
-task!("A heptagon sum", () -> ge("simplify(cos(2*pi/7)+cos(4*pi/7)+cos(6*pi/7))"))
+task!("A heptagon sum", () -> ge("simplify(cos(2*pi/7)+cos(4*pi/7)+cos(6*pi/7)+1/2)"))
 task!("A minimal polynomial", () -> ge("pmin(sqrt(2)+sqrt(3)+sqrt(5),x)"))
-task!("A trigonometric identity", () -> ge("simplify(sin(3*x)/sin(x)-cos(3*x)/cos(x))"))
+task!("A trigonometric identity", () -> ge("simplify(sin(3*x)/sin(x)-cos(3*x)/cos(x)-2)"))
 TASKS["Gauss's 17-gon"] = missing                # no expression of cos(2pi/17) in radicals in Giac
-task!("An inverse cosine, with assumptions", () -> (ge("assume(x>pi and x<2*pi)"); r = ge("simplify(acos(cos(x)))"); ge("purge(x)"); r))
+task!("An inverse cosine, with assumptions", () -> (ge("assume(x>pi and x<2*pi)"); r = ge("simplify(acos(cos(x))-(2*pi-x))"); ge("purge(x)"); r))
 # ---- 8 differential equations
 task!("Airy", () -> ode("y''=x*y", "x", "y", ["diff(Y,x,2)-x*Y"]))
 task!("Bessel, order 1/2", () -> ode("x^2*y''+x*y'+(x^2-1/4)*y=0", "x", "y", ["x^2*diff(Y,x,2)+x*diff(Y,x)+(x^2-1/4)*Y"]))
@@ -251,4 +251,18 @@ function EVALFAMILY(out, params, kk)
         push!(vals, tonum(tj(ge("evalf(" * s * ")"))))
     end
     vals
+end
+
+# Fixed identity differences and near-identity controls; case names are shared
+# by the other adapters and the reference intervals live in zero_reference.jl.
+for (name, expression) in (
+    "Zero identity: nested square root" => "sqrt(3+2*sqrt(2))-1-sqrt(2)",
+    "Zero identity: nested cube root" => "(7+5*sqrt(2))^(1/3)-1-sqrt(2)",
+    "Zero identity: logarithms on positive reals" => "ln(2)+ln(3)-ln(6)",
+    "Zero identity: exponential of a logarithm" => "exp(ln(2))-2",
+    "Zero identity: sine at pi over six" => "sin(pi/6)-1/2",
+    "Nonzero control: rational residual" => "sqrt(2)^2-2+1/10^30",
+    "Nonzero control: near integer" => "exp(pi*sqrt(163))-262537412640768744",
+)
+    task!(name, () -> ge("simplify(" * expression * ")"))
 end

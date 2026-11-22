@@ -164,6 +164,25 @@ function EVAL(ex, vals)
     u = to_julia(cmd(:evalf, isempty(d) ? ex : Giac.substitute(ex, d)))
     u isa Number ? u : nothing
 end
+# Decimal evaluation is separate from the measured call. Keep the decimal
+# string, rather than converting through Float64, before parsing with MPFR.
+function EVAL_HIGH_PRECISION(ex, digits::Int, at)
+    ex isa AbstractFloat && return nothing
+    ex isa Integer && return BigFloat(ex)
+    ex isa GiacExpr || return nothing
+    # A decimal literal may already have lost precision inside Giac.
+    occursin(r"\d+\.\d|\d+(?:\.\d*)?[eE][+-]?\d+", string(ex)) && return nothing
+    try
+        expr = string(ex)
+        if at !== nothing
+            rational = string(numerator(at)) * "/" * string(denominator(at))
+            expr = "subst((" * expr * "),x=" * rational * ")"
+        end
+        parse(BigFloat, string(geval("evalf((" * expr * ")," * string(digits) * ")")))
+    catch
+        nothing
+    end
+end
 NTERMS(ex) = ex isa GiacExpr && string(cmd(:sommet, ex)) == "'+'" ? toint(cmd(:nops, ex)) : 1
 NFACTORS(ex) = ex isa GiacExpr && string(cmd(:sommet, ex)) == "'*'" ? toint(cmd(:nops, ex)) : 1
 IS_EXACT(ex) = occursin("pi", string(ex)) && !occursin(r"\d\.\d", string(ex))

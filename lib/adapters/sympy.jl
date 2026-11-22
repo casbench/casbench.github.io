@@ -146,6 +146,20 @@ function EVAL(ex, vals)
     uu = isempty(pairs) ? N(ex) : N(subs(ex, pairs...))   # subs(ex) with no pairs overflows the stack
     uu isa Number && !(uu isa Sym) ? uu : nothing
 end
+# Decimal evaluation is outside the measured call and never passes through
+# a binary Float64. Existing inexact answers cannot establish 80 digits.
+function EVAL_HIGH_PRECISION(ex, digits::Int, at)
+    ex isa AbstractFloat && return nothing
+    ex isa Integer && return BigFloat(ex)
+    ex isa Sym || return nothing
+    try
+        Bool(getfield(ex.has(S.Float), :o)) && return nothing
+        value = at === nothing ? ex : subs(ex, VAR[:x] => Sym(numerator(at)) / Sym(denominator(at)))
+        parse(BigFloat, string(S.N(value, digits)))
+    catch
+        nothing
+    end
+end
 NTERMS(ex) = ex isa Sym && Bool(ex.is_Add) ? length(ex.args) : 1
 NFACTORS(ex) = ex isa Sym && Bool(ex.is_Mul) ? length(ex.args) : 1
 IS_EXACT(ex) = occursin("pi", string(ex)) && !occursin(r"\d\.\d", string(ex))

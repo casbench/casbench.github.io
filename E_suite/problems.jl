@@ -12,8 +12,8 @@
 # value to a tolerance, an antiderivative by its derivative at points,
 # solutions substituted and counted, differential equations by the residual
 # with the constants given values, regions tested at points inside and
-# outside, and for some problems a form (denested, no trigonometric function
-# left, a number of factors).
+# outside, with exactness and factor-count requirements on some problems.
+# Identity differences are checked by explicit zero and high-precision evaluation.
 #
 # Statuses: verified (passes), unsolved (returned unevaluated, numeric where
 # exact was asked, or not in the form asked), wrong (fails), unverified (the
@@ -23,6 +23,8 @@
 
 using .BenchCommon: numeq
 using LinearAlgebra: diag, Diagonal, I
+include(joinpath(@__DIR__, "zero_reference.jl"))
+isdefined(Main, :EVAL_HIGH_PRECISION) || (EVAL_HIGH_PRECISION(out, digits, at) = out isa Integer ? BigFloat(out) : nothing)
 
 # ---------------------------------------------------------------------------
 # reference values in plain Julia
@@ -75,6 +77,42 @@ function check_value(out, ref; at = Dict{Symbol,Float64}(), rtol = 1e-9, atol = 
     isfinite(v) || return :wrong
     numeq(v, ref; rtol, atol) ? :verified : :wrong
 end
+# A printed exact integer or rational can be evaluated without conversion
+# through a system's machine-precision numeric API. Do not parse floats or
+# arbitrary expressions as exact literals.
+function exact_literal_value(out)
+    m = match(r"^([+-]?\d+)(?:/{1,2}([1-9]\d*))?$", replace(string(out), " " => ""))
+    m === nothing && return nothing
+    n = parse(BigInt, m[1])
+    d = m[2] === nothing ? big(1) : parse(BigInt, m[2])
+    BigFloat(n) / BigFloat(d)
+end
+
+# High-precision checks for identity differences and non-zero controls.
+# The independent real reference for each control is an MPFR enclosure.
+function check_identity_high_precision(out, reference::Symbol; at = nothing)
+    z = replace(string(out), " " => "") in ("0", "0.0", "0/1", "0//1")
+    reference != :zero && z && return (:wrong, "numeric evaluation=0 (exact); certified reference is nonzero")
+    value, source = setprecision(BigFloat, 256) do
+        exact = exact_literal_value(out)
+        exact === nothing ? (EVAL_HIGH_PRECISION(out, 80, at), "80-digit system evaluation") :
+                            (exact, "256-bit evaluation of exact literal")
+    end
+    value === nothing && return (:unverified, "high-precision evaluation unavailable")
+    isfinite(value) || return (:wrong, "high-precision evaluation is not finite")
+    note = "numeric evaluation=$(string(value)); $source" * (at === nothing ? "" : "; x=$at")
+    if reference == :zero
+        # An unreduced identity can leave a small rounding residual even at
+        # 80 digits. It remains unsolved rather than a false wrong result.
+        abs(value) > big"1e-60" && return (:wrong, note)
+        return z && iszero(value) ? (:verified_numeric, note) : (:unsolved, note * "; not reduced to zero")
+    end
+    reference in (:hardy, :rational) || error("unknown reference: $reference")
+    lo, hi = reference == :hardy ? hardy_reference_interval() : rational_control_interval()
+    lo <= value <= hi ? (:verified_numeric, note * "; inside 256-bit certified reference interval") :
+                        (:wrong, note * "; outside 256-bit certified reference interval")
+end
+
 # the notebook's Value: to twelve digits, and the answer must be exact
 function check_exact_value(out, ref; at = Dict{Symbol,Float64}(), rtol = 1e-9)
     st = check_value(out, ref; at, rtol)
@@ -154,26 +192,6 @@ function check_factors(out, ref, nfactors, pt::Dict{Symbol,Float64})
     end
     numeq(p, ref; rtol = 1e-8) ? :verified : :wrong
 end
-function nested_radicals(s::AbstractString)
-    depth = 0; maxd = 0; stack = Bool[]
-    i = 1
-    while i <= lastindex(s)
-        if startswith(SubString(s, i), "sqrt(") || startswith(SubString(s, i), "root(") || startswith(SubString(s, i), "cbrt(")
-            push!(stack, true); depth += 1; maxd = max(maxd, depth)
-            i += findfirst('(', SubString(s, i))
-            continue
-        elseif s[i] == '('
-            push!(stack, false)
-        elseif s[i] == ')' && !isempty(stack)
-            pop!(stack) && (depth -= 1)
-        end
-        i = nextind(s, i)
-    end
-    maxd > 1 || occursin(r"\^\(1/\d\)[^\^]*\^\(1/\d\)", s)
-end
-# a form: the value must pass, then the printed answer must satisfy `form`
-check_form(out, value_status::Symbol, form::Bool) = value_status === :verified ? (form ? :verified : :unsolved) : value_status
-notrig(s) = !occursin(r"\b(cos|sin|tan|acos|asin|atan)\b", s)
 function check_bool(out, expected)
     s = lowercase(replace(string(out), " " => ""))
     s in ("true", "1") && return expected ? :verified : :wrong
@@ -278,13 +296,13 @@ const PROBLEMS = [
     P(CAT[6], "Polynomial decomposition", o -> (o isa Tuple && length(o) == 2 ? (h = tonum(EVAL(o[2], Dict(:x => 0.7))); g = h === nothing ? nothing : tonum(EVAL(o[1], Dict(:x => h))); g === nothing ? :unverified : (numeq(g, 0.7^6 + 6 * 0.7^4 + 0.7^3 + 9 * 0.7^2 + 3 * 0.7 - 5; rtol = 1e-8) ? :verified : :wrong)) : :unverified),
       "x^6+6x^4+x^3+9x^2+3x-5 = g(h(x))"),
     # ---- 7 Simplification and algebraic numbers ----
-    P(CAT[7], "Denesting", o -> check_form(o, check_value(o, sqrt(2) + sqrt(3)), !nested_radicals(string(o))), "sqrt(5+2 sqrt 6) = sqrt2 + sqrt3"),
-    P(CAT[7], "Ramanujan's denesting", o -> check_form(o, check_value(o, cbrt(cbrt(2) - 1)), !nested_radicals(string(o))), "cbrt(cbrt 2 - 1) = cbrt(1/9) - cbrt(2/9) + cbrt(4/9)"),
-    P(CAT[7], "A heptagon sum", o -> check_form(o, check_value(o, -0.5), notrig(string(o))), "cos(2pi/7)+cos(4pi/7)+cos(6pi/7) = -1/2, no cosine left"),
+    P(CAT[7], "Denesting", o -> check_identity_high_precision(o, :zero), "simplify sqrt(5+2 sqrt 6) - sqrt 2 - sqrt 3"),
+    P(CAT[7], "Ramanujan's denesting", o -> check_identity_high_precision(o, :zero), "simplify cbrt(cbrt 2 - 1) - cbrt(1/9) + cbrt(2/9) - cbrt(4/9)"),
+    P(CAT[7], "A heptagon sum", o -> check_identity_high_precision(o, :zero), "simplify cos(2pi/7)+cos(4pi/7)+cos(6pi/7)+1/2"),
     P(CAT[7], "A minimal polynomial", o -> check_value(o, 0.7^8 - 40 * 0.7^6 + 352 * 0.7^4 - 960 * 0.7^2 + 576; at = Dict(:x => 0.7)), "minimal polynomial of sqrt2+sqrt3+sqrt5, checked at x = 0.7"),
-    P(CAT[7], "A trigonometric identity", o -> check_form(o, check_value(o, 2.0; at = Dict(:x => 0.7)), !occursin("x", string(o))), "sin 3x/sin x - cos 3x/cos x = 2"),
-    P(CAT[7], "Gauss's 17-gon", o -> check_form(o, check_value(o, cos(2pi / 17)), notrig(string(o))), "cos(2pi/17) in square roots"),
-    P(CAT[7], "An inverse cosine, with assumptions", o -> check_form(o, check_value(o, 2pi - 4; at = Dict(:x => 4.0)), notrig(string(o))), "acos(cos x) = 2pi - x for pi < x < 2pi"),
+    P(CAT[7], "A trigonometric identity", o -> check_identity_high_precision(o, :zero; at = 7//10), "simplify sin(3x)/sin(x)-cos(3x)/cos(x)-2"),
+    P(CAT[7], "Gauss's 17-gon", o -> check_value(o, cos(2pi / 17)), "cos(2pi/17), checked numerically; no output form required"),
+    P(CAT[7], "An inverse cosine, with assumptions", o -> check_identity_high_precision(o, :zero; at = 4//1), "simplify acos(cos x) - (2pi - x), for pi < x < 2pi"),
     # ---- 8 Differential equations ----
     P(CAT[8], "Airy", o -> check_residual(o), "y'' = x y"),
     P(CAT[8], "Bessel, order 1/2", o -> check_residual(o), "x^2 y'' + x y' + (x^2 - 1/4) y = 0"),
@@ -326,11 +344,11 @@ const PROBLEMS = [
     P(CAT[11], "A delayed step", o -> (v1 = tonum(EVAL(o, Dict(:t => 0.5))); v2 = tonum(EVAL(o, Dict(:t => 1.5))); (v1 === nothing || v2 === nothing) ? :unverified : (numeq(v1, 0.0; atol = 1e-9) && numeq(v2, 1.0) ? :verified : :wrong)),
       "L^-1{e^-s/s}(t) = theta(t-1), checked at t = 1/2 and 3/2"),
     P(CAT[11], "The series of Lambert's W", o -> check_value(o, 0.1 - 0.1^2 + 3 * 0.1^3 / 2 - 8 * 0.1^4 / 3 + 125 * 0.1^5 / 24; at = Dict(:x => 0.1)), "W(x) to order 5 at 0, polynomial part at x = 1/10"),
-    P(CAT[11], "A hypergeometric function", o -> check_form(o, check_value(o, 2log(2); at = Dict(:x => 0.5)), !occursin("hyper", lowercase(string(o)))), "2F1(1,1;2;x) = -ln(1-x)/x"),
-    P(CAT[11], "Gamma's reflection formula", o -> check_form(o, check_value(o, pi * sqrt(2)), !occursin("gamma", lowercase(string(o)))), "Gamma(1/4) Gamma(3/4) = pi sqrt 2"),
+    P(CAT[11], "A hypergeometric function", o -> check_value(o, 2log(2); at = Dict(:x => 0.5)), "2F1(1,1;2;x) = -ln(1-x)/x"),
+    P(CAT[11], "Gamma's reflection formula", o -> check_value(o, pi * sqrt(2)), "Gamma(1/4) Gamma(3/4) = pi sqrt 2"),
     P(CAT[11], "The sine integral's Laplace transform", o -> check_value(o, (pi / 2 - atan(2.0)) / 2; at = Dict(:s => 2.0)), "L{Si t}(s) = (pi/2 - atan s)/s, at s = 2"),
     P(CAT[11], "An inverse Laplace transform to a Bessel function", o -> check_value(o, J0_ref(0.7); at = Dict(:t => 0.7)), "L^-1{1/sqrt(s^2+1)} = J0(t), at t = 7/10"),
-    P(CAT[11], "A polylogarithm value", o -> check_form(o, check_value(o, 0.5372131936080402009406), !occursin(r"polylog|li3|li\(", lowercase(string(o)))), "Li3(1/2) = 7/8 zeta(3) - pi^2/12 ln2 + ln^3 2/6"),
+    P(CAT[11], "A polylogarithm value", o -> check_value(o, 0.5372131936080402009406), "Li3(1/2) = 7/8 zeta(3) - pi^2/12 ln2 + ln^3 2/6"),
     # ---- 12 Control ----
     P(CAT[12], "A stability region", o -> check_intervals(o, [-0.5, 0.0, 7.0], [-1.5, 8.5, 10.0]), "for which k is s^3+3s^2+3s+1+k Hurwitz: -1 < k < 8"),
     P(CAT[12], "A Lyapunov equation", o -> check_matrix(o, [5/4 1/4; 1/4 1/4]), "A'P + PA = -I, A = [[0,1],[-2,-3]]"),
@@ -344,6 +362,14 @@ const PROBLEMS = [
     P(CAT[13], "Jacobian: Brusselator N=50 (build)", o -> check_jacobian_build(o, 50), "the Jacobian of the 100-state model, compiled to a function"),
     P(CAT[13], "Jacobian: Brusselator N=10 (evaluate 1000 points)", o -> check_value(o, jacobian_trace_sum(10); rtol = 1e-6), "sum of traces of the compiled Jacobian over 1000 points"),
     P(CAT[13], "Jacobian: Brusselator N=50 (evaluate 1000 points)", o -> check_value(o, jacobian_trace_sum(50); rtol = 1e-6), "sum of traces of the compiled Jacobian over 1000 points"),
+    # Appended, so every pre-existing case keeps its result identifier.
+    P(CAT[7], "Zero identity: nested square root", o -> check_identity_high_precision(o, :zero), "sqrt(3+2 sqrt(2)) - 1 - sqrt(2)"),
+    P(CAT[7], "Zero identity: nested cube root", o -> check_identity_high_precision(o, :zero), "cbrt(7+5 sqrt(2)) - 1 - sqrt(2)"),
+    P(CAT[7], "Zero identity: logarithms on positive reals", o -> check_identity_high_precision(o, :zero), "log(2) + log(3) - log(6)"),
+    P(CAT[7], "Zero identity: exponential of a logarithm", o -> check_identity_high_precision(o, :zero), "exp(log(2)) - 2 on the positive reals"),
+    P(CAT[7], "Zero identity: sine at pi over six", o -> check_identity_high_precision(o, :zero), "sin(pi/6) - 1/2"),
+    P(CAT[7], "Nonzero control: rational residual", o -> check_identity_high_precision(o, :rational), "sqrt(2)^2 - 2 + 10^(-30): exact reference 1/10^30"),
+    P(CAT[7], "Nonzero control: near integer", o -> check_identity_high_precision(o, :hardy), "exp(pi sqrt(163)) - 262537412640768744: certified negative interval"),
 ]
 
 # the Brusselator ring: u_i' = 1 + u_i^2 v_i - 4 u_i + (u_{i+1} - 2 u_i + u_{i-1}),

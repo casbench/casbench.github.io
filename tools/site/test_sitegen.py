@@ -89,6 +89,19 @@ class SiteGenTests(unittest.TestCase):
         self.assertIsNone(sitegen.operation_metrics([row("verified", 1), row("timeout", 600), row("wrong", 1)])[2])
         self.assertIsNone(sitegen.operation_metrics([row("verified", float("nan"))])[2])
 
+    def test_numeric_identity_case_displays_evaluation(self):
+        root = self.make_root()
+        path = root / "results" / "testhost" / "D_coverage_giac.tsv"
+        with path.open("a", encoding="utf-8") as f:
+            f.write("D_coverage\tGiac.jl\t5\tidentity test\tsimplify\tverified_numeric\t0.01\t0.001\t0\t80-digit evaluation=0.0\tsimplify(lhs-rhs)\n")
+        out = pathlib.Path(tempfile.mkdtemp())
+        sitegen.generate(root, out)
+        page = (out / "content" / "results" / "d_coverage" / sitegen.slug(5, "identity test") / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("simplify(lhs-rhs)", page)
+        self.assertIn("80-digit evaluation=0.0", page)
+        self.assertIn("data-status=\"verified_numeric\"", page)
+        self.assertLess(page.index("#### Input"), page.index("#### Output"))
+
     def test_pages(self):
         root = self.make_root()
         out = pathlib.Path(tempfile.mkdtemp())
@@ -376,6 +389,12 @@ class SiteGenTests(unittest.TestCase):
         rows = [l.split("\t")[0] for l in stm.read_text(encoding="utf-8").splitlines()
                 if l and not l.startswith("#") and not l.startswith("name\t")]
         self.assertEqual(rows, names)
+        # Historical identifiers must still refer to the same case after additions.
+        ref = (ROOT / "results" / "REFERENCE").read_text(encoding="utf-8").strip()
+        for file in (ROOT / "results" / ref).glob("E_suite_*.tsv"):
+            for row in sitegen.read_tsv(file):
+                if row["idx"] > 0:
+                    self.assertEqual(names[row["idx"] - 1], row["case"], (file.name, row["idx"]))
 
 
 if __name__ == "__main__":

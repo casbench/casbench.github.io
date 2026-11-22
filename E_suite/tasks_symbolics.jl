@@ -130,11 +130,11 @@ const TASKS = Dict{String,Any}(
     "Factoring over Q(sqrt 2)" => missing,
     "The cyclic-6 system" => missing,          # a Groebner basis, but no solution count
     "Implicitization" => missing, "Polynomial decomposition" => missing,
-    "Denesting" => () -> Symbolics.simplify(sqrt(5 + 2sqrt(Num(6)))),
+    "Denesting" => () -> (log_input!("Symbolics.simplify(sqrt(5+2*sqrt(Num(6)))-sqrt(Num(2))-sqrt(Num(3)))"); Symbolics.simplify(sqrt(5 + 2sqrt(Num(6))) - sqrt(Num(2)) - sqrt(Num(3)))),
     "Ramanujan's denesting" => missing,
-    "A heptagon sum" => () -> Symbolics.simplify(cos(2VAR[:pi] / 7) + cos(4VAR[:pi] / 7) + cos(6VAR[:pi] / 7)),
+    "A heptagon sum" => () -> (log_input!("Symbolics.simplify(cos(2*VAR[:pi]/7)+cos(4*VAR[:pi]/7)+cos(6*VAR[:pi]/7)+Num(1)/2)"); Symbolics.simplify(cos(2VAR[:pi] / 7) + cos(4VAR[:pi] / 7) + cos(6VAR[:pi] / 7) + Num(1)/2)),
     "A minimal polynomial" => missing,
-    "A trigonometric identity" => () -> Symbolics.simplify(sin(3x) / sin(x) - cos(3x) / cos(x)),
+    "A trigonometric identity" => () -> (log_input!("simplify(sin(3*x)/sin(x)-cos(3*x)/cos(x)-2)"); Symbolics.simplify(sin(3x) / sin(x) - cos(3x) / cos(x) - 2)),
     "Gauss's 17-gon" => missing, "An inverse cosine, with assumptions" => missing,
     "Airy" => () -> linode(y1 -> Dx(Dx(y1)) - x * y1, [-x, 0], 0),
     "Bessel, order 1/2" => () -> linode(y1 -> x^2 * Dx(Dx(y1)) + x * Dx(y1) + (x^2 - 1 // 4) * y1, [(x^2 - 1 // 4) / x^2, 1 / x], 0),
@@ -207,4 +207,31 @@ function EVALFAMILY(out, params, kk)
         push!(vals, r isa Real ? Float64(r) : nothing)
     end
     vals
+end
+
+const ZERO_CASE_INPUTS = Dict(
+    "Zero identity: nested square root" => "sqrt(3 + 2sqrt(Num(2))) - 1 - sqrt(Num(2))",
+    "Zero identity: nested cube root" => "(7 + 5sqrt(Num(2)))^(Num(1)/3) - 1 - sqrt(Num(2))",
+    "Zero identity: logarithms on positive reals" => "log(Num(2)) + log(Num(3)) - log(Num(6))",
+    "Zero identity: exponential of a logarithm" => "exp(log(Num(2))) - 2",
+    "Zero identity: sine at pi over six" => "sin(VAR[:pi]/6) - Num(1)/2",
+    "Nonzero control: rational residual" => "sqrt(Num(2))^2 - 2 + Num(1)/Num(big(10)^30)",
+    "Nonzero control: near integer" => "exp(VAR[:pi]*sqrt(Num(163))) - Num(262537412640768744)",
+)
+
+for (name, build) in (
+    "Zero identity: nested square root" => (() -> sqrt(3 + 2sqrt(Num(2))) - 1 - sqrt(Num(2))),
+    "Zero identity: nested cube root" => (() -> (7 + 5sqrt(Num(2)))^(Num(1)/3) - 1 - sqrt(Num(2))),
+    "Zero identity: logarithms on positive reals" => (() -> log(Num(2)) + log(Num(3)) - log(Num(6))),
+    "Zero identity: exponential of a logarithm" => (() -> exp(log(Num(2))) - 2),
+    "Zero identity: sine at pi over six" => (() -> sin(VAR[:pi]/6) - Num(1)/2),
+    "Nonzero control: rational residual" => (() -> sqrt(Num(2))^2 - 2 + Num(1)/Num(big(10)^30)),
+    "Nonzero control: near integer" => (() -> exp(VAR[:pi]*sqrt(Num(163))) - Num(262537412640768744)),
+)
+    TASKS[name] = () -> begin
+        log_input!(ZERO_CASE_INPUTS[name])
+        ex = build()
+        log_input!("simplify(" * string(ex) * ")")
+        Symbolics.simplify(ex)
+    end
 end

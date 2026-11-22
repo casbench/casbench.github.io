@@ -1,6 +1,6 @@
 # Bench E tasks for SymPy through SymPyPythonCall.jl, as a SymPy user would
 # write them.
-const th, p, q, r, px, py = S.symbols("th p q r px py")
+const th, px, py = S.symbols("th px py")  # p, q and r are already defined by the adapter
 const C6 = collect(S.symbols("c1:7"))
 for i in 1:6
     VAR[Symbol("c$i")] = C6[i]
@@ -27,7 +27,7 @@ raw(e) = e isa Sym ? getfield(e, :o) : e               # the Python object behin
 # rebuilt when a Python function (lambdify, smith_normal_form) must receive one
 pymat(M::AbstractMatrix) = PySympy.Matrix(PyC.pylist([PyC.pylist([raw(e) for e in M[i, :]]) for i in 1:size(M, 1)]))
 const yf = S.Function("y")
-D(f, v, n = 1) = S.diff(f, v, n)
+d_sym(f, v, n = 1) = S.diff(f, v, n)
 # an ODE: dsolve, then the residuals with the constants set to 1
 function ode(eq, residuals::Vector; var = x, ics = nothing)
     sol = ics === nothing ? S.dsolve(eq, yf(var)) : S.dsolve(eq, yf(var); ics = ics)
@@ -134,36 +134,36 @@ const TASKS = Dict{String,Any}(
     "The cyclic-6 system" => () -> length(collect(S.solve_poly_system(cyclic6(), C6...))),
     "Implicitization" => () -> S.resultant(x - t^2 + 1, y - t^3 + t, t),
     "Polynomial decomposition" => () -> (L = collect(S.decompose(x^6 + 6x^4 + x^3 + 9x^2 + 3x - 5)); (L[1], L[2])),
-    "Denesting" => () -> S.sqrtdenest(sqrt(5 + 2sqrt(Sym(6)))),
-    "Ramanujan's denesting" => () -> S.simplify((Sym(2)^(Sym(1) / 3) - 1)^(Sym(1) / 3)),
-    "A heptagon sum" => () -> first(collect(solve(S.minimal_polynomial(cos(2PI / 7) + cos(4PI / 7) + cos(6PI / 7), x), x))),
+    "Denesting" => () -> (log_input!("simplify(sqrt(5 + 2*sqrt(6)) - sqrt(2) - sqrt(3))"); S.simplify(sqrt(5 + 2sqrt(Sym(6))) - sqrt(Sym(2)) - sqrt(Sym(3)))),
+    "Ramanujan's denesting" => () -> (log_input!("simplify((2**Rational(1,3)-1)**Rational(1,3)-Rational(1,9)**Rational(1,3)+Rational(2,9)**Rational(1,3)-Rational(4,9)**Rational(1,3))"); S.simplify((Sym(2)^(Sym(1) / 3) - 1)^(Sym(1) / 3) - (Sym(1)/9)^(Sym(1)/3) + (Sym(2)/9)^(Sym(1)/3) - (Sym(4)/9)^(Sym(1)/3))),
+    "A heptagon sum" => () -> (log_input!("simplify(cos(2*pi/7)+cos(4*pi/7)+cos(6*pi/7)+Rational(1,2))"); S.simplify(cos(2PI / 7) + cos(4PI / 7) + cos(6PI / 7) + Sym(1)/2)),
     "A minimal polynomial" => () -> S.minimal_polynomial(sqrt(Sym(2)) + sqrt(Sym(3)) + sqrt(Sym(5)), x),
-    "A trigonometric identity" => () -> S.simplify(sin(3x) / sin(x) - cos(3x) / cos(x)),
+    "A trigonometric identity" => () -> (log_input!("simplify(sin(3*x)/sin(x)-cos(3*x)/cos(x)-2)"); S.simplify(sin(3x) / sin(x) - cos(3x) / cos(x) - 2)),
     "Gauss's 17-gon" => () -> cos(2PI / 17).rewrite(sqrt),
-    "An inverse cosine, with assumptions" => () -> (xp = S.symbols("x"; positive = true); S.refine(S.acos(cos(xp)), S.Q.gt(xp, PI) & S.Q.lt(xp, 2PI)).subs(xp, x)),
-    "Airy" => () -> ode(S.Eq(D(yf(x), x, 2), x * yf(x)), [y1 -> D(y1, x, 2) - x * y1]),
-    "Bessel, order 1/2" => () -> ode(S.Eq(x^2 * D(yf(x), x, 2) + x * D(yf(x), x) + (x^2 - Sym(1) / 4) * yf(x), 0), [y1 -> x^2 * D(y1, x, 2) + x * D(y1, x) + (x^2 - Sym(1) / 4) * y1]),
-    "Riccati" => () -> ode(S.Eq(D(yf(x), x), x^2 + yf(x)^2), [y1 -> D(y1, x) - x^2 - y1^2]),
-    "A nonlinear autonomous equation" => () -> ode(S.Eq(yf(x) * D(yf(x), x, 2), D(yf(x), x)^2), [y1 -> y1 * D(y1, x, 2) - D(y1, x)^2]),
-    "A forced Euler-Cauchy equation" => () -> ode(S.Eq(x^2 * D(yf(x), x, 2) - 3x * D(yf(x), x) + 4yf(x), x^2 * log(x)), [y1 -> x^2 * D(y1, x, 2) - 3x * D(y1, x) + 4y1 - x^2 * log(x)]),
-    "Bernoulli" => () -> ode(S.Eq(D(yf(x), x) + yf(x), x * yf(x)^3), [y1 -> D(y1, x) + y1 - x * y1^3]),
-    "An exponential solution (Kovacic)" => () -> ode(S.Eq(D(yf(x), x, 2), (x^2 + 1) * yf(x)), [y1 -> D(y1, x, 2) - (x^2 + 1) * y1]),
-    "A forced initial-value problem" => () -> ode(S.Eq(D(yf(x), x, 2) - (x^2 + 1) * yf(x), x * exp(-x^2 / 2)),
-        [y1 -> D(y1, x, 2) - (x^2 + 1) * y1 - x * exp(-x^2 / 2), y1 -> y1.subs(x, 0), y1 -> D(y1, x).subs(x, 0) - 1];
-        ics = Dict(yf(0) => 0, D(yf(x), x).subs(x, 0) => 1)),
-    "A Riccati equation with Airy solutions" => () -> ode(S.Eq(D(yf(x), x), x + yf(x)^2), [y1 -> D(y1, x) - x - y1^2]),
-    "A pendulum released from rest" => () -> ode(S.Eq(D(yf(x), x, 2) + sin(yf(x)), 0), [y1 -> D(y1, x, 2) + sin(y1), y1 -> y1.subs(x, 0) - a, y1 -> D(y1, x).subs(x, 0)]; ics = Dict(yf(0) => a, D(yf(x), x).subs(x, 0) => 0)),
-    "Duffing's oscillator from rest" => () -> ode(S.Eq(D(yf(x), x, 2) + yf(x) + yf(x)^3, 0), [y1 -> D(y1, x, 2) + y1 + y1^3, y1 -> y1.subs(x, 0) - a, y1 -> D(y1, x).subs(x, 0)]; ics = Dict(yf(0) => a, D(yf(x), x).subs(x, 0) => 0)),
+    "An inverse cosine, with assumptions" => () -> (xp = S.symbols("x"; positive = true); log_input!("refine(acos(cos(x))-(2*pi-x), pi<x<2*pi)"); S.refine(S.acos(cos(xp)) - (2PI - xp), S.Q.gt(xp, PI) & S.Q.lt(xp, 2PI)).subs(xp, x)),
+    "Airy" => () -> ode(S.Eq(d_sym(yf(x), x, 2), x * yf(x)), [y1 -> d_sym(y1, x, 2) - x * y1]),
+    "Bessel, order 1/2" => () -> ode(S.Eq(x^2 * d_sym(yf(x), x, 2) + x * d_sym(yf(x), x) + (x^2 - Sym(1) / 4) * yf(x), 0), [y1 -> x^2 * d_sym(y1, x, 2) + x * d_sym(y1, x) + (x^2 - Sym(1) / 4) * y1]),
+    "Riccati" => () -> ode(S.Eq(d_sym(yf(x), x), x^2 + yf(x)^2), [y1 -> d_sym(y1, x) - x^2 - y1^2]),
+    "A nonlinear autonomous equation" => () -> ode(S.Eq(yf(x) * d_sym(yf(x), x, 2), d_sym(yf(x), x)^2), [y1 -> y1 * d_sym(y1, x, 2) - d_sym(y1, x)^2]),
+    "A forced Euler-Cauchy equation" => () -> ode(S.Eq(x^2 * d_sym(yf(x), x, 2) - 3x * d_sym(yf(x), x) + 4yf(x), x^2 * log(x)), [y1 -> x^2 * d_sym(y1, x, 2) - 3x * d_sym(y1, x) + 4y1 - x^2 * log(x)]),
+    "Bernoulli" => () -> ode(S.Eq(d_sym(yf(x), x) + yf(x), x * yf(x)^3), [y1 -> d_sym(y1, x) + y1 - x * y1^3]),
+    "An exponential solution (Kovacic)" => () -> ode(S.Eq(d_sym(yf(x), x, 2), (x^2 + 1) * yf(x)), [y1 -> d_sym(y1, x, 2) - (x^2 + 1) * y1]),
+    "A forced initial-value problem" => () -> ode(S.Eq(d_sym(yf(x), x, 2) - (x^2 + 1) * yf(x), x * exp(-x^2 / 2)),
+        [y1 -> d_sym(y1, x, 2) - (x^2 + 1) * y1 - x * exp(-x^2 / 2), y1 -> y1.subs(x, 0), y1 -> d_sym(y1, x).subs(x, 0) - 1];
+        ics = Dict(yf(0) => 0, d_sym(yf(x), x).subs(x, 0) => 1)),
+    "A Riccati equation with Airy solutions" => () -> ode(S.Eq(d_sym(yf(x), x), x + yf(x)^2), [y1 -> d_sym(y1, x) - x - y1^2]),
+    "A pendulum released from rest" => () -> ode(S.Eq(d_sym(yf(x), x, 2) + sin(yf(x)), 0), [y1 -> d_sym(y1, x, 2) + sin(y1), y1 -> y1.subs(x, 0) - a, y1 -> d_sym(y1, x).subs(x, 0)]; ics = Dict(yf(0) => a, d_sym(yf(x), x).subs(x, 0) => 0)),
+    "Duffing's oscillator from rest" => () -> ode(S.Eq(d_sym(yf(x), x, 2) + yf(x) + yf(x)^3, 0), [y1 -> d_sym(y1, x, 2) + y1 + y1^3, y1 -> y1.subs(x, 0) - a, y1 -> d_sym(y1, x).subs(x, 0)]; ics = Dict(yf(0) => a, d_sym(yf(x), x).subs(x, 0) => 0)),
     "A Jordan block" => () -> vec([fl(e) for e in collect(((t * smat(Sym[1 1 0; 0 1 1; 0 0 1])).exp() * scol(Sym[1, 1, 1])).subs(t, Sym(7) / 10))]),
     "The transport equation" => () -> begin
         uf = S.Function("u")
-        sol = S.pdsolve(S.Eq(D(uf(x, y), x) + 2D(uf(x, y), y), 0), uf(x, y)).rhs
+        sol = S.pdsolve(S.Eq(d_sym(uf(x, y), x) + 2D(uf(x, y), y), 0), uf(x, y)).rhs
         # the arbitrary function chosen as F(w) = w^2, to evaluate the residual
         post = () -> begin
             Fs = S.Function("F")                      # pdsolve names the arbitrary function F
             w = S.symbols("w")
             s1 = sol.replace(Fs, S.Lambda(w, w^2))
-            [S.simplify(D(s1, x) + 2D(s1, y))]
+            [S.simplify(d_sym(s1, x) + 2D(s1, y))]
         end
         (sol, post)
     end,
@@ -207,7 +207,7 @@ const TASKS = Dict{String,Any}(
     "A center manifold" => () -> begin
         c2, c3, c4 = S.symbols("c2 c3 c4")
         h = c2 * x^2 + c3 * x^3 + c4 * x^4
-        rr = S.expand(D(h, x) * x * h + h + x^2)
+        rr = S.expand(d_sym(h, x) * x * h + h + x^2)
         h.subs(first(collect(solve([rr.coeff(x, 2), rr.coeff(x, 3), rr.coeff(x, 4)], [c2, c3, c4]; dict = true))))
     end,
     "A sum-of-squares certificate" => missing,  # no positivity proof in SymPy
@@ -222,4 +222,21 @@ const TASKS = Dict{String,Any}(
 # its elements in (-10, 10), the same list for every kk
 function EVALFAMILY(out, params, kk)
     [fl(e) for e in collect(out.intersect(S.Interval(-10, 10)))]
+end
+
+for (name, expression) in (
+    "Zero identity: nested square root" => "sqrt(3+2*sqrt(2))-1-sqrt(2)",
+    "Zero identity: nested cube root" => "(7+5*sqrt(2))**(1/3)-1-sqrt(2)",
+    "Zero identity: logarithms on positive reals" => "log(2)+log(3)-log(6)",
+    "Zero identity: exponential of a logarithm" => "exp(log(2))-2",
+    "Zero identity: sine at pi over six" => "sin(pi/6)-1/2",
+    "Nonzero control: rational residual" => "sqrt(2)**2-2+1/10**30",
+    "Nonzero control: near integer" => "exp(pi*sqrt(163))-262537412640768744",
+)
+    TASKS[name] = () -> begin
+        log_input!("sympify(" * repr(expression) * ", evaluate=False)")
+        ex = S.sympify(expression; evaluate = false)
+        log_input!("simplify(" * string(ex) * ")")
+        S.simplify(ex)
+    end
 end

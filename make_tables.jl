@@ -24,7 +24,7 @@ fmt_time(t) = !isfinite(t) ? "--" :
     t < 1 ? @sprintf("%.1f\\,ms", t * 1e3) : @sprintf("%.2f\\,s", t)
 fmt_us(t) = isfinite(t) ? @sprintf("%.1f", t * 1e6) : "--"
 
-const STATUS_MARK = Dict("verified" => "\\ok", "wrong" => "\\wrong", "unverified" => "\\unv",
+const STATUS_MARK = Dict("verified" => "\\ok", "verified_numeric" => "\\ok", "wrong" => "\\wrong", "unverified" => "\\unv",
                          "unsolved" => "\\unsolved", "unavailable" => "\\na", "error" => "\\err", "timeout" => "\\tmo")
 
 md = IOBuffer()
@@ -76,7 +76,7 @@ function per_system_table(bench, systems, texname, mdtitle; with_times = true)
                 else
                     rec = data[s][r]
                     cell = get(STATUS_MARK, rec.status, rec.status)
-                    with_times && rec.status in ("verified", "wrong", "unverified", "unsolved") &&
+                    with_times && rec.status in ("verified", "verified_numeric", "wrong", "unverified", "unsolved") &&
                         (cell *= " " * fmt_time(isfinite(rec.t_warm) ? rec.t_warm : rec.t_first))
                     push!(row, cell)
                 end
@@ -91,7 +91,7 @@ function per_system_table(bench, systems, texname, mdtitle; with_times = true)
         for s in systems
             recs = filter(r -> r.idx > 0, data[s])
             isempty(recs) && continue
-            nv = count(r -> r.status == "verified", recs)
+            nv = count(r -> r.status in ("verified", "verified_numeric"), recs)
             nw = count(r -> r.status == "wrong", recs)
             nu = count(r -> r.status in ("unsolved", "unverified"), recs)
             nn = count(r -> r.status == "unavailable", recs)

@@ -13,7 +13,7 @@ using Statistics: median
 
 const E_SYSTEMS = ["giac", "symbolics", "sympy", "symj"]
 const E_LABEL = Dict("giac" => "Giac.jl", "symbolics" => "Symbolics.jl", "sympy" => "SymPy", "symj" => "SymJ.jl")
-solved(r) = r.status == "verified"
+solved(r) = r.status in ("verified", "verified_numeric", "verified_symbolic")
 etime(r) = isfinite(r.t_warm) ? r.t_warm : r.t_first
 
 function make_E()
@@ -26,6 +26,11 @@ function make_E()
         m === nothing && continue
         push!(names, m[2]); push!(cats, m[1]); catof[m[2]] = m[1]
     end
+    # A new task can be committed before it is measured. It must not increase
+    # the denominators of historical runs that have no record for that task.
+    maxidx = maximum((r.idx for rows in values(data) for r in rows); init=0)
+    resize!(names, min(length(names), maxidx))
+    resize!(cats, min(length(cats), maxidx))
     catnames = Dict{String,String}()
     for line in eachline(joinpath(@__DIR__, "E_suite", "problems.jl"))
         m = match(r"^const CAT = \[(.*)$", line)

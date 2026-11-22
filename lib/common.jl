@@ -21,14 +21,15 @@ const ROOT = normpath(joinpath(@__DIR__, ".."))
 # ---------------------------------------------------------------------------
 
 # status vocabulary (one of these strings in the `status` column):
-#   verified     the system returned an answer and the check passed
+#   verified     historical check passed, or an exact or symbolic check passed
+#   verified_numeric  a numeric check passed
 #   wrong        the system returned an answer and the check failed
 #   unverified   an answer was returned but could not be evaluated numerically
 #   unsolved     the system returned the problem unevaluated / incomplete
 #   unavailable  the operation does not exist in this system
 #   error        the call raised an exception (message in `note`)
 #   timeout      the case exceeded the per-case time limit (killed by supervise.jl)
-const STATUSES = ("verified", "wrong", "unverified", "unsolved", "unavailable", "error", "timeout")
+const STATUSES = ("verified", "verified_numeric", "wrong", "unverified", "unsolved", "unavailable", "error", "timeout")
 
 struct Record
     bench::String

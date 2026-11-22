@@ -125,11 +125,11 @@ const TASKS = Dict{String,Any}(
     "The cyclic-6 system" => missing,
     "Implicitization" => whenop(resultant, () -> resultant(x - t^2 + 1, y - t^3 + t, t)),
     "Polynomial decomposition" => missing,
-    "Denesting" => () -> simplify(sqrt(5 + 2sqrt(Sym(6)))),
-    "Ramanujan's denesting" => () -> simplify((Sym(2)^(Sym(1) / 3) - 1)^(Sym(1) / 3)),
-    "A heptagon sum" => () -> simplify(cos(2Sym(π) / 7) + cos(4Sym(π) / 7) + cos(6Sym(π) / 7)),
+    "Denesting" => () -> (log_input!("simplify(sqrt(5+2*sqrt(Sym(6)))-sqrt(Sym(2))-sqrt(Sym(3)))"); simplify(sqrt(5 + 2sqrt(Sym(6))) - sqrt(Sym(2)) - sqrt(Sym(3)))),
+    "Ramanujan's denesting" => () -> (log_input!("simplify((Sym(2)^(Sym(1)/3)-1)^(Sym(1)/3)-(Sym(1)/9)^(Sym(1)/3)+(Sym(2)/9)^(Sym(1)/3)-(Sym(4)/9)^(Sym(1)/3))"); simplify((Sym(2)^(Sym(1) / 3) - 1)^(Sym(1) / 3) - (Sym(1)/9)^(Sym(1)/3) + (Sym(2)/9)^(Sym(1)/3) - (Sym(4)/9)^(Sym(1)/3))),
+    "A heptagon sum" => () -> (log_input!("simplify(cos(2*Sym(pi)/7)+cos(4*Sym(pi)/7)+cos(6*Sym(pi)/7)+Sym(1)/2)"); simplify(cos(2Sym(π) / 7) + cos(4Sym(π) / 7) + cos(6Sym(π) / 7) + Sym(1)/2)),
     "A minimal polynomial" => whenop(minpoly, () -> minpoly(sqrt(Sym(2)) + sqrt(Sym(3)) + sqrt(Sym(5)), x)),
-    "A trigonometric identity" => () -> simplify(sin(3x) / sin(x) - cos(3x) / cos(x)),
+    "A trigonometric identity" => () -> (log_input!("simplify(sin(3*x)/sin(x)-cos(3*x)/cos(x)-2)"); simplify(sin(3x) / sin(x) - cos(3x) / cos(x) - 2)),
     "Gauss's 17-gon" => missing, "An inverse cosine, with assumptions" => missing,
     "Airy" => whenop(dsolve, () -> ode(diff(yy(x), x, x) ~ x * yy(x), [y1 -> diff(y1, x, x) - x * y1])),
     "Bessel, order 1/2" => whenop(dsolve, () -> ode(x^2 * diff(yy(x), x, x) + x * diff(yy(x), x) + (x^2 - Sym(1) / 4) * yy(x) ~ 0, [y1 -> x^2 * diff(y1, x, x) + x * diff(y1, x) + (x^2 - Sym(1) / 4) * y1])),
@@ -191,3 +191,32 @@ const TASKS = Dict{String,Any}(
     "Jacobian: Brusselator N=10 (evaluate 1000 points)" => whenop(jac, () -> jacobian_eval(10)),
     "Jacobian: Brusselator N=50 (evaluate 1000 points)" => whenop(jac, () -> jacobian_eval(50)),
 )
+
+# Build each expression with symbolic rational constants, then log the actual
+# expression passed to simplify (and not a decimal approximation).
+const ZERO_CASE_INPUTS = Dict(
+    "Zero identity: nested square root" => "sqrt(3 + 2sqrt(Sym(2))) - 1 - sqrt(Sym(2))",
+    "Zero identity: nested cube root" => "(7 + 5sqrt(Sym(2)))^(Sym(1)/3) - 1 - sqrt(Sym(2))",
+    "Zero identity: logarithms on positive reals" => "log(Sym(2)) + log(Sym(3)) - log(Sym(6))",
+    "Zero identity: exponential of a logarithm" => "exp(log(Sym(2))) - 2",
+    "Zero identity: sine at pi over six" => "sin(Sym(π)/6) - Sym(1)/2",
+    "Nonzero control: rational residual" => "sqrt(Sym(2))^2 - 2 + Sym(1)/Sym(big(10)^30)",
+    "Nonzero control: near integer" => "exp(Sym(π)*sqrt(Sym(163))) - Sym(262537412640768744)",
+)
+
+for (name, build) in (
+    "Zero identity: nested square root" => (() -> sqrt(3 + 2sqrt(Sym(2))) - 1 - sqrt(Sym(2))),
+    "Zero identity: nested cube root" => (() -> (7 + 5sqrt(Sym(2)))^(Sym(1)/3) - 1 - sqrt(Sym(2))),
+    "Zero identity: logarithms on positive reals" => (() -> log(Sym(2)) + log(Sym(3)) - log(Sym(6))),
+    "Zero identity: exponential of a logarithm" => (() -> exp(log(Sym(2))) - 2),
+    "Zero identity: sine at pi over six" => (() -> sin(Sym(π)/6) - Sym(1)/2),
+    "Nonzero control: rational residual" => (() -> sqrt(Sym(2))^2 - 2 + Sym(1)/Sym(big(10)^30)),
+    "Nonzero control: near integer" => (() -> exp(Sym(π)*sqrt(Sym(163))) - Sym(262537412640768744)),
+)
+    TASKS[name] = () -> begin
+        log_input!(ZERO_CASE_INPUTS[name])
+        ex = build()
+        log_input!("simplify(" * string(ex) * ")")
+        simplify(ex)
+    end
+end
