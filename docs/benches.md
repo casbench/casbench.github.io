@@ -122,18 +122,21 @@ from the base tier. A timeout is an observation at that case's budget.
 Singular.jl does not precompile on Julia 1.13 at the pinned versions and is
 not included.
 
-**J, rational univariate representations** (`J_rur/`; Giac.jl and msolve through
-AlgebraicSolving.jl). It reuses the fixed katsura5, cyclic5, eco7 and noon5
-systems from G. The operation computes a rational parametrization and isolates
-real solutions (msolve: 256-bit requested precision; Giac: intervals refined to 10^-80, evaluated to 100 decimal digits). In plain Julia, the checker
+**J, rational univariate representations** (`J_rur/`; Giac.jl, msolve through
+AlgebraicSolving.jl and Singular through SageMath). It reuses the fixed
+katsura5, cyclic5, eco7 and noon5 systems from G. The operation computes a
+rational parametrization and isolates real solutions: msolve and Sage/Singular
+request 256-bit precision; Giac refines intervals to 10^-80 and evaluates
+them to 100 decimal digits. In plain Julia, the checker
 substitutes every reported real solution at 256-bit precision, checks the
 lifting coordinates, and checks the substituted input polynomials modulo the
 elimination polynomial with exact rational arithmetic, including deterministic
 pseudorandom evaluations of the polynomial identity. A singular denominator,
 unsupported separating form, or absence of reported real solutions is
-`unverified`. The adapter does not isolate complex roots; these checks do not
+`unverified`. The adapters do not isolate complex roots; these checks do not
 prove completeness of the reported real solutions or equality of ideals.
-Sage/Singular currently reports `unavailable` for this operation.
+The Sage/Singular adapter requires the last input variable to be separating;
+otherwise it reports `unsolved` rather than attempting a change of variables.
 
 **I, throughput at scale** (`I_scale/`; Giac.jl, Symbolics.jl, SymEngine.jl,
 SymJ.jl, SymPy). Where B and E time small expressions, this bench asks how

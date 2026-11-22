@@ -180,7 +180,28 @@ function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
     SageBasis(gs, t === nothing ? NaN : parse(Float64, t))
 end
 
+function RUR(polys::Vector{String}, vars::Vector{String})
+    SAGE_ALGORITHM == "singular" || error("unsupported operation: no RUR for this Sage engine")
+    script = "INPUT_POLYS = " * repr(polys) * "\nINPUT_VARS = " * repr(vars) * "\n" *
+             read(joinpath(@__DIR__, "sage_rur.py"), String)
+    txt = run_sage(script)
+    msg = marker(txt, "<<ANS>>")
+    msg === nothing || error(msg)
+    parseq(s) = begin
+        parts = split(strip(s), '/'; limit=2)
+        parse(BigInt, parts[1]) // (length(parts) == 2 ? parse(BigInt, parts[2]) : big(1))
+    end
+    list(s) = isempty(strip(s)) ? Rational{BigInt}[0] : parseq.(split(s, ','))
+    elim, denom, elapsed = marker(txt, "<<ELIM>>"), marker(txt, "<<DEN>>"), marker(txt, "<<TIME>>")
+    (elim === nothing || denom === nothing || elapsed === nothing) && error("sage gave no RUR")
+    params = [list(m[1]) for m in eachmatch(r"<<PAR>>[ \t]*([^\r\n]*)", txt)]
+    solutions = [list(m[1]) for m in eachmatch(r"<<SOL>>[ \t]*([^\r\n]*)", txt)]
+    (vars=vars, linear_form=String[], parameter_index=length(vars), elim=list(elim), denom=list(denom),
+     param=params, solutions=solutions, elapsed=parse(Float64, elapsed))
+end
+
 const OPS = Dict{Symbol,Any}(:integrate_text => INTEGRATE_TEXT, :groebner => GROEBNER)
+SAGE_ALGORITHM == "singular" && (OPS[:rur] = RUR)
 EVAL(ex, vals) = ex isa SageAnswer ? get(ex.values, ComplexF64(vals[:x]), nothing) : (ex isa Number ? ex : nothing)
 NTERMS(ex) = 1
 NFACTORS(ex) = 1

@@ -21,7 +21,7 @@ network access for `Pkg.instantiate`.
 Every bench/system pair runs in its own Julia process with one thread, from
 its own environment under `envs/`, under `lib/supervise.jl`, which enforces a
 per-case time limit (`BENCH_TIMEOUT_<bench>`, read by `run_all.jl`; defaults B 120 s, C 600 s, D 120 s, E 60 s,
-F 30 s, G 300 s, H 30 s, I 300 s) and restarts the
+F 30 s, G and J 300 s, H 30 s, I 300 s; J uses `BENCH_TIMEOUT_G`) and restarts the
 worker at the next case after a timeout or a crash. Choose a new `BENCH_HOST` for a new run: existing result files are never
 replaced. `BENCH_RESUME=1` can resume a file only when its header matches the
 current format; a legacy file must remain untouched. Results are appended to
@@ -97,7 +97,8 @@ exact polynomial divisibility of the rational lifting map by the elimination
 polynomial, with seeded pseudorandom evaluations of the identity. The current
 adapters isolate real roots only; the checker neither isolates
 complex roots nor proves the real list complete. Unsupported separating
-forms and results without real roots are unverified. See the J description in
+forms and results without real roots are unverified; Sage/Singular reports
+non-shape-position systems as unsolved. See the J description in
 [Benches](benches.md) for the cases and implementation limits.
 
 ## Integration verification
