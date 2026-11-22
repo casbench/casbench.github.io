@@ -20,11 +20,11 @@ end
 const REPEATS = 1                      # one process per case
 Base.string(a::FricasAnswer) = a.text
 
-function check_points(integrand)
+function check_points(integrand, params)
     h = 1e-5
     xs = ComplexF64[x0 + s*h for x0 in Main.FPOINTS for s in (-1, 0, 1)]
-    if Main.entire_integrand(integrand)
-        append!(xs, (Main.FCOMPLEX_POINT - h, Main.FCOMPLEX_POINT + h))
+    if Main.complex_sample_enabled(integrand, params)
+        append!(xs, (Main.FCOMPLEX_POINT - h, Main.FCOMPLEX_POINT + h, Main.FCOMPLEX_POINT - im*h, Main.FCOMPLEX_POINT + im*h))
     end
     xs
 end
@@ -59,7 +59,7 @@ end
 
 function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     f = Mapleish.translate(integrand, :fricas)
-    xs = check_points(integrand)
+    xs = check_points(integrand, params)
     lines = [")set message autoload off", ")set message type off", ")set output algebra off", ")set output length 245", ")set break resume",
              "f := $f", "resf := integrate(f, $var)",
              "output(concat(\"<<ANS>>\", unparse(resf::InputForm)))",

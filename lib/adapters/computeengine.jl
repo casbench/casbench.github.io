@@ -130,8 +130,9 @@ function points_json(params, integrand)
     for x0 in Main.FPOINTS, s in (-1, 0, 1)
         push!(CHECK_XS, x0 + s * 1e-5)
     end
-    if Main.entire_integrand(integrand)
-        append!(CHECK_XS, (Main.FCOMPLEX_POINT - 1e-5, Main.FCOMPLEX_POINT + 1e-5))
+    if Main.complex_sample_enabled(integrand, params)
+        append!(CHECK_XS, (Main.FCOMPLEX_POINT - 1e-5, Main.FCOMPLEX_POINT + 1e-5,
+                           Main.FCOMPLEX_POINT - im*1e-5, Main.FCOMPLEX_POINT + im*1e-5))
     end
     value(z) = iszero(imag(z)) ? string(real(z)) : "[\"Complex\",$(real(z)),$(imag(z))]"
     "[" * join(["{" * join(["\"$k\": $v" for (k, v) in params] ∪ ["\"x\": $(value(xv))"], ", ") * "}" for xv in CHECK_XS], ", ") * "]"

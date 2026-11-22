@@ -36,6 +36,79 @@ function entire_integrand(source::AbstractString)
 end
 const FCOMPLEX_POINT = 0.57 + 0.125im
 
+# Screen local analyticity for a deliberately limited expression grammar at
+# the requested sample, after substituting the case's fixed parameters.
+# Unknown functions, poles and principal branch cuts fail closed. A finite
+# nonzero denominator and a non-cut branch argument have an open analytic
+# neighbourhood; Float64 screening at the finite-difference stencil adds a
+# practical margin but is not a rigorous branch certificate.
+function analytic_complex_sample(source::AbstractString, params::AbstractDict = FPARAMS;
+                                 point::Complex = FCOMPLEX_POINT)
+    tree = try Mapleish.julia_expr(source) catch; return false end
+    depends_on_x(ex) = ex === :x || (ex isa Expr && any(depends_on_x, ex.args))
+    nonzero(z) = isfinite(abs(z)) && abs(z) > 1e-10
+    offcut(z) = nonzero(z) && (real(z) > 0 || abs(imag(z)) > 1e-8 * max(1, abs(z)))
+    function evaluate(ex, z)
+        ex isa Number && return ComplexF64(ex)
+        if ex isa Symbol
+            ex === :x && return ComplexF64(z)
+            ex === :pi && return ComplexF64(pi)
+            ex === :im && return ComplexF64(im)
+            haskey(params, ex) || error("unbound symbol")
+            return ComplexF64(params[ex])
+        end
+        ex isa Expr && ex.head === :call || error("unsupported syntax")
+        op, args = ex.args[1], ex.args[2:end]
+        v = [evaluate(a, z) for a in args]
+        value = if op === :+
+            sum(v; init=0.0+0.0im)
+        elseif op === :- && length(v) == 1
+            -v[1]
+        elseif op === :- && length(v) == 2
+            v[1] - v[2]
+        elseif op === :*
+            prod(v; init=1.0+0.0im)
+        elseif op === :/ && length(v) == 2
+            nonzero(v[2]) || error("possible pole")
+            v[1] / v[2]
+        elseif op === :^ && length(v) == 2
+            integer_power = !depends_on_x(args[2]) && iszero(imag(v[2])) && isinteger(real(v[2]))
+            if integer_power
+                real(v[2]) >= 0 || nonzero(v[1]) || error("possible pole")
+            else
+                offcut(v[1]) || error("possible power branch cut")
+            end
+            integer_power ? v[1]^Int(real(v[2])) : v[1]^v[2]
+        elseif op in (:sin, :cos, :sinh, :cosh, :exp) && length(v) == 1
+            getfield(Base, op)(v[1])
+        elseif op in (:tan, :tanh) && length(v) == 1
+            denominator = op === :tan ? cos(v[1]) : cosh(v[1])
+            nonzero(denominator) || error("possible pole")
+            getfield(Base, op)(v[1])
+        elseif op in (:log, :sqrt) && length(v) == 1
+            offcut(v[1]) || error("possible principal branch cut")
+            getfield(Base, op)(v[1])
+        else
+            error("unsupported analytic operation")
+        end
+        isfinite(abs(value)) || error("non-finite value")
+        value
+    end
+    h = 1e-5
+    try
+        all(z -> (evaluate(tree, z); true), (point-h, point, point+h, point-im*h, point+im*h))
+    catch
+        false
+    end
+end
+
+# The worker computes this flag before starting the measured operation.
+# Direct adapter tests can derive it from the same inputs when unset.
+function complex_sample_enabled(source, params)
+    selected = BenchCommon.COMPLEX_SAMPLE_ENABLED[]
+    selected === nothing ? analytic_complex_sample(source, params) : selected
+end
+
 unevaluated(out) = (s = string(out); occursin(r"integrate\(|Integral\(|∫|Integral\b|integral\(", s))
 
 """
@@ -51,7 +124,9 @@ function check_integral(out, integrand::String, reference::String; params::Dict{
                         certified = nothing, real_points = FPOINTS, complex_point = nothing)
     s = string(out)
     leaves = leaf_count(s); ref = leaf_count(reference)
-    grade_note(st) = isempty(reference) ? "leaves=$leaves" : (g = st == :verified ? (leaves <= 2ref ? "A" : "B") : "F"; "grade=$g leaves=$leaves ref=$ref")
+    grade_note(st) = isempty(reference) ? "leaves=$leaves" :
+        (g = st == :verified ? (leaves <= 2ref ? "A" : "B") : st == :wrong ? "F" : "ungraded";
+         "grade=$g leaves=$leaves ref=$ref")
     if occursin("Unintegrable", reference) || occursin("CannotIntegrate", reference)
         return unevaluated(s) ? (:unsolved, "reference has no closed form; returned unevaluated, as the reference; " * grade_note(:unsolved)) :
                                 (:unverified, "reference has no closed form but an answer was returned; not checked; leaves=$leaves")
@@ -91,24 +166,7 @@ function check_integral(out, integrand::String, reference::String; params::Dict{
         F0 === nothing || push!(Fvals, (x0, ComplexF64(F0)))
     end
     npts >= 4 || return (:unverified, "fewer than four real points could be evaluated; leaves=$leaves ref=$ref; samples=" * join(samples, ","))
-    note = grade_note(:verified) * "; Float64 x:Fprime/f=" * join(samples, ",")
-    if complex_point !== nothing
-        z = ComplexF64(complex_point)
-        pt = Dict{Symbol,Number}(k => v for (k, v) in params); pt[:x] = z
-        ptp = copy(pt); ptp[:x] = z + h
-        ptm = copy(pt); ptm[:x] = z - h
-        fz = try fev(pt) catch; nothing end
-        fp = try EVAL(out, ptp) catch; nothing end
-        fm = try EVAL(out, ptm) catch; nothing end
-        (fz === nothing || fp === nothing || fm === nothing) &&
-            return (:unverified, note * "; complex point $z not evaluable")
-        dz = (fp - fm) / (2h)
-        (isfinite(abs(fz)) && isfinite(abs(dz))) || return (:unverified, note * "; complex point $z non-finite")
-        tol = 2e-4 * max(abs(fz), 1.0) + 1e-7
-        abs(dz - fz) <= tol || return (:wrong, note * "; complex mismatch at $z: F'=$dz f=$fz")
-        short(v) = string(round(real(v); sigdigits=5), "+", round(imag(v); sigdigits=5), "im")
-        note *= "; complex x=$z Fprime=$(short(dz)) f=$(short(fz))"
-    end
+    note = grade_note(:unverified) * "; Float64 x:Fprime/f=" * join(samples, ",")
     if cev !== nothing && length(Fvals) >= 2
         agree = true
         x1, F1 = Fvals[1]
@@ -127,5 +185,31 @@ function check_integral(out, integrand::String, reference::String; params::Dict{
             note = (agree ? "certified: agree; " : "certified: differ; ") * note
         end
     end
+    if complex_point !== nothing
+        z = ComplexF64(complex_point)
+        pt = Dict{Symbol,Number}(k => v for (k, v) in params); pt[:x] = z
+        ptp = copy(pt); ptp[:x] = z + h
+        ptm = copy(pt); ptm[:x] = z - h
+        fz = try fev(pt) catch; nothing end
+        fp = try EVAL(out, ptp) catch; nothing end
+        fm = try EVAL(out, ptm) catch; nothing end
+        pti_p = copy(pt); pti_p[:x] = z + im*h
+        pti_m = copy(pt); pti_m[:x] = z - im*h
+        fi_p = try EVAL(out, pti_p) catch; nothing end
+        fi_m = try EVAL(out, pti_m) catch; nothing end
+        (fz === nothing || fp === nothing || fm === nothing || fi_p === nothing || fi_m === nothing) &&
+            return (:unverified, note * "; complex point $z not evaluable")
+        dz = (fp - fm) / (2h)
+        dzi = (fi_p - fi_m) / (2im*h)
+        (isfinite(abs(fz)) && isfinite(abs(dz)) && isfinite(abs(dzi))) || return (:unverified, note * "; complex point $z non-finite")
+        tol = 2e-4 * max(abs(fz), 1.0) + 1e-7
+        cr_tol = 2e-4 * max(abs(dz), abs(dzi), 1.0) + 1e-7
+        abs(dz - dzi) <= cr_tol || return (:unverified, note * "; non-holomorphic or branch-discontinuous answer at $z: real-direction=$dz imaginary-direction=$dzi")
+        abs(dz - fz) <= tol || return (:wrong, replace(note, grade_note(:unverified) => grade_note(:wrong); count=1) *
+                                      "; complex mismatch at $z: F'=$dz f=$fz")
+        short(v) = string(round(real(v); sigdigits=5), imag(v) < 0 ? "" : "+", round(imag(v); sigdigits=5), "im")
+        note *= "; complex x=$z Fprime=$(short(dz)) f=$(short(fz))"
+    end
+    note = replace(note, grade_note(:unverified) => grade_note(:verified); count=1)
     (:verified_numeric, note)
 end

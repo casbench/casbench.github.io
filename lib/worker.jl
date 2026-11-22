@@ -34,6 +34,7 @@ START == 1 && append_record(OUT, Record(BENCH, SYSTEM, 0, "_load", "using", "ver
 const STOP = parse(Int, get(ENV, "BENCH_STOP", string(length(PROBLEMS))))   # last problem index to run (single-problem reruns)
 for i in START:STOP
     prob = PROBLEMS[i]
+    BenchCommon.COMPLEX_SAMPLE_ENABLED[] = hasproperty(prob, :complex_point) ? prob.complex_point !== nothing : nothing
     op_label = BENCH == "G_groebner" && hasproperty(prob, :budget) ? "groebner_hard" : string(prob.op)
     write(PROGRESS, string(i, '\t', prob.name))
     opf = get(OPS, prob.op, missing)

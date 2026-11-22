@@ -23,11 +23,11 @@ const REPEATS = 1                      # one process per case; the warm time is 
 Base.string(a::MaximaAnswer) = a.text
 
 # points of the check (FPOINTS, FPARAMS and h of F_integration/problems.jl, read at call time)
-function check_points(integrand)
+function check_points(integrand, params)
     h = 1e-5
     xs = ComplexF64[x0 + s*h for x0 in Main.FPOINTS for s in (-1, 0, 1)]
-    if Main.entire_integrand(integrand)
-        append!(xs, (Main.FCOMPLEX_POINT - h, Main.FCOMPLEX_POINT + h))
+    if Main.complex_sample_enabled(integrand, params)
+        append!(xs, (Main.FCOMPLEX_POINT - h, Main.FCOMPLEX_POINT + h, Main.FCOMPLEX_POINT - im*h, Main.FCOMPLEX_POINT + im*h))
     end
     xs
 end
@@ -59,7 +59,7 @@ end
 
 function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     f = Mapleish.translate(integrand, :maxima)
-    xs = check_points(integrand)
+    xs = check_points(integrand, params)
     # the batch echoes its input: the markers are assembled by concat so that they only occur in the output
     plist = param_list(integrand, params)
     # the sign of each parameter is assumed as its fixed value has it (a > 0, or m < 0 for a negative candidate value)

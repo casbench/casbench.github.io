@@ -75,6 +75,7 @@ const HEADER = "bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresul
 # A subprocess adapter can announce its answer before it starts numeric
 # evaluations. The worker uses this boundary to protect a completed answer
 # if the later checking phase is interrupted.
+const COMPLEX_SAMPLE_ENABLED = Ref{Union{Nothing,Bool}}(nothing)
 const ANSWER_CALLBACK = Ref{Any}(nothing)
 const TIME_CALL_START = Ref{UInt64}(0)
 notify_answer(text, stamp) = ANSWER_CALLBACK[] === nothing ? nothing : ANSWER_CALLBACK[](String(text), stamp)

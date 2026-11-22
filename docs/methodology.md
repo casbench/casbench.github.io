@@ -107,10 +107,21 @@ For F and H, six fixed real candidate points in (0, 1) are evaluated at
 Float64 precision. The central difference uses `h = 1e-5`; the integrand must
 be finite and real at the point and both neighboring points, and at least
 four points must be usable. The tolerance is `2e-4 * max(abs(f), 1) + 1e-7`.
-For integrands recognised as entire by the conservative syntax check, the
-same comparison includes `0.57 + 0.125im`. Other integrands may also be
-analytic there; the syntax check does not establish that. Samples and domain
-checks cannot prove a global identity or settle branches. H also compares
+The same comparison includes `0.57 + 0.125im` when a conservative local
+analyticity screen accepts the integrand with the case's fixed parameters.
+It handles arithmetic, integer and principal powers, elementary entire
+functions, tangent, hyperbolic tangent, logarithm and square root. At the
+sample and its four real- and imaginary-direction neighbours it checks denominators and
+branch arguments in Float64, rejecting poles, points near the principal
+negative-real cut, non-finite values and unsupported operations. This is not
+a rigorous branch certificate; it omits other locally analytic functions.
+The chosen point, or its omission, is recorded in the task. At an accepted
+complex point, the answer is differentiated in both the real and imaginary
+directions. They must agree within `2e-4 * max(abs(d_real), abs(d_imag), 1) + 1e-7`.
+If they disagree, the answer is `unverified`: a real-domain expression such as `log(abs(x))` can pass the real check without
+being holomorphic. Only a mutually consistent complex derivative that differs
+from the integrand is marked `wrong`. Samples and domain checks cannot prove a
+global identity or settle branches. H also compares
 eligible Lean-certified antiderivatives up to a constant at sampled points.
 Numeric evaluation has a separate 60-second supervisor budget, configurable
 with `BENCH_NUMERIC_VERIFY_TIMEOUT`. If it is interrupted after an external

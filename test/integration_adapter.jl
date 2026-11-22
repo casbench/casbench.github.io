@@ -21,4 +21,14 @@ include(joinpath(@__DIR__, "..", "lib", "verify_expr.jl"))
     @test VERIFY_INTEGRAL(answer, "x^2", "x") == "0"
     @test VERIFY_INTEGRAL("(1/6)*x^2", "x/3", "x") == "0"
     @test occursin(system in ("fricas", "sage_fricas") ? "d(" : "diff", lowercase(VERIFY_INTEGRAL_COMMAND(answer, "x^2", "x")))
+    # 1/x is analytic at the complex sample despite having a pole at zero.
+    rational = INTEGRATE_TEXT("1/x", "x", FPARAMS)
+    st, rational_note = check_integral(rational, "1/x", ""; complex_point=FCOMPLEX_POINT)
+    if occursin("abs(", lowercase(string(rational)))
+        @test st == :unverified
+        @test occursin("non-holomorphic", rational_note)
+    else
+        @test st == :verified_numeric
+        @test occursin("complex x=", rational_note)
+    end
 end

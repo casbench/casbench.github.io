@@ -42,11 +42,11 @@ Base.length(b::SageBasis) = length(b.polys)
 Base.iterate(b::SageBasis, st...) = iterate(b.polys, st...)
 Base.isempty(b::SageBasis) = isempty(b.polys)
 
-function check_points(integrand)
+function check_points(integrand, params)
     h = 1e-5
     xs = ComplexF64[x0 + s*h for x0 in Main.FPOINTS for s in (-1, 0, 1)]
-    if Main.entire_integrand(integrand)
-        append!(xs, (Main.FCOMPLEX_POINT - h, Main.FCOMPLEX_POINT + h))
+    if Main.complex_sample_enabled(integrand, params)
+        append!(xs, (Main.FCOMPLEX_POINT - h, Main.FCOMPLEX_POINT + h, Main.FCOMPLEX_POINT - im*h, Main.FCOMPLEX_POINT + im*h))
     end
     xs
 end
@@ -139,7 +139,7 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
              "    print('<<' + 'TIME>>', walltime() - t0)",
              "    raise SystemExit(0)",
              "print('<<' + 'ANS>>', str(F))", "print('<<' + 'TIME>>', t1 - t0)"]
-    xs = check_points(integrand)
+    xs = check_points(integrand, params)
     for (i, xv) in enumerate(xs)
         point = sage_point(xv)
         push!(lines, "try:\n    v = CC(F.subs({$var: $point" * (isempty(pt) ? "" : ", " * pt) * "}))\n    print('<<' + 'V$i>>', str(v))\nexcept Exception as ex:\n    print('<<' + 'V$i>>', 'fail')")

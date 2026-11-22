@@ -67,16 +67,17 @@ let skipped = 0
         end
         params = merge(Dict{Symbol,Float64}(FPARAMS), vals)        # every parameter symbol has a value; the rule's own first
         certified = r.real == "proved" ? r.result : nothing
+        sample = analytic_complex_sample(r.integrand, params) ? FCOMPLEX_POINT : nothing
         push!(PROBLEMS, (name = r.id * " " * first(r.integrand, 70), op = :integrate_text,
                          args = V -> (r.integrand, "x", params),
                          real_points = FPOINTS,
-                         complex_point = entire_integrand(r.integrand) ? FCOMPLEX_POINT : nothing,
+                         complex_point = sample,
                          check = o -> check_integral(o, r.integrand, ""; params = params, certified = certified,
                                                      real_points = FPOINTS,
-                                                     complex_point = entire_integrand(r.integrand) ? FCOMPLEX_POINT : nothing),
+                                                     complex_point = sample),
                          note = "int " * first(r.integrand, 100) * " dx; R: " * r.real * ", C: " * r.complex * "; " *
                                 join(["$k=$(v)" for (k, v) in sort!(collect(vals); by = kv -> string(kv[1]))], " ") *
-                                "; " * r.legacy * (entire_integrand(r.integrand) ? "; complex sample $(FCOMPLEX_POINT) (entire syntax)" : "; no complex analyticity asserted"),
+                                "; " * r.legacy * (sample === nothing ? "; no complex analyticity asserted" : "; complex sample $sample (local syntax, poles and principal cuts screened at stencil)"),
                          accept_unsolved = false))
     end
     @info "bench H: $(length(PROBLEMS)) rules with admissible values, $skipped without"

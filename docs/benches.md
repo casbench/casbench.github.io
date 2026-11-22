@@ -91,8 +91,11 @@ Maple-like text of the files is translated to each system's syntax by
 the answer, by a central finite difference of the system's own numeric
 evaluation of its answer, against the integrand evaluated in Julia (complex
 arithmetic, SpecialFunctions) at six candidate real points. At least four
-must be usable. A complex point is also checked for integrands recognised as
-entire by the conservative syntax check. The separate symbolic phase asks the
+must be usable. A complex point is also checked when a conservative local screen accepts
+the integrand after checking supported operations, poles and principal branch
+cuts at the finite-difference stencil. If the answer's real- and
+imaginary-direction differences disagree, it is unverified, since a
+real-domain antiderivative need not be holomorphic. The separate symbolic phase asks the
 answering system to simplify the derivative residual to zero. The note carries
 sampled numeric values and leaf counts; the per-case answer limit is 30 s.
 For historical runs the method and status meanings differ; see Methodology.
