@@ -49,6 +49,11 @@ jobs:
           julia --startup-file=no --project=envs/subprocess test/integration_numeric.jl
           julia --startup-file=no --project=envs/subprocess test/integration_task_interface.jl F_integration
           julia --startup-file=no --project=envs/subprocess test/integration_task_interface.jl H_osr
+      - name: Supervised Giac smoke run
+        run: |
+          git submodule update --init Giac.jl
+          julia --startup-file=no --project=envs/giac -e 'using Pkg; Pkg.instantiate()'
+          julia --startup-file=no test/harness_smoke.jl
       - name: Site and history tests
         run: |
           python3 -I tools/site/test_sitegen.py

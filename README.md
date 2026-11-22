@@ -12,10 +12,11 @@ FriCAS, SageMath, Macaulay2 and the JavaScript Compute Engine (MathJSON)
 driven as processes from the same harness.
 Fixed inputs stored in the repository, one adapter per system, every answer
 checked by a system-neutral test, every run dated with its environment
-pinned. Nine benches: FFI overhead, CAS operations, integer factorisation,
-functional coverage, a problem suite, a sample of the 12000.org
-integration tests, Gröbner bases, the integration rules of
-OpenSymbolicRules, and throughput at scale.
+pinned. The nine benches with committed results cover FFI overhead, CAS
+operations, integer factorisation, functional coverage, a problem suite, a
+sample of the 12000.org integration tests, Gröbner bases, the integration
+rules of OpenSymbolicRules, and throughput at scale. Bench J adds rational
+univariate representations; no run for it is committed yet.
 
 **Results, per case and per system: https://s-celles.github.io/computer-algebra-system-benchmarks/**
 
@@ -37,7 +38,8 @@ OpenSymbolicRules, and throughput at scale.
 > one of the systems compared, and wrote LibPARI.jl and OpenSymbolicRules:
 > the Julia packages, not the engines), and their use of AI assistants (the
 > harness, adapters, task files, checks, site and documentation were written
-> with an AI assistant, every change reviewed by the author; the measurements come
+> with an AI assistant; earlier changes were reviewed by the contributor and
+> the current reorientation awaits contributor review. Measurements come
 > from the scripts). Rendered with the relation to every system:
 > https://s-celles.github.io/computer-algebra-system-benchmarks/disclosures/
 > See [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -47,7 +49,7 @@ They are the reproduced numbers of the JuliaCon Proceedings paper on Giac.jl
 submodule.
 
 ```
-A_ffi/ ... H_osr/   the benches (inputs, problems, task files)      docs/benches.md      what each measures
+A_ffi/ ... J_rur/   the benches (inputs, problems, task files)      docs/benches.md      what each measures
 lib/                harness, adapters, checks                          docs/methodology.md  how a run is made
 envs/               one pinned Julia environment per system            results/<host>/      runs, machine; history and REFERENCE
 tables/ figures/    generated for the paper                            site/ tools/site/    the project site
@@ -67,8 +69,9 @@ with `sympy` (`JULIA_PYTHONCALL_EXE`, `JULIA_CONDAPKG_BACKEND=Null`) and the
 CAS binaries on `PATH`. Details, time limits, the status vocabulary and the
 adapters: [docs/methodology.md](docs/methodology.md).
 
-Written with an AI assistant, checked and run by the author; the paper and
-`CITATION.cff` say how to cite.
+Written with AI assistance. The reorientation changes await contributor review;
+see [Disclosures](docs/disclosures.tsv). The paper and `CITATION.cff` say how
+to cite.
 
 ## Licence
 
@@ -83,7 +86,7 @@ Written with an AI assistant, checked and run by the author; the paper and
   are quoted from the 12000.org test files (themselves from the Rubi test
   suite, MIT, and the collections they cite), with the file and line of each;
   `H_osr/rules.tsv` derives from OpenSymbolicRules (MIT); the polynomial
-  systems of bench G are the classical ones of the literature (Katsura,
+  systems of benches G and J are the classical ones of the literature (Katsura,
   cyclic-n, eco, noon, Henrion, Chandrasekhar), whose strings were generated
   once with the `Examples` module of Groebner.jl (GPL-2.0; the strings are
   the systems themselves, not that code); the fork notebook of bench E is
