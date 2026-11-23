@@ -69,6 +69,11 @@ with `sympy` (`JULIA_PYTHONCALL_EXE`, `JULIA_CONDAPKG_BACKEND=Null`) and the
 CAS binaries on `PATH`. Details, time limits, the status vocabulary and the
 adapters: [docs/methodology.md](docs/methodology.md).
 
+For a running Linux campaign, the optional read-only observer and local
+dashboard are documented in [docs/observability.md](docs/observability.md).
+Notes on the GrobX Gröbner benchmarks and a possible adapter are in
+[docs/grobx-review.md](docs/grobx-review.md).
+
 Written with AI assistance. The reorientation changes await contributor review;
 see [Disclosures](docs/disclosures.tsv). The paper and `CITATION.cff` say how
 to cite.

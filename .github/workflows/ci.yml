@@ -59,3 +59,4 @@ jobs:
         run: |
           python3 -I tools/site/test_sitegen.py
           python3 -I tools/test_history_backfill.py
+          python3 -I tools/observability/test_observe.py
