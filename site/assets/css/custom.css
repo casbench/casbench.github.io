@@ -1,3 +1,4 @@
+:root { --hextra-max-content-width: 100%; }
 .content table { font-size: .84rem; }
 .content th { text-align: left; }
 .content td { vertical-align: top; }

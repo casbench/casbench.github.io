@@ -59,6 +59,7 @@ params:
     icon: brand/casbench-mark.svg
   navbar:
     displayTitle: true
+    width: full
   theme:
     default: system
     displayToggle: true
@@ -69,7 +70,8 @@ params:
       index: content
       tokenize: forward
   page:
-    width: wide
+    width: full
   footer:
+    width: full
     displayCopyright: false
     displayPoweredBy: false
