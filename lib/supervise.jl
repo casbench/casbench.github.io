@@ -283,8 +283,7 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
             # worker crashed (e.g. segfault inside a C++ call): record and skip the case
             p = isfile(progress) ? read(progress, String) : ""
             if isempty(p)
-                println("[supervise] $bench/$system: worker exited with code $(proc.exitcode) before the first case; see $logfile")
-                return
+                error("[supervise] $bench/$system: worker exited with code $(proc.exitcode), signal $(proc.termsignal) before the first case; see $logfile")
             end
             i, name, phase = progress_parts(p)
             case_op = bench == "G_groebner" && get(ENV, "BENCH_G_HARD", "0") == "1" ? "groebner_hard" : ""

@@ -99,7 +99,10 @@ for b in benches
         end
     elseif b in ("B", "D", "E")
         bench = b == "B" ? "B_cas" : b == "D" ? "D_coverage" : "E_suite"
-        for sys in ("giac", "symbolics", "sympy", "symj", "symengine")
+        # E has task files for four systems; SymEngine participates in B and D.
+        systems = b == "E" ? ("giac", "symbolics", "sympy", "symj") :
+                            ("giac", "symbolics", "sympy", "symj", "symengine")
+        for sys in systems
             out = joinpath(RESULTS, "$(bench)_$(sys).tsv")
             fresh(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), bench, sys, out, b == "B" ? tB : b == "D" ? tD : tE)
