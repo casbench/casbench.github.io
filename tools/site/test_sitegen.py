@@ -73,6 +73,17 @@ class SiteGenTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             check_assets.check_stylesheets(root, "https://example.org/preview/")
 
+    def test_external_review_is_distinct_from_contributor_declarations(self):
+        root = self.make_root()
+        (root / "docs" / "reviewers.md").write_text(
+            "# External review\n\nAn external reviewer is not a contributor declaration. "
+            "See [the declarations](disclosures.tsv).\n", encoding="utf-8")
+        page = sitegen.Site(root).conflict_page()
+        self.assertIn("## External review", page)
+        self.assertIn("external reviewer is not a contributor declaration", page)
+        self.assertIn("https://github.com/casbench/casbench.github.io/blob/main/docs/disclosures.tsv", page)
+        self.assertNotIn("| An external reviewer |", page)
+
     def test_site_addresses_follow_canonical_and_preview_base(self):
         root = self.make_root()
         site = sitegen.Site(root, base_url="https://preview.example/branch")

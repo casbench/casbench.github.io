@@ -1066,6 +1066,12 @@ class Site:
                 f"sources of the problems, in their own rows of [`docs/disclosures.tsv`]({BLOB}/docs/disclosures.tsv) "
                 "(a row with no relation is also a declaration); a pull request that touches a task file, an adapter, a "
                 f"check or a problem list comes with them ([CONTRIBUTING.md]({BLOB}/CONTRIBUTING.md)).\n\n")
+        reviewer_file = self.root / "docs" / "reviewers.md"
+        if reviewer_file.exists():
+            review = reviewer_file.read_text(encoding="utf-8")
+            review = re.sub(r"^# (.*)", r"## \1", review, count=1)
+            review = review.replace("(disclosures.tsv)", f"({BLOB}/docs/disclosures.tsv)")
+            out += review.rstrip() + "\n\n"
         by_c = {}
         for r in self.disclosures:
             by_c.setdefault((r["contributor"], r["orcid"]), []).append(r)
