@@ -39,7 +39,21 @@
           cp -r . $out
         '';
       };
-      python = pkgs.python3.withPackages (p: [ p.sympy p.numpy ]);
+      # Published Linux x86-64 Python wheel, GPL-3.0-only. The hash fixes both
+      # the engine and its Python interface for the benchmark environment.
+      grobx = pkgs.python3Packages.buildPythonPackage {
+        pname = "grobx";
+        version = "0.73.3";
+        format = "wheel";
+        src = pkgs.fetchurl {
+          url = "https://files.pythonhosted.org/packages/99/23/2a0838556c7497db90daaae7c9ff409598933151797b19d9d3cc4ae6e718/grobx-0.73.3-cp312-abi3-manylinux_2_28_x86_64.whl";
+          hash = "sha256-5xAO+gxGgXW9oK73sdo/xYLj89NylwRBPgSK2wfAJRk=";
+        };
+        nativeBuildInputs = [ pkgs.autoPatchelfHook ];
+        pythonImportsCheck = [ "grobx" ];
+        meta.license = pkgs.lib.licenses.gpl3Only;
+      };
+      python = pkgs.python3.withPackages (p: [ p.sympy p.numpy grobx ]);
       # the CortexJS Compute Engine (MathJSON, JavaScript), pinned by the npm tarball; driven by Node.js
       computeEngine = pkgs.fetchzip {
         url = "https://registry.npmjs.org/@cortex-js/compute-engine/-/compute-engine-0.194.3.tgz";
@@ -76,7 +90,7 @@
         '';
       };
     in {
-      packages.${system} = { inherit julia bench; default = bench; };
+      packages.${system} = { inherit julia bench grobx; grobx-python = python; default = bench; };
       apps.${system}.bench = { type = "app"; program = "${bench}/bin/bench"; };
       devShells.${system} = {
         default = pkgs.mkShell {

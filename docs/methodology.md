@@ -106,6 +106,19 @@ reduced basis is checked by reducing the inputs to zero and comparing digests
 across systems. This does not establish that every basis element belongs to
 the input ideal; matching digests are corroboration, not a proof.
 
+GrobX is driven from a pinned GPL-3.0-only Python wheel, in one thread with a
+fixed seed, using the same systems and fields. Rational coefficients in finite
+fields are reduced modulo the field prime before the msolve-format instance is
+sent. The answering engine's own optional checker is disabled for the timed
+call; the common checker above runs afterwards. GrobX's note includes the
+peak resident memory of its Python process, including interpreter and imports;
+it is not the memory allocated by the engine alone. Base and hard cases use
+the same supervisor budgets as the other systems. Historic data are unchanged.
+For new G records, `check_wall_s` records elapsed wall time inside the common
+Julia checker, including parsing, reduction and any compilation, separately
+from answer timings. The existing per-case watchdog still applies while the
+check runs; an interrupted check need not yield a check-time record.
+
 J asks for an RUR and real solution isolation on fixed G systems. Its check
 substitutes each reported real solution in every input polynomial using
 256-bit BigFloat arithmetic, verifies the lifting coordinates, and checks

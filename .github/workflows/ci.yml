@@ -50,6 +50,14 @@ jobs:
           julia --startup-file=no --project=envs/subprocess test/integration_numeric.jl
           julia --startup-file=no --project=envs/subprocess test/integration_task_interface.jl F_integration
           julia --startup-file=no --project=envs/subprocess test/integration_task_interface.jl H_osr
+      - name: GrobX adapter checks
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check pinned GrobX over Q and a finite field
+        run: |
+          python -m pip install --only-binary=:all: --require-hashes -r tools/grobx/requirements.txt
+          GROBX_PYTHON="$(command -v python)" julia --startup-file=no test/grobx.jl
       - name: Supervised Giac smoke run
         run: |
           git submodule update --init Giac.jl

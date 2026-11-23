@@ -15,6 +15,7 @@
 #   BENCH_MEM_LIMIT_GIB                resident memory a case's worker tree may reach before it is stopped (default 5)
 #   BENCH_VERIFY_INTEGRALS=0           disable symbolic self-checks in F and H (enabled by default under supervisor)
 #   BENCH_VERIFY_TIMEOUT               symbolic check limit in seconds (default 60, independent of answer time)
+#   BENCH_G_SYSTEMS                   comma-separated G systems (default: all)
 #   JULIA_CONDAPKG_BACKEND / JULIA_PYTHONCALL_EXE  forwarded to the SymPy environment
 #
 # Each bench/system pair runs in its own process under lib/supervise.jl, with
@@ -26,6 +27,7 @@ import Pkg
 const ROOT = @__DIR__
 include(joinpath(ROOT, "lib", "common.jl"))
 using .BenchCommon
+include(joinpath(@__DIR__, "G_groebner", "systems.jl"))
 const JULIA = Base.julia_cmd()
 
 # a run must be identifiable: the harness commit goes into machine.txt and every record carries the run id
@@ -51,6 +53,7 @@ envs = Dict("giac" => joinpath(ROOT, "envs", "giac"),
             "sage_giac" => joinpath(ROOT, "envs", "subprocess"), "sage_maxima" => joinpath(ROOT, "envs", "subprocess"),
             "sage_fricas" => joinpath(ROOT, "envs", "subprocess"), "sage_sympy" => joinpath(ROOT, "envs", "subprocess"),
             "sage_singular" => joinpath(ROOT, "envs", "subprocess"), "macaulay2" => joinpath(ROOT, "envs", "subprocess"),
+            "grobx" => joinpath(ROOT, "envs", "subprocess"),
             "symengine" => joinpath(ROOT, "envs", "symengine"),
             "computeengine" => joinpath(ROOT, "envs", "subprocess"))
 
@@ -73,6 +76,7 @@ if get(ENV, "BENCH_SKIP_INSTANTIATE", "0") != "1"
 end
 
 const RESUME = get(ENV, "BENCH_RESUME", "0") == "1"
+const G_SYSTEMS_TO_RUN = selected_g_systems(get(ENV, "BENCH_G_SYSTEMS", ""))
 supervise(env, worker, bench, system, out, timeout) =
     run(`$JULIA --startup-file=no -t 1 $(joinpath(ROOT, "lib", "supervise.jl")) $env $worker $bench $system $out $timeout`)
 function fresh(out)
@@ -128,14 +132,14 @@ for b in benches
         # Separate output and pass: never replace or extend the base-tier TSV.
         withenv("BENCH_G_HARD" => "1", "BENCH_START_INDEX" => "33",
                 "BENCH_CASE_BUDGETS" => "33:600,34:3600,35:600,36:600,37:600") do
-            for sys in ("giac", "groebner", "msolve", "sympy", "sage_singular", "sage_giac", "macaulay2")
+            for sys in G_SYSTEMS_TO_RUN
                 out = joinpath(RESULTS, "G_groebner_hard_$(sys).tsv")
                 fresh(out)
                 supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "G_groebner", sys, out, "3600")
             end
         end
     elseif b == "G"
-        for sys in ("giac", "groebner", "msolve", "sympy", "sage_singular", "sage_giac", "macaulay2")
+        for sys in G_SYSTEMS_TO_RUN
             out = joinpath(RESULTS, "G_groebner_$(sys).tsv")
             fresh(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "G_groebner", sys, out, tG)

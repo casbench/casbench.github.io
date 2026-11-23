@@ -6,8 +6,11 @@
 # digest written in the note by the check (a reduced Gröbner basis is unique).
 
 const G_SYSTEMS = ["giac", "groebner", "msolve", "sympy", "sage_singular", "sage_giac", "macaulay2"]
+if isfile(joinpath(RESULTS, "G_groebner_grobx.tsv")) || isfile(joinpath(RESULTS, "G_groebner_hard_grobx.tsv"))
+    push!(G_SYSTEMS, "grobx")
+end
 const G_LABEL = Dict("giac" => "Giac.jl", "groebner" => "Groebner.jl", "msolve" => "msolve", "sympy" => "SymPy",
-                     "sage_singular" => "Sage/Singular", "sage_giac" => "Sage/Giac", "macaulay2" => "Macaulay2")
+                     "sage_singular" => "Sage/Singular", "sage_giac" => "Sage/Giac", "macaulay2" => "Macaulay2", "grobx" => "GrobX")
 
 function make_G()
     data = Dict(s => vcat(read_records(joinpath(RESULTS, "G_groebner_$(s).tsv")),

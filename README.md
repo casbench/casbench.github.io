@@ -8,7 +8,7 @@
 Reproducible, verified and dated benchmarks of computer algebra systems:
 Julia packages (Giac.jl, Symbolics.jl, SymJ.jl, Groebner.jl, Primes.jl,
 LibPARI.jl, msolve through AlgebraicSolving.jl), Python's SymPy, and Maxima,
-FriCAS, SageMath, Macaulay2 and the JavaScript Compute Engine (MathJSON)
+FriCAS, SageMath, Macaulay2, GrobX and the JavaScript Compute Engine (MathJSON)
 driven as processes from the same harness.
 Fixed inputs stored in the repository, one adapter per system, every answer
 checked by a system-neutral test, every run dated with its environment
@@ -87,6 +87,7 @@ to cite.
   `tables/`, `figures/`, the generated pages): Creative Commons Attribution
   4.0 International (CC BY 4.0), see `LICENSE-DATA`. Cite the repository (or
   `CITATION.cff`) and the run date of the numbers you reuse.
+- **GrobX**: the compared engine and its Python wheel are GPL-3.0-only; see its [source](https://github.com/code1-de/grobx).
 - **Third-party statements**: the problem statements of bench E are those of
   the fork notebook cited in `docs/benches.md`; the entries of `F_integration/sample.tsv`
   are quoted from the 12000.org test files (themselves from the Rubi test

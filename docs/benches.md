@@ -122,7 +122,8 @@ For historical runs the method and status meanings differ; see Methodology.
 
 **G, Gröbner bases** (`G_groebner/`; Giac.jl `gbasis`, Groebner.jl, msolve
 through AlgebraicSolving.jl, SymPy `groebner`; Singular and Giac through
-SageMath, and Macaulay2, as subprocesses). Reduced degrevlex Gröbner
+SageMath, Macaulay2 and GrobX 0.73.3, as subprocesses). GrobX is GPL-3.0-only;
+its pinned Python wheel is supplied by the Nix environment. Reduced degrevlex Gröbner
 bases of sixteen classical systems of the literature (katsura 5 to 9,
 cyclic 4 to 7, eco 7 and 10, noon 4 to 6, henrion 5, chandran 5), whose
 strings were generated once with the `Examples` module of Groebner.jl
@@ -144,6 +145,23 @@ the operation label `groebner_hard` so their timing statistics stay separate
 from the base tier. A timeout is an observation at that case's budget.
 Singular.jl does not precompile on Julia 1.13 at the pinned versions and is
 not included.
+
+GrobX receives the same inputs in msolve text format, with one thread and a
+fixed seed. For finite fields, rational coefficients are reduced modulo the
+same prime before sending them. Its own optional checker is disabled for the
+timed call; the common independent G check is applied afterwards. First-call
+time includes Python startup; warm time is GrobX's in-process call time. GrobX
+records the Python process peak resident memory in its case note, including
+interpreter startup and imports. This is a process-level metric, not an engine
+allocation count, and is not directly comparable to an unrecorded peak for
+another system. Basis length, maximum degree and term count are also recorded
+by the common checker. No GrobX reference results have been committed yet.
+For newly recorded G cases, `check_wall_s` is the wall time of the common
+Julia checker, including parsing, reduction and any compilation. It is recorded
+separately from the answer time, but remains subject to the case watchdog;
+an interrupted check may have no complete check-time record.
+Use `BENCH_G_SYSTEMS=grobx` with `nix run .#bench -- G G-hard` to run only
+GrobX; the same selection applies to both tiers without changing their inputs.
 
 **J, rational univariate representations** (`J_rur/`; Giac.jl, msolve through
 AlgebraicSolving.jl and Singular through SageMath). It reuses the fixed

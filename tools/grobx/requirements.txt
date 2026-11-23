@@ -1,0 +1,2 @@
+# Linux x86-64 CPython 3.12+ abi3 wheel; GPL-3.0-only.
+grobx==0.73.3 --hash=sha256:e7100efa0c468175bda0aef7b1da3fc582e3f3d3729704413e048adb07c02519

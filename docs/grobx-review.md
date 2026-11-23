@@ -15,14 +15,16 @@ memory peaks, timeout penalties, and eligibility rules for comparisons. It
 also distinguishes levels of certainty for rational bases. These are the
 publisher's methods and claims, not independent CASbench measurements.
 
-For a CASbench comparison, add an adapter under the existing supervisor, pin
-the executable and its dependencies, and capture the exact version and
-command. Use our unchanged fixed systems, variable and monomial order, fields,
-per-case budgets, single-thread policy and independent basis check. Record
-any GrobX checker or cofactor certification separately, including its time.
-Test the parsing and conventions over both Q and a prime field before a run.
+CASbench now supplies a supervised adapter for version 0.73.3, pinned by the
+wheel's SHA-256. It uses the unchanged fixed systems, variable and monomial
+order, fields, budgets and independent G check, with a fixed seed and one
+thread. Tests cover Q and a prime field, including rational coefficients.
+GrobX's optional checker and cofactor certificates are not enabled in the
+timed call. GrobX records its process peak RSS, including Python startup; new
+G records also report the elapsed time of the common checker separately.
 The published GrobX timings cannot be combined directly with CASbench's warm
-call timings; any new measurements must come from our own harness.
+call timings. No CASbench GrobX result has been committed yet; measurements
+must come from our own harness and be reviewed before publication.
 
 The GrobX instance corpus may suggest additional problems, but it must be
 reviewed independently for provenance, licence, fixed inputs and coverage

@@ -69,7 +69,7 @@ for i in START:STOP
         args = prob.args(VAR)
         pending_input[] = "args: " * string(args)
         empty!(INPUT_LOG)
-        if (BENCH == "G_groebner" && hasproperty(prob, :budget)) || BENCH == "A_interfaces"
+        if BENCH in ("G_groebner", "A_interfaces")
             checkpoint = OUT * ".input-checkpoint"
             write(checkpoint, "args: " * string(args))
             BenchCommon.INPUT_CHECKPOINT[] = () -> begin
@@ -107,16 +107,26 @@ for i in START:STOP
         input = isempty(INPUT_LOG) ? "args: " * string(args) : join(unique(INPUT_LOG), " ⏎ ")
         twall = isempty(reps) ? tf : minimum(reps)   # the harness's own wall time, the same meaning for every system
         note = prob.note
+        check_elapsed = Ref(NaN)
         status = if out === nothing || (out isa Tuple && !isempty(out) && out[1] === nothing) || (UNSOLVED(prob.op, out) && !get(prob, :accept_unsolved, false))
             :unsolved
         else
+            check_started = time_ns()
             try
                 st = prob.check(out)
                 st isa Tuple ? (note = string(st[2]); st[1]) : st   # a check may return (status, note)
             catch err
                 note = "check raised: " * sprint(showerror, err)
                 :unverified
+            finally
+                check_elapsed[] = (time_ns() - check_started) / 1e9
             end
+        end
+        if BENCH == "G_groebner" && isfinite(check_elapsed[])
+            note *= "; check_wall_s=" * @sprintf("%.6g", check_elapsed[])
+        end
+        if hasfield(typeof(out), :process_peak_rss_kib)
+            note *= "; process_peak_rss_kib=$(out.process_peak_rss_kib) (entire subprocess)"
         end
         # These benches' generic checks rely on numeric samples or counts;
         # reserve :verified for exact or symbolic checks in new records.

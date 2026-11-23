@@ -211,6 +211,23 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("parse and expand((x+y)^2)", case)
         self.assertIn("x^2+2*x*y+y^2", case)
 
+    def test_grobx_case_displays_resource_and_check_metadata(self):
+        root = self.make_root()
+        p = root / "results" / "testhost" / "G_groebner_grobx.tsv"
+        p.write_text("bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput\n"
+                     "G_groebner\tGrobX\t1\texample\tgroebner\tverified\t1\t0.5\t[x+y]\tk=1 terms=2; check_wall_s=0.2; process_peak_rss_kib=2048\tinstance: x+y\n", encoding="utf-8")
+        out = pathlib.Path(tempfile.mkdtemp())
+        sitegen.generate(root, out)
+        case = (out / "content" / "results" / "g_groebner" / sitegen.slug(1, "example") / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("GrobX", case)
+        self.assertIn("instance: x+y", case)
+        self.assertIn("check_wall_s=0.2", case)
+        self.assertIn("process_peak_rss_kib=2048", case)
+        self.assertIn("terms=2", case)
+        self.assertIn("basis size | terms | check time | process peak RSS", case)
+        self.assertIn("2048 KiB", case)
+        self.assertIn("200.0 ms", case)
+
     def test_pages(self):
         root = self.make_root()
         out = pathlib.Path(tempfile.mkdtemp())
