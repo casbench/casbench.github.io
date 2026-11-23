@@ -17,11 +17,12 @@ root = normpath(joinpath(@__DIR__, ".."))
                 run(`$(Base.julia_cmd()) --startup-file=no $supervisor $root $worker A_interfaces $system $out 60`)
             end
             r = last(read_records(out))
+            r.status == "verified_numeric" || @info "interface test failed" system mode note=r.note
             @test (r.idx, r.op, r.status) == (i, mode, "verified_numeric")
             @test isfinite(r.t_first) && isfinite(r.t_warm)
             @test occursin("(x+y)^2", r.input)
             @test occursin("x^2", r.result)
-            count = length(readlines(starts))
+            count = isfile(starts) ? length(readlines(starts)) : 0
             @test mode == "interface_session" ? count == 1 : count > 1
         end
         hung = joinpath(dir, "hung.tsv")
