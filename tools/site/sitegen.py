@@ -421,6 +421,37 @@ def viz_chart(series, title, ylabel, log=False):
     return "\n".join(out) + "\n"
 
 
+def svg_operation_bars(operation, metrics):
+    """One median bar per system, with quartile whiskers and explicit coverage."""
+    width, left, plot_width, row_height, top = 1000, 190, 450, 33, 38
+    height = top + row_height * len(metrics) + 25
+    upper = max((q[2] for _, _, _, q in metrics if q), default=0)
+    scale = lambda t: left + plot_width * t / upper if upper else left
+    title = html.escape(f"{operation}: median verified time by system", quote=True)
+    out = [f'<div class="operation-chart-scroll"><svg class="operation-chart" viewBox="0 0 {width} {height}" '
+           f'role="img" aria-label="{title}">',
+           f'<line x1="{left}" y1="{top - 7}" x2="{left}" y2="{height - 18}" stroke="currentColor" opacity=".35"/>',
+           f'<text x="{left}" y="19" font-size="12">0 s</text>',
+           f'<text x="{left + plot_width}" y="19" text-anchor="end" font-size="12">{esc(fmt_time(upper)) if upper else "0 s"}</text>']
+    for i, (system, n, k, q) in enumerate(metrics):
+        y = top + i * row_height + 10
+        out.append(f'<text x="{left - 10}" y="{y + 4}" text-anchor="end" font-size="13">{esc(system)}</text>')
+        if q is None:
+            reason = "no attempts" if not n else "median omitted"
+            label = f"{k}/{n} verified; {reason}"
+        else:
+            q1, median, q3 = q
+            bar_width = max(0, scale(median) - left)
+            out.append(f'<rect x="{left}" y="{y - 7}" width="{bar_width:.2f}" height="14" fill="#3174ae"/>')
+            out.append(f'<line x1="{scale(q1):.2f}" x2="{scale(q3):.2f}" y1="{y}" y2="{y}" stroke="currentColor" stroke-width="2"/>'
+                       f'<line x1="{scale(q1):.2f}" x2="{scale(q1):.2f}" y1="{y - 5}" y2="{y + 5}" stroke="currentColor" stroke-width="2"/>'
+                       f'<line x1="{scale(q3):.2f}" x2="{scale(q3):.2f}" y1="{y - 5}" y2="{y + 5}" stroke="currentColor" stroke-width="2"/>')
+            label = f"{k}/{n} verified; {fmt_time(median)} [{fmt_time(q1)}, {fmt_time(q3)}]"
+        out.append(f'<text x="{left + plot_width + 14}" y="{y + 4}" font-size="12">{esc(label)}</text>')
+    out.append('</svg></div>')
+    return "\n".join(out) + "\n"
+
+
 def svg_dotplot(by_idx, systems, categories=None, title="", width=760):
     """A dot plot: one row per case, time on a log x axis, one marker per system; filled when verified,
     hollow when the system returned something it did not solve, absent when it has no such operation."""
@@ -880,10 +911,26 @@ class Site:
             if hard:
                 raw += "; hard tier: " + ", ".join(f"[{esc(p.name)}](../../data/{self.reference}/{p.name})" for p in hard)
         out += f"Raw data (TSV, one file per system): {raw}; [all benches](../../data/results.zip); [every file](../../data/).\n\n"
+        groups = {system: self.operation_groups(key, systems[system]) for system in names}
+        operations = sorted({op for system in names for op in groups[system]})
+        out += ("## Time by system\n\nEach bar is the median verified time for one operation; the whisker spans "
+                "the first and third quartiles. Labels show verified / attempted and median [Q1, Q3]. "
+                "Each operation has its own linear scale. A bar is omitted when fewer than half of attempted "
+                "cases are verified or a verified time is missing; unavailable cases are excluded. "
+                "No attempts means the system has no attempted case for that operation.\n\n")
+        for i, op in enumerate(operations):
+            metrics = [(system, *operation_metrics(groups[system].get(op, []))) for system in names]
+            if len(operations) > 8:
+                out += f'<details{" open" if i == 0 else ""}><summary>{esc(op)}</summary>\n\n'
+            else:
+                out += f"### {esc(op)}\n\n"
+            out += svg_operation_bars(op, metrics) + "\n"
+            if len(operations) > 8:
+                out += "</details>\n\n"
         out += "## Operation metrics\n\nMedian [Q1, Q3] of verified times, shown only when at least half of attempted cases are verified and all verified times are available. Unavailable cases are excluded; other outcomes count as attempted.\n\n"
         out += "| system | operation | verified / attempted | median [Q1, Q3] |\n|---|---|---|---|\n"
         for system in names:
-            for op, rows in sorted(self.operation_groups(key, systems[system]).items()):
+            for op, rows in sorted(groups[system].items()):
                 n, k, q = operation_metrics(rows)
                 timing = f"{fmt_time(q[1])} [{fmt_time(q[0])}, {fmt_time(q[2])}]" if q else "not shown: fewer than half solved or missing time" if n else "not shown: no attempts"
                 out += f"| {esc(system)} | {esc(op)} | {k}/{n} | {timing} |\n"

@@ -132,6 +132,20 @@ class SiteGenTests(unittest.TestCase):
         self.assertIsNone(sitegen.operation_metrics([row("verified", 1), row("timeout", 600), row("wrong", 1)])[2])
         self.assertIsNone(sitegen.operation_metrics([row("verified", float("nan"))])[2])
 
+    def test_operation_chart_shows_coverage_and_censored_medians(self):
+        chart = sitegen.svg_operation_bars('simplify "x"', [
+            ("A", 4, 3, (2.0, 3.0, 6.0)),
+            ("B", 3, 1, None),
+            ("C", 0, 0, None),
+            ("D", 1, 1, (0.0, 0.0, 0.0)),
+        ])
+        self.assertIn("3/4 verified; 3.00 s [2.00 s, 6.00 s]", chart)
+        self.assertIn("1/3 verified; median omitted", chart)
+        self.assertIn("0/0 verified; no attempts", chart)
+        self.assertIn("1/1 verified; 0 µs [0 µs, 0 µs]", chart)
+        self.assertEqual(chart.count("<rect "), 2)
+        self.assertIn("&quot;x&quot;", chart)
+
     def test_integration_verification_is_separate(self):
         root = self.make_root()
         path = root / "results" / "testhost" / "F_integration_giac.tsv"
@@ -187,6 +201,8 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("weight: 1", synthesis)
         page = (out / "content" / "results" / "d_coverage" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("## Operation metrics", page)
+        self.assertIn("## Time by system", page)
+        self.assertIn('class="operation-chart"', page)
         self.assertIn("not shown: fewer than half solved or missing time", page)
         self.assertIn('<span class="sk-badge sk-tone--good" data-status="verified"', page)          # site-kit badges
         self.assertIn('<span class="sk-badge sk-tone--neutral-dashed" data-status="unavailable"', page)
