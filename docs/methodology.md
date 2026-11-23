@@ -33,6 +33,22 @@ average, run id), one directory per host (`BENCH_HOST`, else the hostname);
 `figures/E_times.tex` and `results/summary.md`. A run on another machine
 lands in its own directory and the site compares the hosts.
 
+The optional `A-interfaces` pass extends bench A without replacing its historic
+Giac-specific records. It compares the same four expansion inputs through
+prebuilt objects, text, persistent subprocesses, and newly started processes,
+where each path is available. Its check compares the result numerically with
+the input at three fixed points; this is not a proof of equivalence or a check
+that the answer is fully expanded. Recordings include the symbolic operation,
+conversions and input logging. Persistent subprocess startup is included in
+the first call; subsequent warm calls reuse the process. A new-process call
+includes startup every time. FriCAS expands polynomial arithmetic as it parses
+the input. Repeats use the same expression, so caches and adapter-specific
+cache-clearing policies may affect warm timings. Default per-case time limit:
+`BENCH_TIMEOUT_A_INTERFACES` (120 s). Different
+paths and operations are summarised separately, with verified counts.
+Object construction happens before its call is timed and may itself normalise
+the expression; text-path calls include construction.
+
 ## Run identity and noise
 
 A run must be identifiable. `run_all.jl` refuses to start from a working

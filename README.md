@@ -62,6 +62,7 @@ Giac.jl/ osr/       git submodules pinned to the commits measured
 git clone --recurse-submodules https://github.com/casbench/casbench.github.io
 nix run .#bench            # every bench, then the tables (Julia 1.13, SymPy, Maxima, FriCAS, Sage, Macaulay2 from nixpkgs)
 nix run .#bench -- A G     # a subset
+nix run .#bench -- A-interfaces  # comparable interface-path calls
 ```
 
 Without Nix: `julia --startup-file=no run_all.jl` with Julia 1.13, a Python 3

@@ -36,6 +36,7 @@ PAPER = "JuliaCon Proceedings paper on Giac.jl (in preparation, 2027)"
 # bench key -> (title, one-line description)
 BENCHES = {
     "A_ffi": ("A. FFI overhead", "Microseconds per call through each dispatch level of Giac.jl, minimum over rounds."),
+    "A_interfaces": ("A. Interface paths", "Expansion through prebuilt objects, text, and persistent or newly started processes."),
     "B_cas": ("B. CAS operations", "expand, factor, integrate and simplify on fixed inputs, checked by the harness."),
     "C_ifactor": ("C. Integer factorisation", "Giac.ifactor, Primes.factor and LibPARI on Int64 values, smooth integers and semiprimes of 20 to 60 digits."),
     "D_coverage": ("D. Functional coverage", "One problem per capability: is the operation available, and is the answer right?"),
@@ -881,6 +882,8 @@ class Site:
         for key in self.results:
             title, desc = BENCHES.get(key, (key, ""))
             out += f"### [{title}]({key.lower()}/)\n\n{desc}\n\n"
+        if "A_interfaces" not in self.results and (self.root / "A_interfaces" / "problems.jl").exists():
+            out += "### [A. Interface paths](a_interfaces/)\n\nNo run committed yet.\n\n"
         if "J_rur" not in self.results and (self.root / "J_rur" / "problems.jl").exists():
             out += "### [J. Rational univariate representations](j_rur/)\n\nNo run committed yet.\n\n"
         return out
@@ -911,7 +914,7 @@ class Site:
                 "An unsolved or wrong case may hide a benchmark error.\n\n")
         keys = [key for key in BENCHES if key != "J_rur" or key in self.results or
                 (self.root / "J_rur" / "problems.jl").exists()]
-        out += "| system | " + " | ".join(k.split("_", 1)[0] for k in keys) + " | F self-check | H self-check |\n"
+        out += "| system | " + " | ".join("A interfaces" if k == "A_interfaces" else k.split("_", 1)[0] for k in keys) + " | F self-check | H self-check |\n"
         out += "|---|" + "---|" * (len(keys) + 2) + "\n"
         aliases = {"Giac.jl ifactor": "Giac.jl"}
         all_systems = {aliases.get(s, s) for ss in self.results.values() for s in ss}
@@ -921,7 +924,8 @@ class Site:
                 systems = self.results.get(key, {})
                 rows = systems.get(system) or next((v for s, v in systems.items() if aliases.get(s) == system), None)
                 if not rows:
-                    cells.append(f"[not run](../{key.lower()}/)" if key in self.results or key == "J_rur" else "not run")
+                    has_placeholder = key in ("J_rur", "A_interfaces") and (self.root / key / "problems.jl").exists()
+                    cells.append(f"[not run](../{key.lower()}/)" if key in self.results or has_placeholder else "not run")
                     continue
                 n, k, _ = operation_metrics(rows)
                 groups = self.operation_groups(key, rows)
@@ -1397,6 +1401,15 @@ class Site:
                 "These describe the current checks, including their limits.\n\n"
                 "- A: string equality with `giac_eval` for each dispatch level. Agreement with the reference call does not "
                 "independently prove its mathematical answer.\n"
+                "- A interface paths: four fixed expansions checked numerically at three points; this cannot prove "
+                "equality or that an answer is expanded. Prebuilt-object, text, persistent-process and new-process "
+                "calls are reported separately; each includes the operation, conversions and input logging. "
+                "The persistent process starts on the first call and is reused for warm calls; new-process calls include "
+                "startup each time. FriCAS normalises polynomial arithmetic during parsing. These are call latencies, "
+                "not isolated FFI overheads. Repeated calls use the same input, so caches and adapter-specific "
+                "cache-clearing policies may affect warm timings. The default case budget is 120 seconds "
+                "(`BENCH_TIMEOUT_A_INTERFACES`). Some systems normalise an object while constructing it before the "
+                "object-path timer; text-path calls include construction.\n"
                 "- B: numeric comparison at fixed points; expand and factor also require term or factor counts, integrate "
                 "uses finite differences, and simplify compares numeric values without a length bound in new runs. Historical "
                 "results used a length bound. Sampling and form requirements can "
@@ -1580,6 +1593,10 @@ def generate(root, out):
             write(c / "results" / key.lower() / d / "_index.md", text)
     if "J_rur" not in site.results and (site.root / "J_rur" / "problems.jl").exists():
         write(c / "results" / "j_rur" / "_index.md", front("J. Rational univariate representations", 20) +
+              "No results have been committed for this bench yet. See [Methodology](../../methodology/) "
+              "for the inputs, verification method and its limits.\n")
+    if "A_interfaces" not in site.results and (site.root / "A_interfaces" / "problems.jl").exists():
+        write(c / "results" / "a_interfaces" / "_index.md", front("A. Interface paths", 19) +
               "No results have been committed for this bench yet. See [Methodology](../../methodology/) "
               "for the inputs, verification method and its limits.\n")
     write(c / "history" / "_index.md", site.history_page())

@@ -196,6 +196,21 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("data-status=\"verified_numeric\"", page)
         self.assertLess(page.index("#### Input"), page.index("#### Output"))
 
+    def test_interface_paths_have_distinct_cases_and_inputs(self):
+        root = self.make_root()
+        p = root / "results" / "testhost" / "A_interfaces_giac.tsv"
+        p.write_text("bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput\n"
+                     "A_interfaces\tGiac.jl\t1\texpand object\tinterface_object\tverified_numeric\t1\t0.1\tx^2+2*x*y+y^2\tchecked\texpand((x+y)^2)\n"
+                     "A_interfaces\tGiac.jl\t2\texpand text\tinterface_text\tverified_numeric\t2\t0.2\tx^2+2*x*y+y^2\tchecked\tparse and expand((x+y)^2)\n", encoding="utf-8")
+        out = pathlib.Path(tempfile.mkdtemp())
+        sitegen.generate(root, out)
+        page = (out / "content" / "results" / "a_interfaces" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("interface_object", page)
+        self.assertIn("interface_text", page)
+        case = (out / "content" / "results" / "a_interfaces" / sitegen.slug(2, "expand text") / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("parse and expand((x+y)^2)", case)
+        self.assertIn("x^2+2*x*y+y^2", case)
+
     def test_pages(self):
         root = self.make_root()
         out = pathlib.Path(tempfile.mkdtemp())

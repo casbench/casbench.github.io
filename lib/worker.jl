@@ -21,7 +21,11 @@ const VERIFY_ENABLED = get(ENV, "BENCH_VERIFY_INTEGRALS", VERIFY_DEFAULT) == "1"
 VERIFY_ENABLED && get(ENV, "BENCH_VERIFICATION_SUPERVISED", "0") != "1" &&
     error("integration self-verification requires lib/supervise.jl")
 
-include(joinpath(@__DIR__, "adapters", SYSTEM_KEY * ".jl"))
+if BENCH == "A_interfaces"
+    include(joinpath(@__DIR__, "..", BENCH, "adapter.jl"))
+else
+    include(joinpath(@__DIR__, "adapters", SYSTEM_KEY * ".jl"))
+end
 include(joinpath(@__DIR__, "..", BENCH, "problems.jl"))
 
 if START == 1 || (BENCH == "G_groebner" && get(ENV, "BENCH_G_HARD", "0") == "1" && START == 33)
@@ -65,7 +69,7 @@ for i in START:STOP
         args = prob.args(VAR)
         pending_input[] = "args: " * string(args)
         empty!(INPUT_LOG)
-        if BENCH == "G_groebner" && hasproperty(prob, :budget)
+        if (BENCH == "G_groebner" && hasproperty(prob, :budget)) || BENCH == "A_interfaces"
             checkpoint = OUT * ".input-checkpoint"
             write(checkpoint, "args: " * string(args))
             BenchCommon.INPUT_CHECKPOINT[] = () -> begin

@@ -13,6 +13,26 @@ calls, inputs rotating through a pool of 8 expressions so that Giac's
 memoisation of an identical repeated call does not dominate. Every level is
 checked to return the same printed result.
 
+**A, interface paths** (`A_interfaces/`, run separately as `A-interfaces`).
+The same four small polynomial expansions are sent to Giac.jl, Symbolics.jl,
+SymPy via PythonCall, SymJ.jl, SymEngine.jl, Maxima and FriCAS. For Julia
+packages, the operations distinguish prebuilt symbolic objects from text
+parsed for each call. For Maxima and FriCAS they distinguish a persistent
+process from a newly launched process for every call. Unsupported paths are
+`unavailable`, not zero-cost measurements. FriCAS normalises polynomial
+arithmetic while parsing rather than using a separate polynomial expansion
+command. The paths include the operation itself, conversions, and any input
+logging, so these are call latencies, not an isolated measurement of FFI
+overhead. The outputs are checked numerically at three fixed points; this does
+not prove symbolic equality or that the result is fully expanded. The ordinary
+supervisor records the first call and repeated warm-call measurements; the
+first persistent-process call includes startup and later calls reuse it.
+Repeated calls use the same input, so system caches and adapter-specific
+cache-clearing policies may affect warm timings. Some systems normalise an
+object during its construction, which occurs before the object-path timer;
+the text path includes construction, so the paths need not perform equal work.
+The other benchmarks and the historical A results are unchanged.
+
 **B, CAS operations** (`B_cas/problems.jl`; Giac.jl, Symbolics.jl, SymPy, SymEngine.jl,
 SymJ.jl). `expand`, `factor`, `integrate` and `simplify` on 34 fixed inputs.
 Returned answers are checked as well as timed: expansion by numeric equality with
