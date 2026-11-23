@@ -23,6 +23,7 @@ import shutil
 import subprocess
 import sys
 import zipfile
+from collections import Counter
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import latexify  # noqa: E402
@@ -419,6 +420,54 @@ def viz_chart(series, title, ylabel, log=False):
         out.append(f'<figure class="viz viz-panel"><figcaption>{esc(lab)}</figcaption>\n{panel([(lab, ps)], f"{title}: {lab}", 360, 170)}</figure>')
     out.append("</div>")
     return "\n".join(out) + "\n"
+
+
+STATUS_COLORS = {
+    "verified": "#176b4d", "verified_numeric": "#237c8f", "verified_symbolic": "#315aab",
+    "wrong": "#a72c31", "unverified": "#7353a3", "unsolved": "#9a5b06",
+    "unavailable": "#68717e", "error": "#a23f73", "timeout": "#76502d",
+}
+
+
+def status_chart(systems):
+    """Plot recorded answer statuses, including unavailable and any unknown status."""
+    counts = {name: Counter(r["status"] for r in rows) for name, rows in systems.items()}
+    present = {status for c in counts.values() for status in c}
+    order = (*STATUSES, "verified_symbolic")
+    statuses = [s for s in order if s in present] + sorted(present - set(order))
+    left, plot_width, top, row_height = 190, 600, 32, 36
+    height = top + row_height * len(counts) + 12
+    out = ['<div class="operation-chart-scroll"><svg class="operation-chart status-chart" '
+           f'viewBox="0 0 900 {height}" role="img" aria-label="Answer statuses by system; counts follow in a table">',
+           f'<text x="{left}" y="17" font-size="12">0%</text>',
+           f'<text x="{left + plot_width}" y="17" font-size="12" text-anchor="end">100% of recorded cases</text>']
+    for i, (system, c) in enumerate(counts.items()):
+        total = sum(c.values())
+        y = top + i * row_height
+        out.append(f'<text x="{left - 10}" y="{y + 15}" text-anchor="end" font-size="13">{esc(system)}</text>')
+        x = left
+        for status in statuses:
+            n = c[status]
+            if not n:
+                continue
+            w = plot_width * n / total
+            color = STATUS_COLORS.get(status, "#515a66")
+            out.append(f'<rect x="{x:.3f}" y="{y}" width="{w:.3f}" height="22" fill="{color}">'
+                       f'<title>{esc(system)}: {esc(status)} {n}/{total}</title></rect>')
+            if w >= 28:
+                out.append(f'<text x="{x + w / 2:.3f}" y="{y + 15}" text-anchor="middle" '
+                           f'font-size="12" style="fill:white">{n}</text>')
+            x += w
+        out.append(f'<text x="{left + plot_width + 10}" y="{y + 15}" font-size="12">{total} cases</text>')
+    out.append('</svg></div>')
+    out.append('<div class="status-chart-legend">' + ''.join(
+        f'<span><i style="background:{STATUS_COLORS.get(status, "#515a66")}" aria-hidden="true"></i>{esc(status)}</span>'
+        for status in statuses) + '</div>\n')
+    out.append('\n| system | ' + ' | '.join(esc(s) for s in statuses) + ' | total |\n')
+    out.append('|---|' + '---:|' * (len(statuses) + 1) + '\n')
+    for system, c in counts.items():
+        out.append(f'| {esc(system)} | ' + ' | '.join(str(c[s]) for s in statuses) + f' | {sum(c.values())} |\n')
+    return ''.join(out) + '\n'
 
 
 def svg_operation_bars(operation, metrics):
@@ -911,6 +960,11 @@ class Site:
             if hard:
                 raw += "; hard tier: " + ", ".join(f"[{esc(p.name)}](../../data/{self.reference}/{p.name})" for p in hard)
         out += f"Raw data (TSV, one file per system): {raw}; [all benches](../../data/results.zip); [every file](../../data/).\n\n"
+        out += ("## Answer statuses by system\n\nEach bar shows the distribution of recorded case statuses for a system; "
+                "segment labels are case counts. Percentages use all recorded cases, including unavailable operations; "
+                "missing records are not counted. The table gives exact counts, including segments too small to label. "
+                "Historical `verified` statuses can include numeric checks. An unsolved or wrong case may hide a benchmark error.\n\n")
+        out += status_chart({name: systems[name] for name in names})
         groups = {system: self.operation_groups(key, systems[system]) for system in names}
         operations = sorted({op for system in names for op in groups[system]})
         out += ("## Time by system\n\nEach bar is the median verified time for one operation; the whisker spans "

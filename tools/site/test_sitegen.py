@@ -146,6 +146,17 @@ class SiteGenTests(unittest.TestCase):
         self.assertEqual(chart.count("<rect "), 2)
         self.assertIn("&quot;x&quot;", chart)
 
+    def test_status_chart_counts_all_recorded_statuses(self):
+        chart = sitegen.status_chart({
+            "A": [{"status": s} for s in ("verified", "verified", "unsolved", "unavailable")],
+            "B": [{"status": s} for s in ("unverified", "timeout", "new_status")],
+        })
+        self.assertIn("A: verified 2/4", chart)
+        self.assertIn("A: unavailable 1/4", chart)
+        self.assertIn("B: new_status 1/3", chart)
+        self.assertIn("| A | 2 | 0 | 1 | 1 | 0 | 0 | 4 |", chart)
+        self.assertIn("| B | 0 | 1 | 0 | 0 | 1 | 1 | 3 |", chart)
+
     def test_integration_verification_is_separate(self):
         root = self.make_root()
         path = root / "results" / "testhost" / "F_integration_giac.tsv"
@@ -202,6 +213,8 @@ class SiteGenTests(unittest.TestCase):
         page = (out / "content" / "results" / "d_coverage" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("## Operation metrics", page)
         self.assertIn("## Time by system", page)
+        self.assertIn("## Answer statuses by system", page)
+        self.assertIn('class="operation-chart status-chart"', page)
         self.assertIn('class="operation-chart"', page)
         self.assertIn("not shown: fewer than half solved or missing time", page)
         self.assertIn('<span class="sk-badge sk-tone--good" data-status="verified"', page)          # site-kit badges
