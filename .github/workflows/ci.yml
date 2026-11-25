@@ -64,6 +64,7 @@ jobs:
           git submodule update --init Giac.jl
           julia --startup-file=no --project=envs/giac -e 'using Pkg; Pkg.instantiate()'
           julia --startup-file=no test/harness_smoke.jl
+          julia --startup-file=no test/integration_systems.jl
           julia --startup-file=no --project=envs/giac test/integration_adapter.jl giac
       - name: Site and history tests
         run: |

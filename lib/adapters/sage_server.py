@@ -3,7 +3,9 @@
 
 Reads one line at a time from stdin: the path of a Sage script. The script is
 preparsed (Sage syntax: ^ is a power, integer literals are Sage Integers) and
-executed in a fresh namespace over `sage.all`; whatever it prints goes to
+executed in a fresh namespace over `sage.all`. Sage assumptions are global,
+so clear them before and after each script, including after an exception.
+Whatever the script prints goes to
 stdout, then the line <<END>> marks the end of the answer. An exception is
 printed as "<<ANS>> sage_error: ..." so that the caller sees it as an answer.
 Starting Sage once per worker instead of once per case saves several seconds
@@ -24,6 +26,7 @@ for line in sys.stdin:
     if path == "<<QUIT>>":
         break
     try:
+        forget()
         with open(path, encoding="utf-8") as f:
             code = preparse(f.read())
         ns = {}
@@ -35,4 +38,5 @@ for line in sys.stdin:
         print("<<ANS>> sage_error: " + str(ex).replace("\n", " ")[:300])
         print("<<TIME>> nan")
     finally:
+        forget()
         print("<<END>>", flush=True)

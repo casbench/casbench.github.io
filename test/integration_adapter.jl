@@ -21,6 +21,12 @@ include(joinpath(@__DIR__, "..", "lib", "verify_expr.jl"))
     @test VERIFY_INTEGRAL(answer, "x^2", "x") == "0"
     @test VERIFY_INTEGRAL("(1/6)*x^2", "x/3", "x") == "0"
     @test occursin(system in ("fricas", "sage_fricas") ? "d(" : "diff", lowercase(VERIFY_INTEGRAL_COMMAND(answer, "x^2", "x")))
+    if startswith(system, "sage_")
+        parameterized = INTEGRATE_TEXT("e*x+f+F", "x", FPARAMS)
+        parameter_status, _ = check_integral(parameterized, "e*x+f+F", ""; complex_point=FCOMPLEX_POINT)
+        @test parameter_status == :verified_numeric
+        @test VERIFY_INTEGRAL("e*x^2/2+f*x+F*x", "e*x+f+F", "x") == "0"
+    end
     # 1/x is analytic at the complex sample despite having a pole at zero.
     rational = INTEGRATE_TEXT("1/x", "x", FPARAMS)
     st, rational_note = check_integral(rational, "1/x", ""; complex_point=FCOMPLEX_POINT)

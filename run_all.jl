@@ -16,6 +16,7 @@
 #   BENCH_VERIFY_INTEGRALS=0           disable symbolic self-checks in F and H (enabled by default under supervisor)
 #   BENCH_VERIFY_TIMEOUT               symbolic check limit in seconds (default 60, independent of answer time)
 #   BENCH_G_SYSTEMS                   comma-separated G systems (default: all)
+#   BENCH_INTEGRATION_SYSTEMS         comma-separated F and H systems (default: all)
 #   JULIA_CONDAPKG_BACKEND / JULIA_PYTHONCALL_EXE  forwarded to the SymPy environment
 #
 # Each bench/system pair runs in its own process under lib/supervise.jl, with
@@ -28,6 +29,7 @@ const ROOT = @__DIR__
 include(joinpath(ROOT, "lib", "common.jl"))
 using .BenchCommon
 include(joinpath(@__DIR__, "G_groebner", "systems.jl"))
+include(joinpath(@__DIR__, "lib", "integration_systems.jl"))
 const JULIA = Base.julia_cmd()
 
 # a run must be identifiable: the harness commit goes into machine.txt and every record carries the run id
@@ -77,6 +79,7 @@ end
 
 const RESUME = get(ENV, "BENCH_RESUME", "0") == "1"
 const G_SYSTEMS_TO_RUN = selected_g_systems(get(ENV, "BENCH_G_SYSTEMS", ""))
+const INTEGRATION_SYSTEMS_TO_RUN = selected_integration_systems(get(ENV, "BENCH_INTEGRATION_SYSTEMS", ""))
 supervise(env, worker, bench, system, out, timeout) =
     run(`$JULIA --startup-file=no -t 1 $(joinpath(ROOT, "lib", "supervise.jl")) $env $worker $bench $system $out $timeout`)
 function fresh(out)
@@ -108,7 +111,7 @@ for b in benches
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), bench, sys, out, b == "B" ? tB : b == "D" ? tD : tE)
         end
     elseif b == "F"
-        for sys in ("giac", "symbolics", "sympy", "symj", "maxima", "fricas", "sage_giac", "sage_maxima", "sage_fricas", "sage_sympy", "computeengine")
+        for sys in INTEGRATION_SYSTEMS_TO_RUN
             out = joinpath(RESULTS, "F_integration_$(sys).tsv")
             fresh(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "F_integration", sys, out, tF)
@@ -120,7 +123,7 @@ for b in benches
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "I_scale", sys, out, tI)
         end
     elseif b == "H"
-        for sys in ("giac", "symbolics", "sympy", "symj", "maxima", "fricas", "sage_giac", "sage_maxima", "sage_fricas", "sage_sympy", "computeengine")
+        for sys in INTEGRATION_SYSTEMS_TO_RUN
             out = joinpath(RESULTS, "H_osr_$(sys).tsv")
             fresh(out)
             supervise(envs[sys], joinpath(ROOT, "lib", "worker.jl"), "H_osr", sys, out, tH)

@@ -123,7 +123,7 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     f = Mapleish.translate(integrand, :sage)
     # the symbols of the integrand: identifiers that are not function names ("c" is a symbol even when "csc(" occurs)
     syms = unique([m.match for m in eachmatch(r"\b[A-Za-z_][A-Za-z_0-9]*\b", f)
-                   if !occursin(Regex("\\b" * m.match * "\\("), f) && !(m.match in ("pi", "I", "e", "E"))])
+                   if !occursin(Regex("\\b" * m.match * "\\("), f) && !(m.match in ("pi", "I", "E"))])
     used = [k for (k, v) in params if string(k) in syms]
     pt = join(["$k: $(v)" for (k, v) in params if k in used], ", ")
     # the sign of each parameter is assumed as its fixed value has it (Maxima asks otherwise)
@@ -131,18 +131,18 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     lines = ["var('" * join(unique([var; string.(used)]), " ") * "')", assumptions...,
              "t0 = walltime()",
              "try:",
-             "    f = $f",
-             SAGE_ALGORITHM == "giac" ? "    Fg = giac(f).integrate(giac($var))\n    t1 = walltime()\n    try:\n        F = Fg.sage()\n    except Exception as ex:\n        F = str(Fg)   # an unevaluated integral or a form Sage cannot read back: kept as text" :
-                                        "    F = integrate(f, $var, algorithm='$SAGE_ALGORITHM')\n    t1 = walltime()",
+             "    _casbench_integrand = $f",
+             SAGE_ALGORITHM == "giac" ? "    _casbench_giac_answer = giac(_casbench_integrand).integrate(giac($var))\n    t1 = walltime()\n    try:\n        _casbench_answer = _casbench_giac_answer.sage()\n    except Exception as ex:\n        _casbench_answer = str(_casbench_giac_answer)" :
+                                        "    _casbench_answer = integrate(_casbench_integrand, $var, algorithm='$SAGE_ALGORITHM')\n    t1 = walltime()",
              "except Exception as ex:",
              "    print('<<' + 'ANS>>', 'sage_error: ' + str(ex)[:200])",
              "    print('<<' + 'TIME>>', walltime() - t0)",
              "    raise SystemExit(0)",
-             "print('<<' + 'ANS>>', str(F))", "print('<<' + 'TIME>>', t1 - t0)"]
+             "print('<<' + 'ANS>>', str(_casbench_answer))", "print('<<' + 'TIME>>', t1 - t0)"]
     xs = check_points(integrand, params)
     for (i, xv) in enumerate(xs)
         point = sage_point(xv)
-        push!(lines, "try:\n    v = CC(F.subs({$var: $point" * (isempty(pt) ? "" : ", " * pt) * "}))\n    print('<<' + 'V$i>>', str(v))\nexcept Exception as ex:\n    print('<<' + 'V$i>>', 'fail')")
+        push!(lines, "try:\n    _casbench_value = CC(SR(_casbench_answer).subs({$var: $point" * (isempty(pt) ? "" : ", " * pt) * "}))\n    print('<<' + 'V$i>>', str(_casbench_value))\nexcept Exception as ex:\n    print('<<' + 'V$i>>', 'fail')")
     end
     txt, answer_ns = run_sage(join(lines, "\n") * "\n"; capture_answer=true)
     ans = marker(txt, "<<ANS>>")
@@ -221,18 +221,18 @@ end
 function VERIFY_INTEGRAL_COMMAND(answer::String, integrand::String, variable::String)
     f = Mapleish.translate(integrand, :sage)
     words = unique([m.match for m in eachmatch(r"\b[A-Za-z_][A-Za-z_0-9]*\b", f)
-                    if !occursin(Regex("\\b" * m.match * "\\("), f) && !(m.match in ("pi", "I", "e", "E"))])
+                    if !occursin(Regex("\\b" * m.match * "\\("), f) && !(m.match in ("pi", "I", "E"))])
     symbols = join(unique([variable; words]), " ")
-    lines = ["var(" * repr(symbols) * ")", "f = SR(" * f * ")", "F = SR(" * answer * ")"]
+    lines = ["var(" * repr(symbols) * ")", "_casbench_integrand = SR(" * f * ")", "_casbench_answer = SR(" * answer * ")"]
     if SAGE_ALGORITHM == "giac"
-        push!(lines, "r = giac('simplify(diff((' + str(giac(F)) + '),' + str(giac(" * variable * ")) + ')-(' + str(giac(f)) + '))')")
+        push!(lines, "r = giac('simplify(diff((' + str(giac(_casbench_answer)) + '),' + str(giac(" * variable * ")) + ')-(' + str(giac(_casbench_integrand)) + '))')")
     elseif SAGE_ALGORITHM == "maxima"
-        push!(lines, "r = (F._maxima_().diff(" * variable * "._maxima_()) - f._maxima_()).radcan().ratsimp()")
+        push!(lines, "r = (_casbench_answer._maxima_().diff(" * variable * "._maxima_()) - _casbench_integrand._maxima_()).radcan().ratsimp()")
     elseif SAGE_ALGORITHM == "fricas"
-        push!(lines, "r = (fricas(F).D(fricas(" * variable * ")) - fricas(f)).simplify()")
+        push!(lines, "r = (fricas(_casbench_answer).D(fricas(" * variable * ")) - fricas(_casbench_integrand)).simplify()")
     elseif SAGE_ALGORITHM == "sympy"
         push!(lines, "import sympy as sp")
-        push!(lines, "r = sp.simplify(sp.diff(F._sympy_(), sp.Symbol(" * repr(variable) * ")) - f._sympy_())")
+        push!(lines, "r = sp.simplify(sp.diff(_casbench_answer._sympy_(), sp.Symbol(" * repr(variable) * ")) - _casbench_integrand._sympy_())")
     else
         error("no integration self-check for this Sage engine")
     end
