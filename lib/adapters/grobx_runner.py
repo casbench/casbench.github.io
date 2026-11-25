@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """One GrobX call; input is the msolve-format instance file passed in argv."""
-import resource
 import sys
 import time
 import grobx
@@ -24,4 +23,15 @@ else:
     for polynomial in basis[1:-2].split(','):
         if polynomial.strip():
             print('<<G>>', polynomial.strip())
-print('<<RSS_KIB>>', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+# Linux ru_maxrss can inherit a larger high-water mark across fork/exec from
+# the Julia worker. VmHWM is the peak of this process's current address space.
+with open('/proc/self/status', encoding='utf-8') as status:
+    for line in status:
+        if line.startswith('VmHWM:'):
+            fields = line.split()
+            if len(fields) != 3 or fields[2] != 'kB':
+                raise RuntimeError('unexpected VmHWM format')
+            print('<<RSS_KIB>>', int(fields[1]))
+            break
+    else:
+        raise RuntimeError('VmHWM not available in /proc/self/status')

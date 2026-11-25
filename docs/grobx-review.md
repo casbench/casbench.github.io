@@ -22,6 +22,9 @@ thread. Tests cover Q and a prime field, including rational coefficients.
 GrobX's optional checker and cofactor certificates are not enabled in the
 timed call. GrobX records its process peak RSS, including Python startup; new
 G records also report the elapsed time of the common checker separately.
+Early records used `getrusage`, which can inherit the launching worker's peak;
+their RSS values are not reliable case-level peaks. The corrected Linux runner
+reads the current process address space's `VmHWM` instead.
 The published GrobX timings cannot be combined directly with CASbench's warm
 call timings. No CASbench GrobX result has been committed yet; measurements
 must come from our own harness and be reviewed before publication.

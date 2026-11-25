@@ -154,7 +154,9 @@ time includes Python startup; warm time is GrobX's in-process call time. GrobX
 records the Python process peak resident memory in its case note, including
 interpreter startup and imports. This is a process-level metric, not an engine
 allocation count, and is not directly comparable to an unrecorded peak for
-another system. Basis length, maximum degree and term count are also recorded
+another system. On Linux it uses `VmHWM` for the current process address space;
+the earlier `getrusage` measurement can inherit the launching worker's peak
+and must not be treated as an independent case-level peak. Basis length, maximum degree and term count are also recorded
 by the common checker. No GrobX reference results have been committed yet.
 For newly recorded G cases, `check_wall_s` is the wall time of the common
 Julia checker, including parsing, reduction and any compilation. It is recorded
