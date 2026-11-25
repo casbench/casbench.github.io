@@ -171,7 +171,17 @@ function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
          "R.inject_variables(verbose=False)", "I = R.ideal($L)",
          "t0 = walltime()", "B = I.groebner_basis('libsingular:std')", "t1 = walltime()",
          "print('<<' + 'TIME>>', t1 - t0)", "for g in B:", "    print('<<' + 'G>>', str(g))"] :
-        ["t0 = walltime()", "B = giac('gbasis(" * (p == 0 ? L : L * " % $p") * ",$V,revlex)')", "t1 = walltime()",
+        # Sage's giac interface raises on any output that contains "error" (giac._eval_line), and Giac prints over Q
+        # the note "error probability is less than 1e-15" of its probabilistic algorithm: the basis was computed,
+        # but before 2026-11-25 every such case was recorded as an error ("sage gave no basis"). The command is
+        # evaluated with the base Expect._eval_line (same process start, same file path for long input, same
+        # timing); an output line that mentions an error other than that note still raises.
+        ["from sage.interfaces.expect import Expect",
+         "t0 = walltime()", "_casbench_out = Expect._eval_line(giac, 'casbench_B:=gbasis(" * (p == 0 ? L : L * " % $p") * ",$V,revlex)')",
+         "t1 = walltime()",
+         "_casbench_errors = [l for l in _casbench_out.splitlines() if 'error' in l.lower() and 'error probability' not in l.lower()]",
+         "if _casbench_errors: raise RuntimeError('giac: ' + ' | '.join(_casbench_errors)[:300])",
+         "B = giac('casbench_B')",
          "print('<<' + 'TIME>>', t1 - t0)", "for g in B:", "    print('<<' + 'G>>', str(g).replace(' % $p', ''))"]
     txt = run_sage(join(lines, "\n") * "\n")
     gs = [strip(m[1]) for m in eachmatch(r"<<G>>\s*(.*)", txt)]
