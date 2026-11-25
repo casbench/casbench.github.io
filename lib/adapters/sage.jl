@@ -205,7 +205,10 @@ SAGE_ALGORITHM == "singular" && (OPS[:rur] = RUR)
 EVAL(ex, vals) = ex isa SageAnswer ? get(ex.values, ComplexF64(vals[:x]), nothing) : (ex isa Number ? ex : nothing)
 NTERMS(ex) = 1
 NFACTORS(ex) = 1
-UNSOLVED(op, out) = out isa SageAnswer && occursin(r"integrate\(|sage_error: .*(not implemented|NotImplemented|cannot|unable)", out.text)
+# an unevaluated integral is printed integrate(...) by Sage's own front end and integral(...) when it comes back
+# from FriCAS (algorithm='fricas'), as the direct FriCAS adapter recognises; before 2026-11-25 the second form
+# was missed and such answers were checked, then recorded as unverified instead of unsolved
+UNSOLVED(op, out) = out isa SageAnswer && occursin(r"integrate\(|\bintegral\(|sage_error: .*(not implemented|NotImplemented|cannot|unable)", out.text)
 CLEARCACHE() = nothing
 function VERSIONS()
     v = try

@@ -50,6 +50,8 @@ jobs:
           julia --startup-file=no --project=envs/subprocess -e 'using Pkg; Pkg.instantiate()'
           julia --startup-file=no --project=envs/subprocess test/integration_numeric.jl
           julia --startup-file=no --project=envs/subprocess test/integration_task_interface.jl F_integration
+          julia --startup-file=no --project=envs/subprocess test/integration_parameters.jl
+          julia --startup-file=no --project=envs/subprocess test/sage_unsolved.jl
           julia --startup-file=no --project=envs/subprocess test/integration_task_interface.jl H_osr
       - name: GrobX adapter checks
         uses: actions/setup-python@v5

@@ -13,15 +13,20 @@
 
 isdefined(Main, :check_integral) || include(joinpath(@__DIR__, "..", "lib", "integration_check.jl"))
 
-# candidate value sets; the first that satisfies the conditions is used
+# candidate value sets; the first that satisfies the conditions is used. Every symbol of a rule's integrand
+# needs a value in each set: `t` (rubi_3_2_3_r8, r8_nondegenerate, r9) is in no F integrand, so it is added
+# here and not to FPARAMS, which bench F and the adapters' sign oracles use. Before 2026-11-25 `t` had no
+# value: the conditions were evaluated with the default 1.0 below, but the check and the Sage adapter had no
+# value for it (Sage raised "name 't' is not defined" on rubi_3_2_3_r9). Adding it changes no admissibility:
+# r8 and r8_nondegenerate fail h*j - g*k == 0 in every set, r9 has no condition on t.
 const CANDIDATES = [
-    FPARAMS,
+    merge(FPARAMS, Dict(:t => 0.75)),
     Dict(:a => 2.0, :b => 3.0, :c => 5.0, :d => 7.0, :e => 1.0, :f => 2.0, :g => 3.0, :h => 5.0, :m => 2.0, :n => 3.0,
-         :p => 2.0, :q => 3.0, :r => 2.0, :s => 3.0, :k => 2.0, :j => 1.0, :i => 2.0, :A => 2.0, :B => 3.0, :C => 5.0, :D => 1.0, :F => 2.0),
+         :p => 2.0, :q => 3.0, :r => 2.0, :s => 3.0, :t => 2.0, :k => 2.0, :j => 1.0, :i => 2.0, :A => 2.0, :B => 3.0, :C => 5.0, :D => 1.0, :F => 2.0),
     Dict(:a => 2.0, :b => 3.0, :c => 5.0, :d => 7.0, :e => 1.0, :f => 2.0, :g => 3.0, :h => 5.0, :m => -2.0, :n => 2.0,
-         :p => -3.0, :q => 1.0, :r => 2.0, :s => 3.0, :k => 2.0, :j => 1.0, :i => 2.0, :A => 2.0, :B => 3.0, :C => 5.0, :D => 1.0, :F => 2.0),
+         :p => -3.0, :q => 1.0, :r => 2.0, :s => 3.0, :t => 2.0, :k => 2.0, :j => 1.0, :i => 2.0, :A => 2.0, :B => 3.0, :C => 5.0, :D => 1.0, :F => 2.0),
     Dict(:a => 1.7, :b => 0.6, :c => 2.3, :d => 1.1, :e => 0.7, :f => 1.3, :g => 0.9, :h => 1.9, :m => 2.0, :n => 2.0,
-         :p => 0.5, :q => 1.5, :r => 2.1, :s => 1.9, :k => 2.0, :j => 0.35, :i => 0.65, :A => 1.4, :B => 0.9, :C => 2.2, :D => 0.5, :F => 1.6),
+         :p => 0.5, :q => 1.5, :r => 2.1, :s => 1.9, :t => 0.75, :k => 2.0, :j => 0.35, :i => 0.65, :A => 1.4, :B => 0.9, :C => 2.2, :D => 0.5, :F => 1.6),
 ]
 
 function read_rules()

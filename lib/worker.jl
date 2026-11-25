@@ -28,7 +28,10 @@ else
 end
 include(joinpath(@__DIR__, "..", BENCH, "problems.jl"))
 
-if START == 1 || (BENCH == "G_groebner" && get(ENV, "BENCH_G_HARD", "0") == "1" && START == 33)
+# the machine block of a supervised run is written by its first worker: case 1, or the first case of a targeted
+# run (BENCH_START_INDEX, as the hard Gröbner tier and single-case reruns use), not by a worker restarted later
+if START == 1 || (BENCH == "G_groebner" && get(ENV, "BENCH_G_HARD", "0") == "1" && START == 33) ||
+   START == parse(Int, get(ENV, "BENCH_START_INDEX", "1"))
     # the machine block goes next to the results file: results/<host>/machine.txt
     write_machine_info(joinpath(dirname(abspath(OUT)), "machine.txt"), [("bench", BENCH), ("system", SYSTEM), VERSIONS()...])
 end
