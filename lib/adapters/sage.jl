@@ -174,10 +174,19 @@ function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
         # Sage's giac interface raises on any output that contains "error" (giac._eval_line), and Giac prints over Q
         # the note "error probability is less than 1e-15" of its probabilistic algorithm: the basis was computed,
         # but before 2026-11-25 every such case was recorded as an error ("sage gave no basis"). The command is
-        # evaluated with the base Expect._eval_line (same process start, same file path for long input, same
-        # timing); an output line that mentions an error other than that note still raises.
+        # evaluated with the base Expect._eval_line, and a long command through a file as Sage's own
+        # _eval_line_using_file does (whose read command would otherwise go through giac._eval_line again); the
+        # process start and the timing are the same. An output line that mentions an error other than that note
+        # still raises.
         ["from sage.interfaces.expect import Expect",
-         "t0 = walltime()", "_casbench_out = Expect._eval_line(giac, 'casbench_B:=gbasis(" * (p == 0 ? L : L * " % $p") * ",$V,revlex)')",
+         "_casbench_cmd = 'casbench_B:=gbasis(" * (p == 0 ? L : L * " % $p") * ",$V,revlex)'",
+         "t0 = walltime()",
+         "if giac._eval_using_file_cutoff and len(_casbench_cmd) > giac._eval_using_file_cutoff:",
+         "    with open(giac._local_tmpfile(), 'w') as _casbench_file:",
+         "        _casbench_file.write(_casbench_cmd + '\\n')",
+         "    _casbench_out = Expect._eval_line(giac, giac._read_in_file_command(giac._local_tmpfile()), allow_use_file=False)",
+         "else:",
+         "    _casbench_out = Expect._eval_line(giac, _casbench_cmd, allow_use_file=False)",
          "t1 = walltime()",
          "_casbench_errors = [l for l in _casbench_out.splitlines() if 'error' in l.lower() and 'error probability' not in l.lower()]",
          "if _casbench_errors: raise RuntimeError('giac: ' + ' | '.join(_casbench_errors)[:300])",
