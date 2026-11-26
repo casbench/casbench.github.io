@@ -177,6 +177,37 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn(command, page)
         self.assertIn("integrate(x,x)", page)
 
+    def test_host_pages_show_their_self_check(self):
+        """The reference host's files may predate the self-check: its F page then has no empty self-check columns and
+        points to the hosts that have one; each such host gets its own F page and case pages, self-check included."""
+        root = self.make_root()
+        header = "bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput"
+        row = "F_integration\tGiac.jl\t1\tintegral\tintegrate_text\tverified_numeric\t1.0\t0.5\tx^2/2\tnumeric check\tintegrate(x,x)"
+        (root / "results" / "testhost" / "F_integration_giac.tsv").write_text(header + "\n" + row + "\n", encoding="utf-8")
+        (root / "results" / "other").mkdir()
+        (root / "results" / "other" / "machine.txt").write_text(MACHINE.replace("host\tvm", "host\tlaptop"), encoding="utf-8")
+        (root / "results" / "other" / "F_integration_giac.tsv").write_text(
+            header + "\tverify_status\tverify_time_s\tverify_input\n" + row + "\tverified_symbolic\t4.2\tdiff(x^2/2,x)-x\n", encoding="utf-8")
+        out = pathlib.Path(tempfile.mkdtemp())
+        sitegen.generate(root, out)
+        c = out / "content"
+        ref = (c / "results" / "f_integration" / "_index.md").read_text(encoding="utf-8")
+        self.assertNotIn("self-check |", ref)
+        self.assertIn("](../../results/other/f_integration/)", ref)
+        ref_case = (c / "results" / "f_integration" / sitegen.slug(1, "integral") / "_index.md").read_text(encoding="utf-8")
+        self.assertNotIn("not measured", ref_case)
+        page = (c / "results" / "other" / "f_integration" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("Giac.jl self-check", page)
+        self.assertIn("verified_symbolic", page)
+        self.assertIn("](../../../data/other/F_integration_giac.tsv)", page)
+        self.assertIn("`other`", page)
+        case = (c / "results" / "other" / "f_integration" / sitegen.slug(1, "integral") / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("verified_symbolic", case)
+        self.assertIn("diff(x^2/2,x)-x", case)
+        self.assertTrue((c / "results" / "other" / "_index.md").exists())
+        hosts = (c / "docs" / "hosts" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("](../../results/other/f_integration/)", hosts)
+
     def test_self_verification_median_requires_half(self):
         def row(status, time):
             return {"status": "verified_numeric", "verify_status": status, "verify_time_s": time}

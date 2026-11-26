@@ -12,6 +12,7 @@ written). The pages follow the site-kit SPEC pinned in site/go.mod
 (site-kit.json at the repository root). See tools/site/build.sh.
 """
 import argparse
+import copy
 import csv
 import datetime
 import html
@@ -584,6 +585,8 @@ class Site:
         if self.reference not in self.hosts:
             self.reference = next(iter(self.hosts), "")
         self.results = self.hosts.get(self.reference, {})     # the published numbers: the reference host
+        self.view_of = None        # set on a host view (Site.host_view): the host whose pages these are
+        self.up = "../../"         # from a bench page to the site root
         self.machine = self.machines.get(self.reference, [])
         self.categories = self.read_categories()
         self._task_cache = {}
@@ -802,6 +805,50 @@ class Site:
                 return p.name[len(key) + 1:-4]
         return label.lower()
 
+    # benches whose answers have a separately timed self-check (verify_status)
+    VERIFIED_BENCHES = ("F_integration", "H_osr")
+
+    def has_self_check(self, key, host=None):
+        rows = (r for s in self.hosts.get(host or self.reference, {}).get(key, {}).values() for r in s)
+        return any(r.get("verify_status") for r in rows)
+
+    def self_check_hosts(self, key):
+        """Hosts other than the reference whose files of this bench have a self-check: they get their own pages."""
+        return [h for h in self.hosts if h != self.reference and self.has_self_check(key, h)]
+
+    def host_view(self, host):
+        """The same site seen from another host, for that host's own bench pages under results/<host>/."""
+        v = copy.copy(self)
+        v.reference, v.view_of, v.up = host, host, "../../../"
+        v.results, v.machine = self.hosts[host], self.machines.get(host, [])
+        v._task_cache = {}
+        return v
+
+    def host_note(self, key):
+        """The line a bench page gives about hosts: whose numbers these are, and where the self-check is."""
+        if self.view_of:
+            return (f"This page shows the host `{esc(self.view_of)}`, not the reference host: the reference numbers are on the "
+                    f"[reference page]({self.up}results/{key.lower()}/), the hosts are compared on the [Hosts]({self.up}docs/hosts/) page.\n\n")
+        if key in self.VERIFIED_BENCHES and not self.has_self_check(key):
+            others = self.self_check_hosts(key)
+            out = (f"The files of the reference host `{esc(self.reference)}` were written before the integration self-check, "
+                   "so this page has no self-check column")
+            if others:
+                out += "; the self-check of every answer is on the pages of " + ", ".join(
+                    f"[`{esc(h)}`]({self.up}results/{esc(h)}/{key.lower()}/)" for h in others)
+            return out + ".\n\n"
+        return ""
+
+    def host_index(self, host, keys):
+        out = front(f"Host {host}", 40)
+        out += (f"Bench pages of the host `{esc(host)}`, with the integration self-check that the reference host's files do not "
+                f"have. The reference numbers are on the [Results](../) pages; the hosts are compared on the "
+                f"[Hosts](../../docs/hosts/) page.\n\n")
+        for key in keys:
+            title, desc = BENCHES.get(key, (key, ""))
+            out += f"### [{title}]({key.lower()}/)\n\n{desc}\n\n"
+        return out
+
     def by_case(self, key):
         """Case index -> {"case", "op", system: row} for a bench."""
         by_idx = {}
@@ -961,13 +1008,14 @@ class Site:
         out += f"{desc} Source: [`{key}/`]({BLOB}/{key}), results: [`results/`]({BLOB}/results).\n\n"
         out += ("Time shown: the minimum over repeated calls (warm; for a system run as a process, its own in-process time of "
                 "the single call), else the first call. Type to filter, click a heading to sort, click a case for every answer.\n\n")
-        raw = ", ".join(f"[{esc(s)}](../../data/{self.reference}/{key}_{self.system_key(key, s)}.tsv)" for s in names)
+        raw = ", ".join(f"[{esc(s)}]({self.up}data/{self.reference}/{key}_{self.system_key(key, s)}.tsv)" for s in names)
         if key == "G_groebner":
             hostdir = self.root / "results" / self.reference
             hard = sorted(hostdir.glob("G_groebner_hard_*.tsv"))
             if hard:
-                raw += "; hard tier: " + ", ".join(f"[{esc(p.name)}](../../data/{self.reference}/{p.name})" for p in hard)
-        out += f"Raw data (TSV, one file per system): {raw}; [all benches](../../data/results.zip); [every file](../../data/).\n\n"
+                raw += "; hard tier: " + ", ".join(f"[{esc(p.name)}]({self.up}data/{self.reference}/{p.name})" for p in hard)
+        out += f"Raw data (TSV, one file per system): {raw}; [all benches]({self.up}data/results.zip); [every file]({self.up}data/).\n\n"
+        out += self.host_note(key)
         out += ("## Answer statuses by system\n\nEach bar shows the distribution of recorded case statuses for a system; "
                 "segment labels are case counts. Percentages use all recorded cases, including unavailable operations; "
                 "missing records are not counted. The table gives exact counts, including segments too small to label. "
@@ -1011,7 +1059,7 @@ class Site:
             out += "\n"
         out += '<div class="filterable">\n\n'
         cat = key == "E_suite" and self.categories
-        verification = key in ("F_integration", "H_osr")
+        verification = key in self.VERIFIED_BENCHES and self.has_self_check(key)
         headers = [h for s in names for h in ([esc(s), esc(s) + " self-check"] if verification else [esc(s)])]
         out += "| # | case |" + (" category |" if cat else "") + " op | " + " | ".join(headers) + " |\n"
         out += "|---|---|" + ("---|" if cat else "") + "---|" + "---|" * len(headers) + "\n"
@@ -1047,7 +1095,7 @@ class Site:
             # cases that made each page 3 MB and the site 4 GB) and out of the search index (llms-full.txt has every
             # case as text); the bench page links every case
             out = front(f"{i}. {name}", i, yaml="sidebar:\n  exclude: true\nexcludeSearch: true", linkTitle=f"{i}. {name}"[:60])
-            out += f"[{title}](../) · operation `{esc(e['op'])}`"
+            out += f"[{title}](../) · operation `{esc(e['op'])}`" + (f" · host `{esc(self.view_of)}`" if self.view_of else "")
             if key == "E_suite" and i in self.categories:
                 out += f" · category *{esc(self.categories[i])}*"
             out += "\n\n"
@@ -1056,7 +1104,7 @@ class Site:
             asked = [n for n, _ in __import__("collections").Counter(notes).most_common(1)]
             if asked:
                 out += f"**What is asked.** {esc(asked[0])}\n\n"
-            verification = key in ("F_integration", "H_osr")
+            verification = key in self.VERIFIED_BENCHES and self.has_self_check(key)
             groebner = key == "G_groebner"
             if groebner:
                 out += ("Check time includes any checker compilation. Process peak RSS, where recorded, includes "
@@ -1299,6 +1347,10 @@ class Site:
             out += (f"| `{esc(h)}` | {esc(s.get('cpu', ''))} | {esc(s.get('memory_GiB', ''))} | {esc(s.get('julia', ''))} | "
                     f"{esc(s.get('calibration_s', ''))} | `{esc(str(s.get('harness_commit', ''))[:12])}`"
                     f"{' (dirty)' if str(s.get('harness_dirty', '')) == 'true' else ''} |\n")
+        own = [(h, k) for k in self.VERIFIED_BENCHES for h in self.self_check_hosts(k) if k in self.hosts[h]]
+        if own:
+            out += ("\nBench pages of another host, with the integration self-check the reference host's files do not have: "
+                    + ", ".join(f"[`{esc(h)}`, {esc(BENCHES.get(k, (k, ''))[0])}](../../results/{esc(h)}/{k.lower()}/)" for h, k in own) + ".\n")
         out += "\n## Verified and attempted cases per host\n\n"
         out += "| bench | system | " + " | ".join(f"`{esc(h)}`" for h in hosts) + " |\n|---|---|" + "---|" * len(hosts) + "\n"
         pairs = sorted({(b, s) for h in hosts for b, systems in self.hosts[h].items() for s in systems})
@@ -1642,6 +1694,16 @@ def generate(root, out):
         write(c / "results" / key.lower() / "_index.md", site.bench_page(key, w))
         for d, text in site.case_pages(key):
             write(c / "results" / key.lower() / d / "_index.md", text)
+    for host in [h for h in site.hosts if h != site.reference]:
+        keys = [k for k in site.VERIFIED_BENCHES if host in site.self_check_hosts(k)]
+        if not keys:
+            continue
+        view = site.host_view(host)
+        write(c / "results" / host / "_index.md", site.host_index(host, keys))
+        for w, key in enumerate(keys, 1):
+            write(c / "results" / host / key.lower() / "_index.md", view.bench_page(key, w))
+            for d, text in view.case_pages(key):
+                write(c / "results" / host / key.lower() / d / "_index.md", text)
     if "J_rur" not in site.results and (site.root / "J_rur" / "problems.jl").exists():
         write(c / "results" / "j_rur" / "_index.md", front("J. Rational univariate representations", 20) +
               "No results have been committed for this bench yet. See [Methodology](../../methodology/) "
