@@ -136,16 +136,27 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     # line with Giac's own error mark "Error:" raises (before 2026-11-26: errors and false answers). Giac runs on one
     # thread, as in every Giac column (docs/benches.md), set before the timed call. The variable is passed by its
     # Giac name (sageVARx), as Sage's own call does: int(f, sage1) would take sage1 for a new variable.
+    # The result variable is reset before each call: a failed int leaves it unassigned (Giac does not always print
+    # "Error:", for instance "Degree mismatch inside factorisation"), and the previous case's value must not be read.
+    # Giac reprints its warnings each time some results are evaluated, so that Sage cannot convert them: that is an
+    # error of the interface, not an answer (before 2026-11-26 the warning text itself was recorded as the answer).
     integrate_giac = "    _casbench_gf = giac(_casbench_integrand)\n" *
         "    _casbench_out = Expect._eval_line(giac, 'casbench_F:=int(' + _casbench_gf.name() + ',' + str(giac($var)) + '):;', allow_use_file=False)\n" *
         "    t1 = walltime()\n" *
         "    _casbench_failed = [l for l in _casbench_out.splitlines() if 'Error:' in l]\n" *
         "    if _casbench_failed: raise RuntimeError('giac: ' + ' | '.join(_casbench_failed))\n" *
+        "    if Expect._eval_line(giac, 'type(casbench_F)', allow_use_file=False).strip().splitlines()[-1] == 'string':\n" *
+        "        raise RuntimeError('giac gave no antiderivative: ' + ' '.join(_casbench_out.split())[:600])\n" *
         "    _casbench_giac_answer = giac('casbench_F')\n" *
         "    try:\n        _casbench_answer = _casbench_giac_answer.sage()\n" *
-        "    except Exception as ex:\n        _casbench_answer = str(_casbench_giac_answer)"
+        "    except Exception as ex:\n" *
+        "        _casbench_text = str(_casbench_giac_answer)\n" *
+        "        _casbench_msgs = [l for l in _casbench_text.splitlines() if l.startswith(('Simplification assuming', 'Warning', 'Check ['))]\n" *
+        "        if _casbench_msgs: raise RuntimeError('Sage cannot read the answer: Giac prints messages each time it is evaluated (' + _casbench_msgs[0] + ')')\n" *
+        "        _casbench_answer = _casbench_text"
     lines = ["var('" * join(unique([var; string.(used)]), " ") * "')", assumptions...,
-             (SAGE_ALGORITHM == "giac" ? ["from sage.interfaces.expect import Expect", "giac.eval('threads:=1')"] : String[])...,
+             (SAGE_ALGORITHM == "giac" ? ["from sage.interfaces.expect import Expect", "giac.eval('threads:=1')",
+                                          "Expect._eval_line(giac, 'casbench_F:=\"casbench_unset\":;', allow_use_file=False)"] : String[])...,
              "t0 = walltime()",
              "try:",
              "    _casbench_integrand = $f",
@@ -215,6 +226,7 @@ function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
         # still raises.
         ["from sage.interfaces.expect import Expect",
          "giac.eval('threads:=1')",          # one Giac thread, as in every Giac column (docs/benches.md), before the timed call
+         "Expect._eval_line(giac, 'casbench_B:=\"casbench_unset\":;', allow_use_file=False)",   # no stale basis from the previous case
          "_casbench_cmd = 'casbench_B:=gbasis(" * (p == 0 ? L : L * " % $p") * ",$V,revlex)'",
          "t0 = walltime()",
          "if giac._eval_using_file_cutoff and len(_casbench_cmd) > giac._eval_using_file_cutoff:",
@@ -226,6 +238,7 @@ function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
          "t1 = walltime()",
          "_casbench_errors = [l for l in _casbench_out.splitlines() if 'error' in l.lower() and 'error probability' not in l.lower()]",
          "if _casbench_errors: raise RuntimeError('giac: ' + ' | '.join(_casbench_errors)[:300])",
+         "if Expect._eval_line(giac, 'type(casbench_B)', allow_use_file=False).strip().splitlines()[-1] == 'string': raise RuntimeError('giac gave no basis: ' + ' '.join(_casbench_out.split())[:300])",
          "B = giac('casbench_B')",
          "print('<<' + 'TIME>>', t1 - t0)", "for g in B:", "    print('<<' + 'G>>', str(g).replace(' % $p', ''))"]
     txt = run_sage(join(lines, "\n") * "\n")

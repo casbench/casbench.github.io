@@ -19,14 +19,19 @@ include(joinpath(@__DIR__, "..", "lib", "integration_check.jl"))
         @test occursin("forms returned verifies", note) || occursin("of the 2 returned verifies", note)
     end
     if system == "sage_giac"
-        # bench H case 479: Giac's warning "Simplification assuming c near 0" was read as the answer
+        # bench H case 479: Giac's warning "Simplification assuming c near 0", reprinted at each evaluation of the
+        # result, was recorded as the answer; it is now an error of the interface that says so
         params = merge(FPARAMS, Dict(:t => 0.75))
-        A = INTEGRATE_TEXT("(((s+(t*ln((i*((g+(h*x)))^(n)))))*ln((e*(((f*((a+(b*x)))^(p))*((c+(d*x)))^(q)))^(r))))*((j+(k*x)))^((-1)))", "x", params)
+        A = try INTEGRATE_TEXT("(((s+(t*ln((i*((g+(h*x)))^(n)))))*ln((e*(((f*((a+(b*x)))^(p))*((c+(d*x)))^(q)))^(r))))*((j+(k*x)))^((-1)))", "x", params)
+            catch err; sprint(showerror, err) end
         @test !startswith(string(A), "Simplification")
-        # bench F case 140: "Warning, integration of abs or sign assumes ..." raised in Sage's giac interface
-        B = INTEGRATE_TEXT("(a+c/x^2+b/x)^(1/2)", "x", FPARAMS)
+        # bench F case 140: Giac fails ("Degree mismatch", also with Giac.jl directly); the error is Giac's own now,
+        # and the next case must not read the previous value of the result variable
+        B = try INTEGRATE_TEXT("(a+c/x^2+b/x)^(1/2)", "x", FPARAMS) catch err; sprint(showerror, err) end
+        @test occursin("giac gave no antiderivative", string(B))
         @test !occursin("error occurred running a Giac command", string(B))
-        @test check_integral(B, "(a+c/x^2+b/x)^(1/2)", "")[1] in (:verified_numeric, :unverified, :wrong)
+        C = INTEGRATE_TEXT("x^2", "x", FPARAMS)
+        @test check_integral(C, "x^2", "")[1] == :verified_numeric
     end
     if system in ("sage_sympy", "sage_fricas", "sage_giac")
         # an exception is reported with its type and text: sage_error: NameError: name ... is not defined
