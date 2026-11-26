@@ -1131,3 +1131,272 @@ system	Sage/FriCAS
 SageMath	SageMath version 10.9, Release Date: 2026-05-04
 sage_algorithm	fricas
 
+
+# 2026-11-26 07:04:47
+run_id	20261126_host-2_review_reruns_0c0d15a
+harness_commit	0c0d15a881feab9397f1e767cf2ab4d9afdf5bff
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	11324719adbf65a05d1bb45d3cee11c3f81b1406
+host	host-2
+host_slug	host-2-review-reruns-20261126
+kernel	Linux x86_64-linux-gnu
+cpu	AMD Ryzen 9 8945HS w/ Radeon 780M Graphics x16
+memory_GiB	30.6
+julia	1.13.3
+julia_threads	1
+load_avg	1.31
+calibration_s	0.344
+bench	E_suite
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+
+# 2026-11-26 11:42:44
+run_id	20261126_host-2_review_reruns_0c0d15a
+harness_commit	0c0d15a881feab9397f1e767cf2ab4d9afdf5bff
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	11324719adbf65a05d1bb45d3cee11c3f81b1406
+host	host-2
+host_slug	host-2-review-reruns-20261126
+kernel	Linux x86_64-linux-gnu
+cpu	AMD Ryzen 9 8945HS w/ Radeon 780M Graphics x16
+memory_GiB	30.6
+julia	1.13.3
+julia_threads	1
+load_avg	2.33
+calibration_s	0.3408
+bench	F_integration
+system	Sage/Maxima
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	maxima
+
+
+# 2026-11-26 12:09:21
+run_id	20261126_host-2_review_reruns_0c0d15a
+harness_commit	0c0d15a881feab9397f1e767cf2ab4d9afdf5bff
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	11324719adbf65a05d1bb45d3cee11c3f81b1406
+host	host-2
+host_slug	host-2-review-reruns-20261126
+kernel	Linux x86_64-linux-gnu
+cpu	AMD Ryzen 9 8945HS w/ Radeon 780M Graphics x16
+memory_GiB	30.6
+julia	1.13.3
+julia_threads	1
+load_avg	2.38
+calibration_s	0.345
+bench	F_integration
+system	Sage/FriCAS
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	fricas
+
+
+# 2026-11-26 12:46:43
+run_id	20261126_host-2_review_reruns_0c0d15a
+harness_commit	0c0d15a881feab9397f1e767cf2ab4d9afdf5bff
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	11324719adbf65a05d1bb45d3cee11c3f81b1406
+host	host-2
+host_slug	host-2-review-reruns-20261126
+kernel	Linux x86_64-linux-gnu
+cpu	AMD Ryzen 9 8945HS w/ Radeon 780M Graphics x16
+memory_GiB	30.6
+julia	1.13.3
+julia_threads	1
+load_avg	3.85
+calibration_s	0.3377
+bench	F_integration
+system	Sage/SymPy
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	sympy
+
+
+# 2026-11-26 15:21:31
+run_id	20261126_host-2_review_reruns_0c0d15a
+harness_commit	0c0d15a881feab9397f1e767cf2ab4d9afdf5bff
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	11324719adbf65a05d1bb45d3cee11c3f81b1406
+host	host-2
+host_slug	host-2-review-reruns-20261126
+kernel	Linux x86_64-linux-gnu
+cpu	AMD Ryzen 9 8945HS w/ Radeon 780M Graphics x16
+memory_GiB	30.6
+julia	1.13.3
+julia_threads	1
+load_avg	2.59
+calibration_s	0.3443
+bench	H_osr
+system	Sage/Maxima
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	maxima
+
+
+# 2026-11-26 15:42:21
+run_id	20261126_host-2_review_reruns_0c0d15a
+harness_commit	0c0d15a881feab9397f1e767cf2ab4d9afdf5bff
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	11324719adbf65a05d1bb45d3cee11c3f81b1406
+host	host-2
+host_slug	host-2-review-reruns-20261126
+kernel	Linux x86_64-linux-gnu
+cpu	AMD Ryzen 9 8945HS w/ Radeon 780M Graphics x16
+memory_GiB	30.6
+julia	1.13.3
+julia_threads	1
+load_avg	2.44
+calibration_s	0.342
+bench	H_osr
+system	Sage/FriCAS
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	fricas
+
+
+# 2026-11-26 16:13:06
+run_id	20261126_host-2_review_reruns_0c0d15a
+harness_commit	0c0d15a881feab9397f1e767cf2ab4d9afdf5bff
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	11324719adbf65a05d1bb45d3cee11c3f81b1406
+host	host-2
+host_slug	host-2-review-reruns-20261126
+kernel	Linux x86_64-linux-gnu
+cpu	AMD Ryzen 9 8945HS w/ Radeon 780M Graphics x16
+memory_GiB	30.6
+julia	1.13.3
+julia_threads	1
+load_avg	2.51
+calibration_s	0.3445
+bench	H_osr
+system	Sage/SymPy
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	sympy
+
+# 2026-11-26 19:06:50
+run_id	20261126_host2_reruns3_73f1ea4
+harness_commit	73f1ea466f78a36354537d721e016626a952df4b
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	11324719adbf65a05d1bb45d3cee11c3f81b1406
+host	host-2-reruns3-20261126
+host_slug	host-2-reruns3-20261126
+kernel	Linux x86_64-linux-gnu
+cpu	AMD Ryzen 9 8945HS w/ Radeon 780M Graphics x16
+memory_GiB	30.6
+julia	1.13.3
+julia_threads	1
+load_avg	2.26
+calibration_s	0.3452
+bench	F_integration
+system	FriCAS
+FriCAS	Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg
+
+
+# 2026-11-26 19:37:38
+run_id	20261126_host2_reruns3_73f1ea4
+harness_commit	73f1ea466f78a36354537d721e016626a952df4b
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	11324719adbf65a05d1bb45d3cee11c3f81b1406
+host	host-2-reruns3-20261126
+host_slug	host-2-reruns3-20261126
+kernel	Linux x86_64-linux-gnu
+cpu	AMD Ryzen 9 8945HS w/ Radeon 780M Graphics x16
+memory_GiB	30.6
+julia	1.13.3
+julia_threads	1
+load_avg	3.17
+calibration_s	0.3391
+bench	H_osr
+system	FriCAS
+FriCAS	Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg
+
+
+# 2026-11-26 20:18:34
+run_id	20261126_host2_reruns3_73f1ea4
+harness_commit	73f1ea466f78a36354537d721e016626a952df4b
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	11324719adbf65a05d1bb45d3cee11c3f81b1406
+host	host-2-reruns3-20261126
+host_slug	host-2-reruns3-20261126
+kernel	Linux x86_64-linux-gnu
+cpu	AMD Ryzen 9 8945HS w/ Radeon 780M Graphics x16
+memory_GiB	30.6
+julia	1.13.3
+julia_threads	1
+load_avg	1.81
+calibration_s	0.3453
+bench	F_integration
+system	Maxima
+Maxima	5.49.0
+
+
+# 2026-11-26 20:35:37
+run_id	20261126_host2_reruns3_73f1ea4
+harness_commit	73f1ea466f78a36354537d721e016626a952df4b
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	11324719adbf65a05d1bb45d3cee11c3f81b1406
+host	host-2-reruns3-20261126
+host_slug	host-2-reruns3-20261126
+kernel	Linux x86_64-linux-gnu
+cpu	AMD Ryzen 9 8945HS w/ Radeon 780M Graphics x16
+memory_GiB	30.6
+julia	1.13.3
+julia_threads	1
+load_avg	2.32
+calibration_s	0.343
+bench	H_osr
+system	Maxima
+Maxima	5.49.0
+
+
+# 2026-11-26 20:58:47
+run_id	20261126_host2_reruns3_73f1ea4
+harness_commit	73f1ea466f78a36354537d721e016626a952df4b
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	11324719adbf65a05d1bb45d3cee11c3f81b1406
+host	host-2-reruns3-20261126
+host_slug	host-2-reruns3-20261126
+kernel	Linux x86_64-linux-gnu
+cpu	AMD Ryzen 9 8945HS w/ Radeon 780M Graphics x16
+memory_GiB	30.6
+julia	1.13.3
+julia_threads	1
+load_avg	1.54
+calibration_s	0.338
+bench	F_integration
+system	Sage/Giac
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	giac
+
+
+# 2026-11-26 21:44:05
+run_id	20261126_host2_reruns3_73f1ea4
+harness_commit	73f1ea466f78a36354537d721e016626a952df4b
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	11324719adbf65a05d1bb45d3cee11c3f81b1406
+host	host-2-reruns3-20261126
+host_slug	host-2-reruns3-20261126
+kernel	Linux x86_64-linux-gnu
+cpu	AMD Ryzen 9 8945HS w/ Radeon 780M Graphics x16
+memory_GiB	30.6
+julia	1.13.3
+julia_threads	1
+load_avg	2.13
+calibration_s	0.3432
+bench	H_osr
+system	Sage/Giac
+SageMath	SageMath version 10.9, Release Date: 2026-05-04
+sage_algorithm	giac
