@@ -82,3 +82,22 @@ end
     @test saved[]
     @test first < 0.08 && warm < 0.08
 end
+
+@testset "machine block names the host by BENCH_HOST, not by the hostname" begin
+    mktempdir() do dir
+        path = joinpath(dir, "machine.txt")
+        saved = BenchCommon.RUN_ID[]
+        BenchCommon.RUN_ID[] = ""          # the run id of a fresh process, generated under BENCH_HOST
+        try
+            withenv("BENCH_HOST" => "host-test", "BENCH_RUN_ID" => nothing) do
+                write_machine_info(path, Pair{String,String}[]; calibration = false)
+            end
+        finally
+            BenchCommon.RUN_ID[] = saved
+        end
+        fields = Dict(split(l, '\t'; limit = 2) for l in readlines(path) if occursin('\t', l))
+        @test fields["host"] == "host-test"
+        @test fields["host_slug"] == "host-test"
+        @test !occursin(gethostname(), read(path, String)) || gethostname() == "host-test"
+    end
+end
