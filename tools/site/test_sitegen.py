@@ -352,7 +352,10 @@ class SiteGenTests(unittest.TestCase):
         page = (out / "content" / "history" / "_index.md").read_text(encoding="utf-8")
         # the stamp covers every host of the history, not only the reference host's last run
         self.assertIn("History up to the run of 2026-11-25 (<code>testhost</code> to 2026-11-19, <code>otherhost</code> to 2026-11-25)", page)
-        self.assertEqual(page.count('<svg class="viz-chart"'), 1)                 # verified counts only, two series in one chart
+        self.assertEqual(page.count('<svg class="viz-chart"'), 1)                 # verified counts, the series with two runs only
+        self.assertIn("One run so far for the other series", page)                     # a one-run series is listed, not drawn
+        self.assertIn("| Giac.jl | otherhost | 2026-11-25 | 23 / 23 |", page)
+        self.assertNotIn("@otherhost", page)
         self.assertIn('<g class="viz-pt" aria-label="2026-11-18 08:28: Giac.jl @testhost 22">', page)   # the label starts with the date
         self.assertIn('data-viz="dense"', page)
         self.assertIn("<table", page.replace("| date | host |", "<table"))             # the values are on the page
