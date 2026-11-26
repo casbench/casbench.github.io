@@ -165,6 +165,11 @@ julia_expr(s::AbstractString) = Meta.parse(translate(s, :julia))
 # and logarithms of negative values are defined)
 # ---------------------------------------------------------------------------
 module Fns
+    # a zero imaginary part made +0.0 after every operation of an evaluated expression: Julia's complex arithmetic gives
+    # -0.0 (cos(2.53 + 0.0im) is -0.819 - 0.0im, -(1.7 + 0.0im) is -1.7 - 0.0im), which puts a power or a root of a
+    # negative real on the other side of its cut; +0.0 gives the principal value every system gives (test/integration_cuts.jl)
+    _cz(z::Complex) = complex(real(z), imag(z) + 0.0)
+    _cz(z) = z
     using SpecialFunctions: gamma, zeta, erf, erfc, erfi, expinti, expint, sinint, cosint
     # functions Base lacks or whose real version throws on the complex plane
     sinhint(z) = error("Shi: not evaluated")
@@ -206,8 +211,11 @@ Maple-like expression `s` with every symbol of `names` bound to its complex
 value at the point. Compiled once per expression (a closure over a generated
 function); throws at evaluation if a function is not available.
 """
+canonical_zeros(ex) = ex isa Expr && ex.head === :call ?
+    Expr(:call, :_cz, Expr(:call, ex.args[1], map(canonical_zeros, ex.args[2:end])...)) : ex
+
 function make_evaluator(s::AbstractString, names::Vector{Symbol})
-    ex = julia_expr(s)
+    ex = canonical_zeros(julia_expr(s))
     args = Expr(:tuple, names...)
     fn = Core.eval(Fns, Expr(:->, args, ex))
     Base.invokelatest(() -> nothing)

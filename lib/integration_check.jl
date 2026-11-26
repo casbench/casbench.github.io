@@ -116,6 +116,21 @@ unevaluated(out) = (s = string(out); occursin(r"integrate\(|Integral\(|∫|Integ
 # each with its own values, in a field `alternatives`
 alternatives(out) = hasproperty(out, :alternatives) ? out.alternatives : ()
 
+# whether the integrand, real at the point, is on a branch cut there: its value at the point (the principal value)
+# differs from its value just above or just below the real axis. Bench F case 348 has two cuts that compensate: just
+# off the axis the integrand is +0.116 on both sides, on the axis its principal value is -0.116, and the systems' answers
+# follow one or the other.
+function on_cut(fev, pt, fx; eps = 1e-12)
+    side(s) = (q = Dict{Symbol,ComplexF64}(k => v for (k, v) in pt); q[:x] = complex(pt[:x], s * eps); q)
+    tol = 1e-6 * max(abs(fx), 1.0)
+    for s in (1, -1)
+        v = try fev(side(s)) catch; nothing end
+        v === nothing && continue
+        abs(v - fx) > tol && return true
+    end
+    false
+end
+
 """
     check_integral(out, integrand, reference; params = FPARAMS, certified = nothing)
 
@@ -157,6 +172,7 @@ function check_integral(out, integrand::String, reference::String; params::Dict{
     cev = certified === nothing ? nothing : (try make_evaluator(certified, names) catch err; nothing end)
     h = 1e-5
     npts = 0
+    ncut = 0
     samples = String[]
     Fvals = Tuple{Float64,ComplexF64}[]      # (x0, F(x0)) for the comparison with the certified antiderivative
     for x0 in real_points
@@ -165,6 +181,12 @@ function check_integral(out, integrand::String, reference::String; params::Dict{
         (fx === nothing || !isfinite(fx)) && continue
         abs(imag(fx)) > 1e-9 * max(abs(fx), 1.0) && continue      # only points where the integrand is real
         fx = real(fx)
+        # a point on a branch cut of the integrand (its values above and below the real axis differ) is not used: the
+        # value there is only a convention (bench F case 348, where every point is on a cut; test/integration_cuts.jl)
+        if on_cut(fev, pt, fx)
+            ncut += 1
+            continue
+        end
         ptp = copy(pt); ptp[:x] = x0 + h
         ptm = copy(pt); ptm[:x] = x0 - h
         # Exclude obvious singularities or departures from the real branch
@@ -182,7 +204,9 @@ function check_integral(out, integrand::String, reference::String; params::Dict{
         F0 = EVAL(out, pt)
         F0 === nothing || push!(Fvals, (x0, ComplexF64(F0)))
     end
-    npts >= 4 || return (:unverified, "fewer than four real points could be evaluated; leaves=$leaves ref=$ref; samples=" * join(samples, ","))
+    npts >= 4 || return (:unverified, "fewer than four real points could be evaluated" *
+                                      (ncut > 0 ? " ($ncut on a branch cut of the integrand)" : "") *
+                                      "; leaves=$leaves ref=$ref; samples=" * join(samples, ","))
     note = grade_note(:unverified) * "; Float64 x:Fprime/f=" * join(samples, ",")
     if cev !== nothing && length(Fvals) >= 2
         agree = true

@@ -110,8 +110,12 @@ Maple-like text of the files is translated to each system's syntax by
 `lib/mapleish.jl`. Every answer is checked in plain Julia: the derivative of
 the answer, by a central finite difference of the system's own numeric
 evaluation of its answer, against the integrand evaluated in Julia (complex
-arithmetic, SpecialFunctions) at six candidate real points. At least four
-must be usable. A complex point is also checked when a conservative local screen accepts
+arithmetic, SpecialFunctions, a zero imaginary part kept +0.0 so that a root
+or a power of a negative real takes its principal value) at six candidate real
+points. A point where the integrand's value differs from its value just above
+or below the real axis lies on a branch cut, where the value is a convention,
+and is not used, as a pole is not (bench F case 348). At least four must be
+usable. A complex point is also checked when a conservative local screen accepts
 the integrand after checking supported operations, poles and principal branch
 cuts at the finite-difference stencil. If the answer's real- and
 imaginary-direction differences disagree, it is unverified, since a
