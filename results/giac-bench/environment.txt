@@ -9,16 +9,7 @@ Platform Info:
   OS: Linux (x86_64-linux-gnu)
   uname: Linux 6.18.56 #1-NixOS SMP PREEMPT_DYNAMIC Sun Oct 11 13:26:12 UTC 2026 x86_64 unknown
   CPU: 13th Gen Intel(R) Core(TM) i5-13500T: 
-              speed         user         nice          sys         idle          irq
-       #1     0 MHz        298 s        355 s         37 s      38658 s          9 s  
-       #2     0 MHz        412 s        165 s         36 s      38730 s          9 s  
-       #3     0 MHz        339 s        441 s         32 s      38529 s          9 s  
-       #4     0 MHz        413 s        188 s         29 s      38713 s         10 s  
-       #5     0 MHz        356 s        641 s        107 s      38247 s         10 s  
-       #6     0 MHz        330 s        269 s         22 s      38727 s         11 s  
   Memory: 7.685737609863281 GB (7114.546875 MB free)
-  Uptime: 39394.97 sec
-  Load Avg:  0.12  0.09  0.03
   WORD_SIZE: 64
   LLVM: libLLVM-20.1.8 (ORCJIT, raptorlake)
   GC: Built with stock GC
@@ -28,14 +19,7 @@ Environment:
   JULIA_PYTHONCALL_EXE = /nix/store/2xjrmpad4ni55l0rnlpjibrg5igfg5qh-python3-3.14.10-env/bin/python3
   JULIA_PKG_PRECOMPILE_AUTO = 1
   JULIA_NUM_THREADS = 1
-  NIX_PATH = nixpkgs=/nix/store/fnz4mqb8ljnga2fz52c6xa2i1khn6fg1-mcw86k11xl4bnd6mhb7b93l34kxr13lz-source
-  HOME = /home/scelles
-  INFOPATH = /home/scelles/.nix-profile/info:/home/scelles/.nix-profile/share/info:/nix/profile/info:/nix/profile/share/info:/home/scelles/.local/state/nix/profile/info:/home/scelles/.local/state/nix/profile/share/info:/etc/profiles/per-user/scelles/info:/etc/profiles/per-user/scelles/share/info:/nix/var/nix/profiles/default/info:/nix/var/nix/profiles/default/share/info:/run/current-system/sw/info:/run/current-system/sw/share/info
   TERM = dumb
-  GTK_PATH = /home/scelles/.nix-profile/lib/gtk-2.0:/home/scelles/.nix-profile/lib/gtk-3.0:/home/scelles/.nix-profile/lib/gtk-4.0:/nix/profile/lib/gtk-2.0:/nix/profile/lib/gtk-3.0:/nix/profile/lib/gtk-4.0:/home/scelles/.local/state/nix/profile/lib/gtk-2.0:/home/scelles/.local/state/nix/profile/lib/gtk-3.0:/home/scelles/.local/state/nix/profile/lib/gtk-4.0:/etc/profiles/per-user/scelles/lib/gtk-2.0:/etc/profiles/per-user/scelles/lib/gtk-3.0:/etc/profiles/per-user/scelles/lib/gtk-4.0:/nix/var/nix/profiles/default/lib/gtk-2.0:/nix/var/nix/profiles/default/lib/gtk-3.0:/nix/var/nix/profiles/default/lib/gtk-4.0:/run/current-system/sw/lib/gtk-2.0:/run/current-system/sw/lib/gtk-3.0:/run/current-system/sw/lib/gtk-4.0
-  QTWEBKIT_PLUGIN_PATH = /home/scelles/.nix-profile/lib/mozilla/plugins/:/nix/profile/lib/mozilla/plugins/:/home/scelles/.local/state/nix/profile/lib/mozilla/plugins/:/etc/profiles/per-user/scelles/lib/mozilla/plugins/:/nix/var/nix/profiles/default/lib/mozilla/plugins/:/run/current-system/sw/lib/mozilla/plugins/
-  LIBEXEC_PATH = /home/scelles/.nix-profile/libexec:/nix/profile/libexec:/home/scelles/.local/state/nix/profile/libexec:/etc/profiles/per-user/scelles/libexec:/nix/var/nix/profiles/default/libexec:/run/current-system/sw/libexec
-  PATH = /nix/store/jspxwfjqhz060q18s0dcblx5h1h361fw-julia-bin-1.13.3/bin:/nix/store/2xjrmpad4ni55l0rnlpjibrg5igfg5qh-python3-3.14.10-env/bin:/nix/store/i2m3w4ly2w6grrmk1j59rb7zp09bssia-git-2.56.0/bin:/nix/store/8x4c8zah3fbnyckaic4sskjbw7d2y98n-util-linux-2.42.4-bin/bin:/nix/store/a50ml7za6h61m4mv4cdbvkl33c6sx5yn-coreutils-9.12/bin:/run/wrappers/bin:/home/scelles/.nix-profile/bin:/nix/profile/bin:/home/scelles/.local/state/nix/profile/bin:/etc/profiles/per-user/scelles/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin
 Architecture:                            x86_64
 CPU op-mode(s):                          32-bit, 64-bit
 Address sizes:                           46 bits physical, 48 bits virtual

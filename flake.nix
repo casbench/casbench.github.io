@@ -83,7 +83,7 @@
             echo "# environment capture $(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo "flake_rev ${self.rev or "dirty"}"
             echo "nixpkgs_rev ${nixpkgs.rev}"
-            julia --startup-file=no -e 'using InteractiveUtils; versioninfo(verbose=true)'
+            julia --startup-file=no -e 'using InteractiveUtils; versioninfo()'
             lscpu
           } >> "results/$h/environment.txt" 2>&1
           exec nice -n 10 julia --startup-file=no run_all.jl "$@"

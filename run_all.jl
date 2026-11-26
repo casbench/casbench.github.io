@@ -8,7 +8,8 @@
 #   BENCH_TIMEOUT_C                    per-case limit for integer factorisation (default 600)
 #   BENCH_TIMEOUT_E                    per-case limit for the problem suite (default 60)
 #   BENCH_SKIP_INSTANTIATE=1           do not call Pkg.instantiate on the environments
-#   BENCH_HOST                         name of this host in results/<host>/ (default: the hostname)
+#   BENCH_HOST                         name of this host in results/<host>/ and in machine.txt (default: the
+#                                      hostname); give a neutral name to a machine that is to be published
 #   BENCH_ALLOW_DIRTY=1                run from a tree with uncommitted changes (the run is then marked -dirty)
 #   BENCH_RUN_ID                       identifier of the run (default: <date>_<host>, generated here)
 #   BENCH_RESUME=1                     keep the existing results files and resume each one after its last case

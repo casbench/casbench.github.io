@@ -304,7 +304,8 @@ function write_machine_info(path::AbstractString, versions::AbstractVector; cali
         println(io, "harness_dirty\t", gi.dirty)
         isempty(gi.giac_jl) || println(io, "giac_jl_commit\t", gi.giac_jl)
         isempty(gi.osr) || println(io, "osr_commit\t", gi.osr)
-        println(io, "host\t", gethostname())
+        # BENCH_HOST names a published host: the machine's own name is then not recorded
+        println(io, "host\t", haskey(ENV, "BENCH_HOST") ? host_slug() : gethostname())
         println(io, "host_slug\t", host_slug())
         println(io, "kernel\t", Sys.KERNEL, " ", Sys.MACHINE)
         println(io, "cpu\t", cpu, " x", Sys.CPU_THREADS)

@@ -1553,7 +1553,7 @@ class Site:
             lab = lambda s, h: SYSTEM_LABELS.get(s, s) + (f" @{h}" if multi and h else "")
             out += f"## {esc(title)}\n\n"
             # a time series needs two runs: a series with one run is listed, not drawn as a lone point (most series had
-            # a single run when the GEEKR9 campaign was published, and the page was a wall of one-point charts)
+            # a single run when the host-2 campaign was published, and the page was a wall of one-point charts)
             points = {(s, h): [(r["date"], r["verified"]) for r in rows if r["system"] == s and r["host"] == h] for s, h in series}
             charted = {k: v for k, v in points.items() if len({d[:16] for d, _ in v}) >= 2}
             single = [k for k in series if k not in charted]

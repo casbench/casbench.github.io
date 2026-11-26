@@ -56,6 +56,13 @@ AI assistance row exists. See `CONTRIBUTING.md`.
   pages; another machine's campaign is published as its own host directory,
   `results/<host>/`, and compared on the Hosts page. Changing the reference
   host is the owner's decision.
+- A host is published under a neutral name (`BENCH_HOST=host-<n>`), never
+  under a personal machine's own hostname, and its files carry no user name,
+  home directory or session counters. A campaign already written under
+  another name is renamed with `tools/anonymize_host.py`, the only change
+  allowed to a results file outside the harness. Only the identity is
+  hidden: the machine's characteristics (processor, memory, threads, kernel,
+  versions, what shares the host) stay in the files and the texts.
 - A campaign assembled from several runs (a main run, then targeted reruns)
   copies each results file unchanged from the run that wrote it, the latest
   run's file replacing an earlier one, with a `SOURCES.tsv` naming for each

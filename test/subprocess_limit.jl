@@ -2,7 +2,7 @@
 # `timeout BENCH_CASE_TIMEOUT`, a safety net in case the worker dies. When that
 # limit equalled the supervisor's case budget, the two raced: if the
 # subprocess's own `timeout` fired first, the worker read an empty output and
-# recorded "fricas gave no answer" (an error) instead of a timeout (GEEKR9,
+# recorded "fricas gave no answer" (an error) instead of a timeout (host-2,
 # 23 and 26 November 2026: H 482 to 490 for FriCAS flipped between the two).
 # The limit seen by the subprocess must exceed the case budget, so that the
 # supervisor always stops the case first.
