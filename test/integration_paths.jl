@@ -28,7 +28,7 @@ include(joinpath(@__DIR__, "..", "lib", "integration_check.jl"))
         # bench F case 140: Giac fails ("Degree mismatch", also with Giac.jl directly); the error is Giac's own now,
         # and the next case must not read the previous value of the result variable
         B = try INTEGRATE_TEXT("(a+c/x^2+b/x)^(1/2)", "x", FPARAMS) catch err; sprint(showerror, err) end
-        @test occursin("giac gave no antiderivative", string(B))
+        @test occursin(r"giac gave no antiderivative|giac: .*Error:", string(B))     # Giac's own failure, as with Giac.jl
         @test !occursin("error occurred running a Giac command", string(B))
         C = INTEGRATE_TEXT("x^2", "x", FPARAMS)
         @test check_integral(C, "x^2", "")[1] == :verified_numeric
