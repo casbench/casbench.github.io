@@ -4,6 +4,10 @@ using Giac
 using LinearAlgebra: det
 
 const SYSTEM = "Giac.jl"
+# one Giac thread: Giac parallelises some algorithms (gbasis over Q used 15 threads on a 16-thread machine) while every
+# other system runs on one; set at load and after each restart (bench E), not logged as an input (docs/benches.md)
+giac_one_thread() = giac_eval("threads:=1")
+giac_one_thread()
 geval(s) = (log_input!(s); giac_eval(s))   # every string sent to the engine is logged for the input column
 @giac_var x y z u v a b c s t k n
 # the parameters of bench F; `e` and `i` are constants in Giac, so those two symbols are ee and ii

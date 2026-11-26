@@ -16,7 +16,9 @@ struct FricasAnswer
     text::String
     values::Dict{ComplexF64,ComplexF64}
     answer_ns::UInt64
+    alternatives::Vector{FricasAnswer}     # the forms of a list answer, each with its values (lib/integration_check.jl)
 end
+FricasAnswer(text, values, answer_ns) = FricasAnswer(text, values, answer_ns, FricasAnswer[])
 const REPEATS = 1                      # one process per case
 Base.string(a::FricasAnswer) = a.text
 
@@ -93,7 +95,61 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
             break
         end
     end
-    FricasAnswer(ans, vals, answer_ns)
+    alts = startswith(ans, "[") ? list_forms(ans, integrand, params, xs) : FricasAnswer[]
+    FricasAnswer(ans, vals, answer_ns, alts)
+end
+
+# the top-level elements of a printed list "[a, f(b, c)]"
+function list_elements(s::AbstractString)
+    body = strip(s)[2:end-1]; out = String[]; depth = 0; start = 1
+    for (i, c) in pairs(body)
+        c in ('(', '[') && (depth += 1)
+        c in (')', ']') && (depth -= 1)
+        if c == ',' && depth == 0
+            push!(out, strip(body[start:prevind(body, i)])); start = nextind(body, i)
+        end
+    end
+    push!(out, strip(body[start:end]))
+    out
+end
+
+# A list answer (one antiderivative per case of a parameter's sign) is evaluated form by form in a second FriCAS
+# process, after the answer (the measured time is not changed), reading the printed list back: integrate's own
+# result is typed by the integrand (a polynomial is not an Expression), so the first script cannot index it.
+function list_forms(ans::AbstractString, integrand, params, xs)
+    forms = list_elements(ans)
+    length(forms) > 1 || return FricasAnswer[]
+    lines = [")set message autoload off", ")set message type off", ")set output algebra off", ")set output length 245", ")set break resume",
+             "resl : List(Expression(Integer)) := $ans"]
+    for k in eachindex(forms), (i, xv) in enumerate(xs)
+        push!(lines, "v$(i)_$k := complexNumeric(eval(resl.$k, [$(param_list(xv, integrand, params, false))]))")
+        push!(lines, "output(concat(\"<<V$(i)_$(k)>>\", unparse(v$(i)_$k::InputForm)))")
+        push!(lines, "w$(i)_$k := complexNumeric(eval(resl.$k, [$(param_list(xv, integrand, params, true))]))")
+        push!(lines, "output(concat(\"<<W$(i)_$(k)>>\", unparse(w$(i)_$k::InputForm)))")
+    end
+    path = tempname() * ".input"
+    write(path, join(lines, "\n") * "\n")
+    txt = try
+        first(run_fricas(path))
+    finally
+        rm(path; force = true)
+    end
+    alts = FricasAnswer[]
+    for (k, form) in enumerate(forms)
+        vals = Dict{ComplexF64,ComplexF64}()
+        for (i, xv) in enumerate(xs)
+            for mk in ("<<V$(i)_$(k)>>", "<<W$(i)_$(k)>>")      # the real evaluation first, as for a single answer
+                mv = marker_text(txt, mk)
+                mv === nothing && continue
+                v = parse_fricas_number(mv)
+                v === nothing && continue
+                vals[xv] = v
+                break
+            end
+        end
+        push!(alts, FricasAnswer(String(form), vals, UInt64(0)))
+    end
+    alts
 end
 
 # the text after a marker, with the continuation lines FriCAS indents joined to it

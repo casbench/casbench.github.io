@@ -28,7 +28,7 @@ floats(s) = (v = tj(ge("evalf(" * s * ")")); v isa AbstractVector ? [tj(e) for e
 for i in 1:6
     VAR[Symbol("c$i")] = ge("c$i")
 end
-reset!() = ge("restart")
+reset!() = (ge("restart"); giac_one_thread())   # one Giac thread, whatever restart resets
 
 # an ODE: desolve, then the residual with the arbitrary constants set to 1; `template`
 # is the residual with the unknown written as Y (substituted textually, since Giac

@@ -111,6 +111,11 @@ end
 
 unevaluated(out) = (s = string(out); occursin(r"integrate\(|Integral\(|∫|Integral\b|integral\(", s))
 
+# the forms of an answer given as a list (FriCAS returns one antiderivative per case of a parameter's sign, for
+# instance two forms of ∫ 1/(a+b cos x) dx for a² > b² and a² < b²); an adapter that evaluates each form puts them,
+# each with its own values, in a field `alternatives`
+alternatives(out) = hasproperty(out, :alternatives) ? out.alternatives : ()
+
 """
     check_integral(out, integrand, reference; params = FPARAMS, certified = nothing)
 
@@ -122,6 +127,18 @@ up to a constant at the check points.
 """
 function check_integral(out, integrand::String, reference::String; params::Dict{Symbol,Float64} = FPARAMS,
                         certified = nothing, real_points = FPOINTS, complex_point = nothing)
+    forms = alternatives(out)
+    if length(forms) > 1
+        # each form is checked at the fixed parameter values the system received: the form for the case those
+        # values are in verifies, the others need not (before 2026-11-26 a list was never evaluated: unverified)
+        rs = [check_integral(a, integrand, reference; params, certified, real_points, complex_point) for a in forms]
+        n = length(forms)
+        k = findfirst(r -> r[1] == :verified_numeric, rs)
+        k === nothing || return (:verified_numeric, "form $k of the $n returned verifies at the fixed parameters; " * rs[k][2])
+        all(r -> r[1] == :wrong, rs) && return (:wrong, "each of the $n forms returned fails; form 1: " * rs[1][2])
+        return (:unverified, "none of the $n forms returned verifies; " *
+                             join(("form $j: " * first(string(r[1]) * ", " * r[2], 70) for (j, r) in enumerate(rs)), "; "))
+    end
     s = string(out)
     leaves = leaf_count(s); ref = leaf_count(reference)
     grade_note(st) = isempty(reference) ? "leaves=$leaves" :

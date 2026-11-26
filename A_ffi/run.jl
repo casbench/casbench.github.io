@@ -21,6 +21,7 @@ include(joinpath(@__DIR__, "..", "lib", "common.jl"))
 using .BenchCommon
 using Giac
 using Giac.GiacCxxBindings
+giac_eval("threads:=1")              # one Giac thread, as in every Giac column (docs/benches.md)
 
 const OUT = length(ARGS) >= 1 ? ARGS[1] : joinpath(results_dir(), "A_ffi_giac.tsv")
 const ROUNDS = 7

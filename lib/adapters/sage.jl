@@ -30,7 +30,9 @@ struct SageAnswer
     values::Dict{ComplexF64,ComplexF64}
     elapsed::Float64
     answer_ns::UInt64
+    alternatives::Vector{SageAnswer}     # the forms of a list answer, each with its values (lib/integration_check.jl)
 end
+SageAnswer(text, values, elapsed, answer_ns) = SageAnswer(text, values, elapsed, answer_ns, SageAnswer[])
 Base.string(a::SageAnswer) = a.text
 
 struct SageBasis
@@ -128,21 +130,48 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     pt = join(["$k: $(v)" for (k, v) in params if k in used], ", ")
     # the sign of each parameter is assumed as its fixed value has it (Maxima asks otherwise)
     assumptions = ["assume($k " * (params[k] > 0 ? ">" : "<") * " 0)" for k in used if params[k] != 0]
+    # Giac through Sage: Sage's giac interface raises on any output containing "error" and reads Giac's warnings
+    # ("Simplification assuming c near 0", "Warning, integration of abs or sign assumes ...") as the answer; the
+    # integral is computed with the base Expect._eval_line into a Giac variable, read back afterwards, and only a
+    # line with Giac's own error mark "Error:" raises (before 2026-11-26: errors and false answers). Giac runs on one
+    # thread, as in every Giac column (docs/benches.md), set before the timed call.
+    integrate_giac = "    _casbench_gf = giac(_casbench_integrand)\n" *
+        "    _casbench_out = Expect._eval_line(giac, 'casbench_F:=int(' + _casbench_gf.name() + ',' + giac($var).name() + '):;', allow_use_file=False)\n" *
+        "    t1 = walltime()\n" *
+        "    _casbench_failed = [l for l in _casbench_out.splitlines() if 'Error:' in l]\n" *
+        "    if _casbench_failed: raise RuntimeError('giac: ' + ' | '.join(_casbench_failed))\n" *
+        "    _casbench_giac_answer = giac('casbench_F')\n" *
+        "    try:\n        _casbench_answer = _casbench_giac_answer.sage()\n" *
+        "    except Exception as ex:\n        _casbench_answer = str(_casbench_giac_answer)"
     lines = ["var('" * join(unique([var; string.(used)]), " ") * "')", assumptions...,
+             (SAGE_ALGORITHM == "giac" ? ["from sage.interfaces.expect import Expect", "giac.eval('threads:=1')"] : String[])...,
              "t0 = walltime()",
              "try:",
              "    _casbench_integrand = $f",
-             SAGE_ALGORITHM == "giac" ? "    _casbench_giac_answer = giac(_casbench_integrand).integrate(giac($var))\n    t1 = walltime()\n    try:\n        _casbench_answer = _casbench_giac_answer.sage()\n    except Exception as ex:\n        _casbench_answer = str(_casbench_giac_answer)" :
+             SAGE_ALGORITHM == "giac" ? integrate_giac :
                                         "    _casbench_answer = integrate(_casbench_integrand, $var, algorithm='$SAGE_ALGORITHM')\n    t1 = walltime()",
              "except Exception as ex:",
-             "    print('<<' + 'ANS>>', 'sage_error: ' + str(ex)[:200])",
+             # the exception's type and its whole text on one line (before 2026-11-26: the first 200 characters, often
+             # empty or cut before the reason); the full repr also goes to the worker's log
+             "    import sys",
+             "    print('casbench sage_error:', repr(ex), file=sys.stderr)",
+             "    print('<<' + 'ANS>>', 'sage_error: ' + type(ex).__name__ + ': ' + ' '.join(str(ex).split())[:1500])",
              "    print('<<' + 'TIME>>', walltime() - t0)",
              "    raise SystemExit(0)",
-             "print('<<' + 'ANS>>', str(_casbench_answer))", "print('<<' + 'TIME>>', t1 - t0)"]
+             "print('<<' + 'ANS>>', str(_casbench_answer))", "print('<<' + 'TIME>>', t1 - t0)",
+             # a list answer (FriCAS: one antiderivative per case of a parameter's sign) is evaluated form by form
+             "_casbench_forms = list(_casbench_answer) if isinstance(_casbench_answer, (list, tuple)) else [_casbench_answer]",
+             "print('<<' + 'NFORMS>>', len(_casbench_forms))",
+             "for _casbench_k, _casbench_form in enumerate(_casbench_forms, 1):",
+             "    if len(_casbench_forms) > 1: print('<<' + 'FORM%d>>' % _casbench_k, str(_casbench_form))"]
     xs = check_points(integrand, params)
     for (i, xv) in enumerate(xs)
         point = sage_point(xv)
-        push!(lines, "try:\n    _casbench_value = CC(SR(_casbench_answer).subs({$var: $point" * (isempty(pt) ? "" : ", " * pt) * "}))\n    print('<<' + 'V$i>>', str(_casbench_value))\nexcept Exception as ex:\n    print('<<' + 'V$i>>', 'fail')")
+        push!(lines, "for _casbench_k, _casbench_form in enumerate(_casbench_forms, 1):\n" *
+                     "    _casbench_mark = 'V$i' if _casbench_k == 1 else 'V$(i)_%d' % _casbench_k\n" *
+                     "    try:\n        _casbench_value = CC(SR(_casbench_form).subs({$var: $point" * (isempty(pt) ? "" : ", " * pt) * "}))\n" *
+                     "        print('<<' + _casbench_mark + '>>', str(_casbench_value))\n" *
+                     "    except Exception as ex:\n        print('<<' + _casbench_mark + '>>', 'fail')")
     end
     txt, answer_ns = run_sage(join(lines, "\n") * "\n"; capture_answer=true)
     ans = marker(txt, "<<ANS>>")
@@ -150,15 +179,20 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     # an exception inside Sage is an error of the interface (e.g. the pexpect giac interface cannot parse an answer that
     # giac prints with a warning), unless the system declares that it cannot integrate (then the worker says unsolved)
     startswith(ans, "sage_error:") && !occursin(r"not implemented|NotImplemented|cannot|unable", ans) && error(ans)
-    vals = Dict{ComplexF64,ComplexF64}()
-    for (i, xv) in enumerate(xs)
-        v = marker(txt, "<<V$i>>")
-        (v === nothing || v == "fail") && continue
-        c = parse_sage_complex(v)
-        c === nothing || (vals[xv] = c)
-    end
+    values_of(suffix) = (vals = Dict{ComplexF64,ComplexF64}();
+        for (i, xv) in enumerate(xs)
+            v = marker(txt, "<<V$i$suffix>>")
+            (v === nothing || v == "fail") && continue
+            c = parse_sage_complex(v)
+            c === nothing || (vals[xv] = c)
+        end; vals)
     t = marker(txt, "<<TIME>>")
-    SageAnswer(ans, vals, t === nothing ? NaN : parse(Float64, t), answer_ns)
+    elapsed = t === nothing ? NaN : parse(Float64, t)
+    nf = marker(txt, "<<NFORMS>>")
+    nforms = nf === nothing ? 1 : something(tryparse(Int, nf), 1)
+    alts = nforms > 1 ? [SageAnswer(something(marker(txt, "<<FORM$k>>"), ""), values_of(k == 1 ? "" : "_$k"), elapsed, answer_ns)
+                         for k in 1:nforms] : SageAnswer[]
+    SageAnswer(ans, values_of(""), elapsed, answer_ns, alts)
 end
 
 function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
@@ -179,6 +213,7 @@ function GROEBNER(polys::Vector{String}, vars::Vector{String}, p::Int)
         # process start and the timing are the same. An output line that mentions an error other than that note
         # still raises.
         ["from sage.interfaces.expect import Expect",
+         "giac.eval('threads:=1')",          # one Giac thread, as in every Giac column (docs/benches.md), before the timed call
          "_casbench_cmd = 'casbench_B:=gbasis(" * (p == 0 ? L : L * " % $p") * ",$V,revlex)'",
          "t0 = walltime()",
          "if giac._eval_using_file_cutoff and len(_casbench_cmd) > giac._eval_using_file_cutoff:",

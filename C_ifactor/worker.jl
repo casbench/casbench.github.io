@@ -25,6 +25,7 @@ include(joinpath(@__DIR__, "inputs.jl"))
 
 if SYSTEM_KEY == "giac"
     using Giac
+    giac_eval("threads:=1")          # one Giac thread, as in every Giac column (docs/benches.md)
     const SYSTEM = "Giac.jl ifactor"
     FACT(n) = begin
         L = to_julia(invoke_cmd(:ifactors, giac_eval(string(n))))

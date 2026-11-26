@@ -17,7 +17,8 @@ const JULIA = Dict("arctan" => "atan", "arcsin" => "asin", "arccos" => "acos", "
                    "arccsc" => "acsc", "arctanh" => "atanh", "arcsinh" => "asinh", "arccosh" => "acosh", "arccoth" => "acoth",
                    "arcsech" => "asech", "arccsch" => "acsch", "ln" => "log", "GAMMA" => "gamma", "Zeta" => "zeta",
                    "Ei" => "expinti", "Si" => "sinint", "Ci" => "cosint", "erf" => "erf", "erfc" => "erfc", "erfi" => "erfi",
-                   "LambertW" => "lambertw", "Shi" => "sinhint", "Chi" => "coshint")
+                   "LambertW" => "lambertw", "Shi" => "sinhint", "Chi" => "coshint",
+                   "HurwitzZeta" => "zeta", "ExpIntegralE" => "expint")
 const GIAC = Dict("arctan" => "atan", "arcsin" => "asin", "arccos" => "acos", "arccot" => "acot", "arcsec" => "asec",
                   "arccsc" => "acsc", "arctanh" => "atanh", "arcsinh" => "asinh", "arccosh" => "acosh", "arccoth" => "acoth",
                   "arcsech" => "asech", "arccsch" => "acsch", "log" => "ln", "GAMMA" => "Gamma", "polylog" => "polylog",
@@ -26,12 +27,12 @@ const SYMPY = Dict("arctan" => "atan", "arcsin" => "asin", "arccos" => "acos", "
                    "arccsc" => "acsc", "arctanh" => "atanh", "arcsinh" => "asinh", "arccosh" => "acosh", "arccoth" => "acoth",
                    "arcsech" => "asech", "arccsch" => "acsch", "ln" => "log", "GAMMA" => "gamma", "Zeta" => "zeta",
                    "FresnelC" => "fresnelc", "FresnelS" => "fresnels", "EllipticF" => "elliptic_f", "EllipticE" => "elliptic_e",
-                   "EllipticPi" => "elliptic_pi", "hypergeom" => "hyper")
+                   "EllipticPi" => "elliptic_pi", "hypergeom" => "hyper", "HurwitzZeta" => "zeta", "ExpIntegralE" => "expint")
 const MAXIMA = Dict("arctan" => "atan", "arcsin" => "asin", "arccos" => "acos", "arccot" => "acot", "arcsec" => "asec",
                     "arccsc" => "acsc", "arctanh" => "atanh", "arcsinh" => "asinh", "arccosh" => "acosh", "arccoth" => "acoth",
                     "arcsech" => "asech", "arccsch" => "acsch", "ln" => "log", "GAMMA" => "gamma", "Zeta" => "zeta",
                     "Ei" => "expintegral_ei", "Si" => "expintegral_si", "Ci" => "expintegral_ci", "Shi" => "expintegral_shi",
-                    "Chi" => "expintegral_chi", "LambertW" => "lambert_w", "polylog" => "li")
+                    "Chi" => "expintegral_chi", "LambertW" => "lambert_w", "polylog" => "li", "ExpIntegralE" => "expintegral_e")
 const FRICAS = Dict("arctan" => "atan", "arcsin" => "asin", "arccos" => "acos", "arccot" => "acot", "arcsec" => "asec",
                     "arccsc" => "acsc", "arctanh" => "atanh", "arcsinh" => "asinh", "arccosh" => "acosh", "arccoth" => "acoth",
                     "arcsech" => "asech", "arccsch" => "acsch", "ln" => "log", "GAMMA" => "Gamma", "Ei" => "Ei", "Si" => "Si",
@@ -39,14 +40,71 @@ const FRICAS = Dict("arctan" => "atan", "arcsin" => "asin", "arccos" => "acos", 
 const SAGE = Dict("ln" => "log", "GAMMA" => "gamma", "Zeta" => "zeta", "Ei" => "Ei", "Si" => "sin_integral", "Ci" => "cos_integral",
                   "Shi" => "sinh_integral", "Chi" => "cosh_integral", "LambertW" => "lambert_w", "FresnelC" => "fresnel_cos",
                   "FresnelS" => "fresnel_sin", "EllipticF" => "elliptic_f", "EllipticE" => "elliptic_e", "EllipticPi" => "elliptic_pi",
-                  "hypergeom" => "hypergeometric", "polylog" => "polylog")
+                  "hypergeom" => "hypergeometric", "polylog" => "polylog", "HurwitzZeta" => "hurwitz_zeta",
+                  "ExpIntegralE" => "exp_integral_e")
 const TABLES = Dict(:julia => JULIA, :giac => GIAC, :sympy => SYMPY, :maxima => MAXIMA, :fricas => FRICAS, :sage => SAGE)
 # constants per dialect
 const CONSTS = Dict(:julia => Dict("Pi" => "pi", "I" => "im"), :giac => Dict("Pi" => "pi", "I" => "i"),
                     :sympy => Dict("Pi" => "pi", "I" => "I"), :maxima => Dict("Pi" => "%pi", "I" => "%i"),
                     :fricas => Dict("Pi" => "%pi", "I" => "%i"), :sage => Dict("Pi" => "pi", "I" => "I"))
 # functions the test files use whose meaning is not a plain function call (abstract functions, held forms)
-const UNSUPPORTED = ("Derivative", "Unintegrable", "CannotIntegrate", "RootSum", "AppellF1", "HypergeometricPFQ", "f", "g")
+const UNSUPPORTED = ("Derivative", "Unintegrable", "CannotIntegrate", "RootSum", "AppellF1", "HypergeometricPFQ", "f", "g",
+                     "ZetaDerivative")
+# Maple's multi-argument forms, rewritten by arity before the renames (see rewrite_arity): Zeta(0,s,a) is the Hurwitz
+# zeta function and Ei(n,z) the generalized exponential integral E_n(z). Each target was checked numerically in the
+# system on 2026-11-26 (zeta(2,1.7) = 0.793232830163998, E_2(0.6) = 0.276183934180385); a system without the
+# function gets no translation: Giac's two-argument Zeta is not Hurwitz's, Maxima has no Hurwitz zeta, FriCAS
+# has neither. Giac's E_n is Ei(z,n), its arguments in the other order. Before 2026-11-26 these forms were
+# passed with Maple's arguments and every system rejected or misread them (bench F cases 616, 617, 628 to 630).
+const NO_TRANSLATION = Dict(:giac => ("HurwitzZeta",), :maxima => ("HurwitzZeta",), :fricas => ("HurwitzZeta", "ExpIntegralE"))
+
+# the arguments of the call whose opening parenthesis is at index `open`, and the index of its closing one
+function call_args(s::AbstractString, open::Int)
+    depth = 0; args = String[]; start = nextind(s, open); i = open
+    while true
+        i = nextind(s, i)
+        i > lastindex(s) && error("unbalanced parentheses in $s")
+        c = s[i]
+        if c in ('(', '[')
+            depth += 1
+        elseif c in (')', ']')
+            if depth == 0
+                push!(args, strip(s[start:prevind(s, i)]))
+                return args, i
+            end
+            depth -= 1
+        elseif c == ',' && depth == 0
+            push!(args, strip(s[start:prevind(s, i)])); start = nextind(s, i)
+        end
+    end
+end
+
+"""
+    rewrite_arity(s, dialect) -> String
+
+Maple's Zeta(n, s, a) and Ei(n, z) as HurwitzZeta(s, a) (n = 0), ZetaDerivative (n > 0, unsupported) and
+ExpIntegralE(n, z), or Ei(z, n) for Giac; the one-argument forms are kept.
+"""
+function rewrite_arity(s::AbstractString, dialect::Symbol)
+    out = IOBuffer(); i = firstindex(s)
+    while i <= lastindex(s)
+        m = match(r"\b(Zeta|Ei)\s*\(", s, i)
+        m === nothing && (print(out, s[i:end]); break)
+        open = m.offset + length(m.match) - 1
+        args, close = call_args(s, open)
+        args = [rewrite_arity(a, dialect) for a in args]
+        print(out, s[i:prevind(s, m.offset)])
+        if m[1] == "Zeta" && length(args) == 3
+            print(out, args[1] == "0" ? "HurwitzZeta($(args[2]),$(args[3]))" : "ZetaDerivative($(join(args, ",")))")
+        elseif m[1] == "Ei" && length(args) == 2
+            print(out, dialect == :giac ? "Ei($(args[2]),$(args[1]))" : "ExpIntegralE($(args[1]),$(args[2]))")
+        else
+            print(out, m[1], "(", join(args, ","), ")")
+        end
+        i = nextind(s, close)
+    end
+    String(take!(out))
+end
 
 """
     translate(s, dialect) -> String
@@ -57,6 +115,7 @@ Rewrite a Maple-like expression for `dialect` (:julia, :giac, :sympy, :maxima,
 """
 function translate(s::AbstractString, dialect::Symbol)
     tbl, consts = TABLES[dialect], CONSTS[dialect]
+    occursin(r"\b(Zeta|Ei)\s*\(", s) && (s = rewrite_arity(s, dialect))
     out = IOBuffer()
     i = firstindex(s); n = lastindex(s)
     while i <= n
@@ -71,6 +130,7 @@ function translate(s::AbstractString, dialect::Symbol)
             iscall = k <= n && s[k] == '('
             if iscall
                 id in UNSUPPORTED && error("unsupported function $id")
+                id in get(NO_TRANSLATION, dialect, ()) && error("unsupported function $id: no translation for this system")
                 print(out, get(tbl, id, id))
             else
                 print(out, get(consts, id, id))
@@ -105,7 +165,7 @@ julia_expr(s::AbstractString) = Meta.parse(translate(s, :julia))
 # and logarithms of negative values are defined)
 # ---------------------------------------------------------------------------
 module Fns
-    using SpecialFunctions: gamma, zeta, erf, erfc, erfi, expinti, sinint, cosint
+    using SpecialFunctions: gamma, zeta, erf, erfc, erfi, expinti, expint, sinint, cosint
     # functions Base lacks or whose real version throws on the complex plane
     sinhint(z) = error("Shi: not evaluated")
     coshint(z) = error("Chi: not evaluated")
