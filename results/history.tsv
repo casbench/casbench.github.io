@@ -88,3 +88,16 @@ date	host	bench	system	n	verified	wrong	unverified	unsolved	unavailable	error	ti
 2026-11-23 17:49:04	host-2	J_rur	giac	4	2	0	2	0	0	0	0	0.0879832	0.0439916	GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0; Giac.jl 0.14.3	run
 2026-11-23 17:48:48	host-2	J_rur	msolve	4	3	0	1	0	0	0	0	0.0285375	0.00703407	AlgebraicSolving 0.13.0; msolve_jll 0.1100.0+0; Nemo 0.57.2	run
 2026-11-23 17:49:17	host-2	J_rur	sage_singular	4	2	0	0	2	0	0	0	0.616445	0.308223	sage_algorithm singular; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-26 07:04:47	host-2	E_suite	giac	114	71	3	0	30	9	1	0	3.5021	NaN	GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0; Giac.jl 0.14.3	run
+2026-11-26 19:06:50	host-2	F_integration	fricas	639	270	9	185	148	0	8	19	54.9961	NaN	FriCAS Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg	run
+2026-11-26 20:18:34	host-2	F_integration	maxima	639	192	3	99	332	0	6	7	12.909	NaN	Maxima 5.49.0	run
+2026-11-26 12:09:21	host-2	F_integration	sage_fricas	639	325	18	100	153	0	24	19	122.57	0.0186956	sage_algorithm fricas; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-26 20:58:47	host-2	F_integration	sage_giac	639	200	16	96	271	0	31	25	16.9578	NaN	sage_algorithm giac; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-26 11:42:44	host-2	F_integration	sage_maxima	639	212	13	42	315	0	45	12	5.56841	NaN	sage_algorithm maxima; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-26 12:46:43	host-2	F_integration	sage_sympy	639	111	3	18	366	0	15	126	190.053	NaN	sage_algorithm sympy; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-26 19:37:38	host-2	H_osr	fricas	641	60	0	59	482	0	0	40	7.38365	NaN	FriCAS Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg	run
+2026-11-26 20:35:37	host-2	H_osr	maxima	641	60	0	52	520	0	0	9	4.12098	NaN	Maxima 5.49.0	run
+2026-11-26 15:42:21	host-2	H_osr	sage_fricas	641	92	5	21	482	0	1	40	8.41565	NaN	sage_algorithm fricas; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-26 21:44:05	host-2	H_osr	sage_giac	641	51	1	33	521	0	21	14	1.04036	NaN	sage_algorithm giac; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-26 15:21:31	host-2	H_osr	sage_maxima	641	71	0	12	519	0	25	14	2.51177	NaN	sage_algorithm maxima; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-26 16:13:06	host-2	H_osr	sage_sympy	641	48	0	0	385	0	2	206	32.5583	NaN	sage_algorithm sympy; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
