@@ -28,6 +28,8 @@ from collections import Counter
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import latexify  # noqa: E402
 
+csv.field_size_limit(1 << 30)   # a Gröbner basis in the result column exceeds the default 128 KiB field
+
 REPO = "https://github.com/casbench/casbench.github.io"
 DEFAULT_SITE = "https://casbench.github.io/"
 BLOB = REPO + "/blob/main"

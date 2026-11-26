@@ -14,6 +14,8 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import sitegen  # noqa: E402
 import check_assets  # noqa: E402
 
+csv.field_size_limit(1 << 30)   # a Gröbner basis in the result column exceeds the default 128 KiB field
+
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 TSV = """bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput

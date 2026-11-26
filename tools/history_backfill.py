@@ -18,6 +18,8 @@ import statistics
 import subprocess
 import sys
 
+csv.field_size_limit(1 << 30)   # a Gröbner basis in the result column exceeds the default 128 KiB field
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 HISTORY = ROOT / "results" / "history.tsv"
 OLD_HOST = "giac-bench"      # the host of the flat layout, before results/<host>/

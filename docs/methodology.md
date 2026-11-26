@@ -207,6 +207,39 @@ Nemo extension (`factor_use_nemo`); an operation an adapter maps to `missing`
 is reported as `unavailable`. SymJ.jl is not in the General registry at the
 time of writing and is pinned by URL and tree hash in `envs/symj`.
 
+## GEEKR9 campaign (partial)
+
+`results/geekr9/` is the campaign run on GEEKR9 (AMD Ryzen 9 8945HS, 16
+threads, 30.6 GiB, a host shared with three virtual machines) from
+2026-11-23 to 2026-11-25, published on 2026-11-26 while targeted reruns are
+pending; the reference host stays `giac-bench`, and the Hosts page compares
+the two. Each file is copied unchanged from the run that wrote it, named in
+`results/geekr9/SOURCES.tsv` with its commit and checksum: the main campaign
+(5a8b062: benches E, F, H, J for every system), the interface paths
+(55d2ffe), the corrected Sage columns of F and H (e13f0a1: assumptions no
+longer persist between cases), Sage/FriCAS rerun after its unevaluated
+`integral(...)` answers were recognised (65a227a), and GrobX with per-case
+memory (23523cf).
+
+What it does not yet include, and what the pending reruns change:
+
+- the hard tier of bench G, whose files hold the full bases (up to 104 MB a
+  file) and are kept in the review archive;
+- Maple's `Zeta(0,s,a)` and `Ei(n,z)`, now translated by arity (bench F cases
+  616, 617, 628 to 630 are errors in these files);
+- FriCAS's list answers, now checked form by form (84 F and 21 H cases are
+  unverified in these files, directly and through Sage);
+- the full text and type of Sage's exceptions, and the Sage/Giac
+  integration path, which read some of Giac's warnings as the answer;
+- Giac on one thread (these runs used its default, 16 threads; only `gbasis`
+  over Q was seen to use them);
+- bench H case 479, whose symbol `t` had no value: an error in the Sage
+  columns of these files.
+
+Part of these runs was measured while the host ran other builds (host load
+up to 15 before some GrobX and FriCAS cases): times are indicative, statuses
+are not affected.
+
 ## Reproducing on another machine
 
 `BENCH_HOST=<name> nix run .#bench` writes under `results/<name>/`, with that
