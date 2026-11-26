@@ -40,6 +40,21 @@ include(joinpath(@__DIR__, "..", "lib", "integration_check.jl"))
         @test !occursin("error occurred running a Giac command", string(B))
         C = INTEGRATE_TEXT("x^2", "x", FPARAMS)
         @test check_integral(C, "x^2", "")[1] == :verified_numeric
+        # bench H case 363: Giac returns the integral unevaluated in 0.02 s; converting it with .sage() made Sage
+        # integrate it again (over 30 s: a timeout instead of unsolved). The text is checked first, as Sage's own giac
+        # integrator does
+        t = @elapsed D = INTEGRATE_TEXT("((a+(b*arctanh((c*x))))*((d+(e*(x)^(2))))^((-1)))", "x", FPARAMS)
+        @test UNSOLVED(:integrate_text, D)
+        @test t < 20
+        # bench F case 48: an answer Giac reprints with its warnings cannot be read through Sage; that is an error of
+        # the interface, which the unsolved rule must not catch (its message said "cannot" until 2026-11-26)
+        E = try INTEGRATE_TEXT("(a+b*x+c*x^2)/(x^3*sqrt(1-d*x)*sqrt(1+d*x))", "x", FPARAMS) catch err; err end
+        @test E isa Exception
+        @test !occursin(r"not implemented|NotImplemented|cannot|unable", sprint(showerror, E))
+        # bench F case 348: Giac answers with "Warning, integration of abs or sign assumes constant sign by intervals";
+        # the word integration in a message must not make the answer an unevaluated integral
+        G = try INTEGRATE_TEXT("(a+a*sec(c+d*x))^(5/2)/cos(c+d*x)^(3/2)", "x", FPARAMS) catch err; err end
+        @test !(G isa Exception) && !UNSOLVED(:integrate_text, G)
     end
     if system in ("sage_sympy", "sage_fricas", "sage_giac")
         # an exception is reported with its type and text: sage_error: NameError: name ... is not defined

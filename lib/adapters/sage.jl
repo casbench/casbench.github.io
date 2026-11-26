@@ -139,7 +139,11 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     # The result variable is reset before each call: a failed int leaves it unassigned (Giac does not always print
     # "Error:", for instance "Degree mismatch inside factorisation"), and the previous case's value must not be read.
     # Giac reprints its warnings each time some results are evaluated, so that Sage cannot convert them: that is an
-    # error of the interface, not an answer (before 2026-11-26 the warning text itself was recorded as the answer).
+    # error of the interface, not an answer (before 2026-11-26 the warning text itself was recorded as the answer), and
+    # its message avoids the words of the unsolved rule. An unevaluated integral (integrate( outside the message
+    # lines, whose "integration of abs or sign" comes with real answers) is returned held, before any conversion, as
+    # Sage's own giac integrator does: .sage() turns Giac's integrate(...) into a Sage integral that
+    # Maxima then tries again (bench H case 363: 0.02 s in Giac, over 30 s through the conversion).
     integrate_giac = "    _casbench_gf = giac(_casbench_integrand)\n" *
         "    _casbench_out = Expect._eval_line(giac, 'casbench_F:=int(' + _casbench_gf.name() + ',' + str(giac($var)) + '):;', allow_use_file=False)\n" *
         "    t1 = walltime()\n" *
@@ -148,12 +152,15 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
         "    if Expect._eval_line(giac, 'type(casbench_F)', allow_use_file=False).strip().splitlines()[-1] == 'string':\n" *
         "        raise RuntimeError('giac gave no antiderivative: ' + ' '.join(_casbench_out.split())[:600])\n" *
         "    _casbench_giac_answer = giac('casbench_F')\n" *
-        "    try:\n        _casbench_answer = _casbench_giac_answer.sage()\n" *
-        "    except Exception as ex:\n" *
-        "        _casbench_text = str(_casbench_giac_answer)\n" *
-        "        _casbench_msgs = [l for l in _casbench_text.splitlines() if l.startswith(('Simplification assuming', 'Warning', 'Check ['))]\n" *
-        "        if _casbench_msgs: raise RuntimeError('Sage cannot read the answer: Giac prints messages each time it is evaluated (' + _casbench_msgs[0] + ')')\n" *
-        "        _casbench_answer = _casbench_text"
+        "    _casbench_giac_text = str(_casbench_giac_answer)\n" *
+        "    _casbench_expr = [l for l in _casbench_giac_text.splitlines() if not l.startswith(('Simplification assuming', 'Warning', 'Check ['))]\n" *
+        "    if any('integrate(' in l for l in _casbench_expr):\n" *
+        "        _casbench_answer = _casbench_integrand.integrate($var, hold=True)\n" *
+        "    else:\n      try:\n        _casbench_answer = _casbench_giac_answer.sage()\n" *
+        "      except Exception as ex:\n" *
+        "        _casbench_msgs = [l for l in _casbench_giac_text.splitlines() if l.startswith(('Simplification assuming', 'Warning', 'Check ['))]\n" *
+        "        if _casbench_msgs: raise RuntimeError('answer unreadable through the Sage interface: Giac reprints messages each time it is evaluated (' + _casbench_msgs[0] + ')')\n" *
+        "        _casbench_answer = _casbench_giac_text"
     lines = ["var('" * join(unique([var; string.(used)]), " ") * "')", assumptions...,
              (SAGE_ALGORITHM == "giac" ? ["from sage.interfaces.expect import Expect", "giac.eval('threads:=1')",
                                           "Expect._eval_line(giac, 'casbench_F:=\"casbench_unset\":;', allow_use_file=False)"] : String[])...,
