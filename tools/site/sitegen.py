@@ -1315,9 +1315,25 @@ class Site:
             out += f"| {esc(BENCHES.get(b, (b, ''))[0])} | {esc(s)} | " + " | ".join(cells) + " |\n"
         return out
 
+    def history_stamp(self):
+        """The stamp of the History page: the latest run in results/history.tsv and the latest of each host (the home
+        page's data stamp names the reference host's run only, which made the history look older than it is)."""
+        last = {}
+        for r in self.history:
+            h = r["host"] or self.reference
+            last[h] = max(last.get(h, ""), r["date"][:10])
+        if not last:
+            return self.data_stamp()
+        hosts = ", ".join(f"<code>{esc(h)}</code> to {esc(d)}" for h, d in sorted(last.items(), key=lambda kv: (kv[0] != self.reference, kv[0])))
+        s = f"History up to the run of {esc(max(last.values()))} ({hosts})"
+        if self.results_commit:
+            h, d = self.results_commit
+            s += f', results commit <a href="{REPO}/commit/{esc(h)}"><code>{esc(h)}</code></a> ({esc(d[:10])})'
+        return f'<p class="data-stamp">{s}.</p>'
+
     def history_page(self):
         out = front("History", 2)
-        out += (self.data_stamp() + "\n\n"
+        out += (self.history_stamp() + "\n\n"
                 "Every run of every bench and system on every host, from `results/history.tsv` (one row per host, bench, system and run date; "
                 "appended by `make_tables.jl`, backfilled from the git history by `tools/history_backfill.py`). "
                 "Verified counts are shown below. **2026-11-22 change:** synthesis times now use per-operation "

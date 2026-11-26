@@ -344,13 +344,16 @@ class SiteGenTests(unittest.TestCase):
         (root / "results" / "history.tsv").write_text(
             "date\thost\tbench\tsystem\tn\tverified\twrong\tunverified\tunsolved\tunavailable\terror\ttimeout\tt_warm_sum\tt_warm_median\tversions\tsource\n"
             "2026-11-18 08:28:32\ttesthost\tD_coverage\tgiac\t23\t22\t0\t1\t0\t0\t0\t0\t1.8\t7.5e-05\t\tabc\n"
-            "2026-11-19 10:00:00\ttesthost\tD_coverage\tgiac\t23\t23\t0\t0\t0\t0\t0\t0\t1.8\t7.0e-05\t\trun\n", encoding="utf-8")
+            "2026-11-19 10:00:00\ttesthost\tD_coverage\tgiac\t23\t23\t0\t0\t0\t0\t0\t0\t1.8\t7.0e-05\t\trun\n"
+            "2026-11-25 05:16:00\totherhost\tD_coverage\tgiac\t23\t23\t0\t0\t0\t0\t0\t0\t1.8\t7.0e-05\t\trun\n", encoding="utf-8")
         out = pathlib.Path(tempfile.mkdtemp())
         site = sitegen.generate(root, out)
-        self.assertEqual(len(site.history), 2)
+        self.assertEqual(len(site.history), 3)
         page = (out / "content" / "history" / "_index.md").read_text(encoding="utf-8")
-        self.assertEqual(page.count('<svg class="viz-chart"'), 1)                 # verified counts only
-        self.assertIn('<g class="viz-pt" aria-label="2026-11-18 08:28: Giac.jl 22">', page)   # the label starts with the date
+        # the stamp covers every host of the history, not only the reference host's last run
+        self.assertIn("History up to the run of 2026-11-25 (<code>testhost</code> to 2026-11-19, <code>otherhost</code> to 2026-11-25)", page)
+        self.assertEqual(page.count('<svg class="viz-chart"'), 1)                 # verified counts only, two series in one chart
+        self.assertIn('<g class="viz-pt" aria-label="2026-11-18 08:28: Giac.jl @testhost 22">', page)   # the label starts with the date
         self.assertIn('data-viz="dense"', page)
         self.assertIn("<table", page.replace("| date | host |", "<table"))             # the values are on the page
         one = sitegen.viz_chart({"a": [("2026-11-18", 1.0), ("2026-11-19", 2.0)]}, "t", "y")
