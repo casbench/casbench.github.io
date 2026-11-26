@@ -209,14 +209,14 @@ Nemo extension (`factor_use_nemo`); an operation an adapter maps to `missing`
 is reported as `unavailable`. SymJ.jl is not in the General registry at the
 time of writing and is pinned by URL and tree hash in `envs/symj`.
 
-## GEEKR9 campaign (partial)
+## host-2 campaign (partial)
 
-`results/geekr9/` is the campaign run on GEEKR9 (AMD Ryzen 9 8945HS, 16
-threads, 30.6 GiB, a host shared with three virtual machines) from
+`results/host-2/` is the campaign run on a second machine (AMD Ryzen 9
+8945HS, 16 threads, 30.6 GiB, a host shared with three virtual machines) from
 2026-11-23 to 2026-11-25, published on 2026-11-26 while targeted reruns are
 pending; the reference host stays `giac-bench`, and the Hosts page compares
 the two. Each file is copied unchanged from the run that wrote it, named in
-`results/geekr9/SOURCES.tsv` with its commit and checksum: the main campaign
+`results/host-2/SOURCES.tsv` with its commit and checksum: the main campaign
 (5a8b062: benches E, F, H, J for every system), the interface paths
 (55d2ffe), the corrected Sage columns of F and H (e13f0a1: assumptions no
 longer persist between cases), Sage/FriCAS rerun after its unevaluated
@@ -251,10 +251,23 @@ Part of these runs was measured while the host ran other builds (host load
 up to 15 before some GrobX and FriCAS cases): times are indicative, statuses
 are not affected.
 
+The campaign is published under the neutral name `host-2`:
+`tools/anonymize_host.py` replaced the machine's own name in the run ids,
+run directories and `machine.txt`, and removed from the `environment.txt` of
+both hosts the user's environment variables and the session counters (uptime,
+load, per-CPU times). The machine's characteristics are unchanged: processor,
+memory, threads, kernel, Julia and the `lscpu` report. No status, time or
+answer changed; `SOURCES.tsv` gives the checksum of each published file and, in
+`sha256_as_written`, that of the file the run wrote, which the review archive
+keeps.
+
 ## Reproducing on another machine
 
 `BENCH_HOST=<name> nix run .#bench` writes under `results/<name>/`, with that
-machine's `machine.txt` and `environment.txt`; commit the directory and the
+machine's `machine.txt` and `environment.txt`; `<name>` is also the host
+recorded in `machine.txt`, so a neutral name keeps the machine's own name out
+of the published files, and `environment.txt` keeps only the `JULIA_*`
+variables. Commit the directory and the
 site's Hosts page compares every host. Statuses should agree across hosts (a
 difference is a bug of the benchmark or an unstable case); times scale with
 the machine, which the calibration workload makes comparable.
