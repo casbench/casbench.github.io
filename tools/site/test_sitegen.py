@@ -177,6 +177,35 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn(command, page)
         self.assertIn("integrate(x,x)", page)
 
+    def test_system_pages_gather_every_bench(self):
+        """One page per system gathers its results on every bench (reference host), its cases with links to the case
+        pages, and its counts on the other hosts; an index lists the systems."""
+        root = self.make_root()
+        (root / "results" / "testhost" / "F_integration_giac.tsv").write_text(
+            "bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput\n"
+            "F_integration\tGiac.jl\t1\tintegral\tintegrate_text\tunsolved\t1.0\t0.5\tintegrate(f(x),x)\t\tintegrate(f(x),x)\n",
+            encoding="utf-8")
+        (root / "results" / "other").mkdir()
+        (root / "results" / "other" / "machine.txt").write_text(MACHINE.replace("host\tvm", "host\tlaptop"), encoding="utf-8")
+        (root / "results" / "other" / "D_coverage_giac.tsv").write_text(TSV, encoding="utf-8")
+        out = pathlib.Path(tempfile.mkdtemp())
+        sitegen.generate(root, out)
+        c = out / "content" / "results" / "systems"
+        page = (c / "giac-jl" / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("](../../d_coverage/)", page)
+        self.assertIn("](../../f_integration/)", page)
+        self.assertIn(f"](../../d_coverage/{sitegen.slug(1, 'factor x^4-1')}/)", page)
+        self.assertIn(f"](../../f_integration/{sitegen.slug(1, 'integral')}/)", page)
+        self.assertIn("| D. Functional coverage | 2/3 verified |", page)      # the reference host's counts
+        self.assertIn("`other`", page)                                         # and the other host's
+        self.assertIn("unsolved", page)
+        self.assertTrue((c / "sympy" / "_index.md").exists())
+        index = (c / "_index.md").read_text(encoding="utf-8")
+        self.assertIn("](giac-jl/)", index)
+        self.assertIn("](sympy/)", index)
+        self.assertIn("](systems/)", (out / "content" / "results" / "_index.md").read_text(encoding="utf-8"))
+        self.assertIn("](../../results/systems/)", (out / "content" / "docs" / "systems" / "_index.md").read_text(encoding="utf-8"))
+
     def test_host_pages_show_their_self_check(self):
         """The reference host's files may predate the self-check: its F page then has no empty self-check columns and
         points to the hosts that have one; each such host gets its own F page and case pages, self-check included."""

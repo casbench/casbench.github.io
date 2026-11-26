@@ -214,6 +214,11 @@ def esc(s):
     return html.escape(str(s), quote=False)
 
 
+def system_slug(label):
+    """Directory name of a system page: "Giac.jl" is giac-jl, "Sage/Giac" sage-giac."""
+    return re.sub(r"[^a-z0-9]+", "-", label.lower()).strip("-")
+
+
 def slug(idx, name):
     """Directory name of a case page: index and a short ASCII form of the case name."""
     t = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:48].rstrip("-")
@@ -435,7 +440,7 @@ STATUS_COLORS = {
 }
 
 
-def status_chart(systems):
+def status_chart(systems, label="system"):
     """Plot recorded answer statuses, including unavailable and any unknown status."""
     counts = {name: Counter(r["status"] for r in rows) for name, rows in systems.items()}
     present = {status for c in counts.values() for status in c}
@@ -444,7 +449,7 @@ def status_chart(systems):
     left, plot_width, top, row_height = 190, 600, 32, 36
     height = top + row_height * len(counts) + 12
     out = ['<div class="operation-chart-scroll"><svg class="operation-chart status-chart" '
-           f'viewBox="0 0 900 {height}" role="img" aria-label="Answer statuses by system; counts follow in a table">',
+           f'viewBox="0 0 900 {height}" role="img" aria-label="Answer statuses by {label}; counts follow in a table">',
            f'<text x="{left}" y="17" font-size="12">0%</text>',
            f'<text x="{left + plot_width}" y="17" font-size="12" text-anchor="end">100% of recorded cases</text>']
     for i, (system, c) in enumerate(counts.items()):
@@ -469,7 +474,7 @@ def status_chart(systems):
     out.append('<div class="status-chart-legend">' + ''.join(
         f'<span><i style="background:{STATUS_COLORS.get(status, "#515a66")}" aria-hidden="true"></i>{esc(status)}</span>'
         for status in statuses) + '</div>\n')
-    out.append('\n| system | ' + ' | '.join(esc(s) for s in statuses) + ' | total |\n')
+    out.append(f'\n| {label} | ' + ' | '.join(esc(s) for s in statuses) + ' | total |\n')
     out.append('|---|' + '---:|' * (len(statuses) + 1) + '\n')
     for system, c in counts.items():
         out.append(f'| {esc(system)} | ' + ' | '.join(str(c[s]) for s in statuses) + f' | {sum(c.values())} |\n')
@@ -930,6 +935,7 @@ class Site:
     def results_index(self):
         out = front("Results", 1)
         out += "[Synthesis](synthesis/): verified counts and per-operation timings across systems.\n\n"
+        out += "[By system](systems/): every bench for one system, with its cases and its counts on every host.\n\n"
         for key in self.results:
             title, desc = BENCHES.get(key, (key, ""))
             out += f"### [{title}]({key.lower()}/)\n\n{desc}\n\n"
@@ -998,6 +1004,104 @@ class Site:
                 value = self_verification_summary(rows) if rows else "not run"
                 cells.append(f"[{value}](../{key.lower()}/)" if key in self.results else value)
             out += f"| {esc(system)} | " + " | ".join(cells) + " |\n"
+        return out
+
+    # -- one page per system -------------------------------------------------
+    SYSTEM_ALIASES = {"Giac.jl ifactor": "Giac.jl"}     # two columns of one system (bench C)
+
+    def system_names(self):
+        """Every system of every host, under one name per system."""
+        return sorted({self.SYSTEM_ALIASES.get(s, s) for h in self.hosts.values() for ss in h.values() for s in ss})
+
+    def system_columns(self, results, key, system):
+        """(column label, rows) of a system on a bench: its own column and those it is an alias of."""
+        return [(s, rows) for s, rows in sorted(results.get(key, {}).items()) if self.SYSTEM_ALIASES.get(s, s) == system]
+
+    def system_page(self, system, weight):
+        out = front(system, weight, linkTitle=system)
+        kind, name = package(system)
+        what = (f"the Julia package {esc(name)}" if kind == "julia" else
+                f"SageMath driving {esc(system.split('/', 1)[1])}" if system.startswith("Sage/") else f"the system {esc(name)}")
+        out += (f"Every bench for {esc(system)} ({what}): "
+                f"the numbers of the reference host `{esc(self.reference)}`, then the counts of the other hosts and every case. "
+                "Versions are on the [Systems](../../../docs/systems/) page, the relation of the contributors to each system "
+                "on the [Disclosures](../../../disclosures/) page. An unsolved or wrong case may hide a benchmark error.\n\n")
+        keys = [k for k in BENCHES if self.system_columns(self.results, k, system)]
+        if keys:
+            out += f"## Answer statuses by bench\n\nOn the reference host `{esc(self.reference)}`.\n\n"
+            out += status_chart({f"{BENCHES[k][0]}" + (f" ({c})" if len(cols) > 1 else ""): rows
+                                 for k in keys for cols in [self.system_columns(self.results, k, system)] for c, rows in cols},
+                                label="bench")
+            out += "| bench | verified / attempted | median time by operation [Q1, Q3] | self-check | bench page |\n|---|---|---|---|---|\n"
+            for k in keys:
+                for c, rows in self.system_columns(self.results, k, system):
+                    n, v, _ = operation_metrics(rows)
+                    ops = []
+                    for op, rr in sorted(self.operation_groups(k, rows).items()):
+                        op_n, op_k, q = operation_metrics(rr)
+                        ops.append(f"`{esc(op)}` {op_k}/{op_n}: " + (f"{fmt_time(q[1])} [{fmt_time(q[0])}, {fmt_time(q[2])}]" if q else "median omitted"))
+                    shown = "; ".join(ops) if len(ops) <= 6 else f"{len(ops)} operations, on the bench page"
+                    check = self_verification_summary(rows) if k in self.VERIFIED_BENCHES and self.has_self_check(k) else "--"
+                    title = BENCHES[k][0] + (f" ({esc(c)})" if c != system else "")
+                    out += f"| {esc(title)} | {v}/{n} verified | {shown or '--'} | {check} | [{esc(BENCHES[k][0])}](../../{k.lower()}/) |\n"
+            out += "\n"
+        else:
+            out += f"No result for {esc(system)} on the reference host `{esc(self.reference)}`.\n\n"
+        others = [h for h in self.hosts if h != self.reference]
+        rows_hosts = [(k, h) for k in BENCHES for h in [self.reference] + others if self.system_columns(self.hosts[h], k, system)]
+        if others and rows_hosts:
+            hosts = [self.reference] + others
+            out += ("## Hosts\n\nVerified / attempted on each host (statuses should agree across hosts; times scale with the "
+                    "machine, see [Hosts](../../../docs/hosts/)).\n\n")
+            out += "| bench | " + " | ".join(f"`{esc(h)}`" for h in hosts) + " |\n|---|" + "---|" * len(hosts) + "\n"
+            for k in [k for k in BENCHES if any(kk == k for kk, _ in rows_hosts)]:
+                cells = []
+                for h in hosts:
+                    cols = self.system_columns(self.hosts[h], k, system)
+                    if not cols:
+                        cells.append("")
+                        continue
+                    n = sum(operation_metrics(rows)[0] for _, rows in cols)
+                    v = sum(operation_metrics(rows)[1] for _, rows in cols)
+                    cell = f"{v}/{n} verified"
+                    if h != self.reference and h in self.self_check_hosts(k):
+                        cell = f"[{cell}](../../{esc(h)}/{k.lower()}/)"
+                    cells.append(cell)
+                out += f"| {esc(BENCHES[k][0])} | " + " | ".join(cells) + " |\n"
+            out += "\n"
+        if keys:
+            out += ("## Cases\n\nEvery case of the reference host, with its status and time (the minimum over repeated calls, "
+                    "else the first call); follow a case for every system's answer.\n\n")
+            for k in keys:
+                verification = k in self.VERIFIED_BENCHES and self.has_self_check(k)
+                for c, rows in self.system_columns(self.results, k, system):
+                    title = BENCHES[k][0] + (f" ({c})" if c != system else "")
+                    out += f"<details><summary>{esc(title)}: {len(rows)} cases</summary>\n\n<div class=\"filterable\">\n\n"
+                    out += "| # | case | op | status | time |" + (" self-check |" if verification else "") + "\n"
+                    out += "|---|---|---|---|---|" + ("---|" if verification else "") + "\n"
+                    for r in sorted(rows, key=lambda r: r["idx"]):
+                        t = fmt_time(etime(r)) if r["status"] in SOLVED_STATUSES | {"wrong", "unverified", "unsolved"} else ""
+                        vs = r.get("verify_status", "")
+                        out += (f"| {r['idx']} | [{esc(r['case'])}](../../{k.lower()}/{slug(r['idx'], r['case'])}/) | `{esc(r['op'])}` | "
+                                f"{badge(r['status'])} | {t} |" + (f" {badge(vs) if vs else 'not measured'} |" if verification else "") + "\n")
+                    out += "\n</div>\n\n</details>\n\n"
+        return out
+
+    def systems_index(self):
+        out = front("By system", 2, linkTitle="By system")
+        out += ("One page per system: its results on every bench, its cases, and its counts on every host. Verified / "
+                f"attempted on the reference host `{esc(self.reference)}` (\"not run\" when the system has no column for "
+                "that bench there).\n\n")
+        keys = [k for k in BENCHES if k in self.results]
+        out += "| system | " + " | ".join(esc(k.split("_", 1)[0]) for k in keys) + " |\n|---|" + "---|" * len(keys) + "\n"
+        for system in self.system_names():
+            cells = []
+            for k in keys:
+                cols = self.system_columns(self.results, k, system)
+                n = sum(operation_metrics(rows)[0] for _, rows in cols)
+                v = sum(operation_metrics(rows)[1] for _, rows in cols)
+                cells.append(f"{v}/{n}" if cols else "not run")
+            out += f"| [{esc(system)}]({system_slug(system)}/) | " + " | ".join(cells) + " |\n"
         return out
 
     def bench_page(self, key, weight):
@@ -1210,6 +1314,7 @@ class Site:
         out += "| package | version | recorded |\n|---|---|---|\n"
         for k, (v, d) in sorted(self.versions().items(), key=lambda kv: kv[0].lower()):
             out += f"| {esc(k)} | `{esc(v[:90])}` | {esc(d[:10])} |\n"
+        out += "\nThe results of each system on every bench are on its own page: [By system](../../results/systems/).\n"
         out += "\nThe relation of every contributor to each system is stated on the [Disclosures](../../disclosures/) page.\n"
         out += ("\n## Adapters\n\n`lib/adapters/<system>.jl` give the systems the same small interface "
                 "(`OPS`, `EVAL`, `NTERMS`, `NFACTORS`, `UNSOLVED`, `VERSIONS`). Bench E has one task file per system, "
@@ -1690,6 +1795,9 @@ def generate(root, out):
     write(c / "_index.md", home)
     write(c / "results" / "_index.md", site.results_index())
     write(c / "results" / "synthesis" / "_index.md", site.synthesis_page())
+    write(c / "results" / "systems" / "_index.md", site.systems_index())
+    for w, system in enumerate(site.system_names(), 1):
+        write(c / "results" / "systems" / system_slug(system) / "_index.md", site.system_page(system, w))
     for w, key in enumerate(site.results, 2):
         write(c / "results" / key.lower() / "_index.md", site.bench_page(key, w))
         for d, text in site.case_pages(key):
