@@ -188,6 +188,12 @@ class SiteGenTests(unittest.TestCase):
         (root / "results" / "other").mkdir()
         (root / "results" / "other" / "machine.txt").write_text(MACHINE.replace("host\tvm", "host\tlaptop"), encoding="utf-8")
         (root / "results" / "other" / "D_coverage_giac.tsv").write_text(TSV, encoding="utf-8")
+        (root / "docs" / "systems.tsv").write_text(
+            "# registry\nsystem\tproject\trole\thomepage\tsource\n"
+            "Giac.jl\tGiac.jl\tthe Julia package\thttps://example.org/giacjl\thttps://example.org/giacjl-src\n"
+            "Giac.jl\tGiac\tthe engine\thttps://example.org/giac\thttps://example.org/giac-src\n", encoding="utf-8")
+        (root / "lib" / "adapters").mkdir(parents=True)
+        (root / "lib" / "adapters" / "giac.jl").write_text("# adapter\n", encoding="utf-8")
         out = pathlib.Path(tempfile.mkdtemp())
         sitegen.generate(root, out)
         c = out / "content" / "results" / "systems"
@@ -199,6 +205,8 @@ class SiteGenTests(unittest.TestCase):
         self.assertIn("| D. Functional coverage | 2/3 verified |", page)      # the reference host's counts
         self.assertIn("`other`", page)                                         # and the other host's
         self.assertIn("unsolved", page)
+        self.assertIn("| Giac | the engine | [example.org/giac](https://example.org/giac) | [example.org/giac-src](https://example.org/giac-src) |", page)
+        self.assertIn("](https://github.com/casbench/casbench.github.io/blob/main/lib/adapters/giac.jl)", page)
         self.assertTrue((c / "sympy" / "_index.md").exists())
         index = (c / "_index.md").read_text(encoding="utf-8")
         self.assertIn("](giac-jl/)", index)
@@ -512,6 +520,8 @@ class SiteGenTests(unittest.TestCase):
         out = pathlib.Path(tempfile.mkdtemp())
         site = sitegen.generate(ROOT, out)
         self.assertGreaterEqual(len(site.results), 1)
+        listed = {r["system"] for r in site.system_links}
+        self.assertEqual(set(site.system_names()) - listed, set(), "systems without a row in docs/systems.tsv")
         if "E_suite" in site.results:
             self.assertGreaterEqual(len(site.categories), 100)
 

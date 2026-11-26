@@ -1,0 +1,37 @@
+# Where each system of the results lives: one row per project a system column runs (a Sage/<engine> column runs
+# SageMath and that engine). Read by tools/site/sitegen.py for the system pages; every system of the results needs a
+# row (tools/site/test_sitegen.py). Columns: system (as labelled in the results), project, role, homepage, source.
+system	project	role	homepage	source
+Giac.jl	Giac.jl	the Julia package	https://github.com/JuliaGiac/Giac.jl	https://github.com/JuliaGiac/Giac.jl
+Giac.jl	Giac	the engine (GIAC_jll is built from the JuliaGiac/giac fork)	https://www-fourier.univ-grenoble-alpes.fr/~parisse/giac.html	https://github.com/JuliaGiac/giac
+Symbolics.jl	Symbolics.jl	the Julia package	https://docs.sciml.ai/Symbolics/stable/	https://github.com/JuliaSymbolics/Symbolics.jl
+Symbolics.jl	RischIntegrate.jl	integrals	https://github.com/jverzani/RischIntegrate.jl	https://github.com/jverzani/RischIntegrate.jl
+Symbolics.jl	GruntzLimit.jl	limits	https://github.com/jverzani/GruntzLimit.jl	https://github.com/jverzani/GruntzLimit.jl
+SymJ.jl	SymJ.jl	the Julia package	https://github.com/jverzani/SymJ.jl	https://github.com/jverzani/SymJ.jl
+SymJ.jl	RischIntegrate.jl	integrals	https://github.com/jverzani/RischIntegrate.jl	https://github.com/jverzani/RischIntegrate.jl
+SymJ.jl	GruntzLimit.jl	limits	https://github.com/jverzani/GruntzLimit.jl	https://github.com/jverzani/GruntzLimit.jl
+SymPy	SymPy	the Python library	https://www.sympy.org/	https://github.com/sympy/sympy
+SymPy	SymPyPythonCall.jl	the Julia interface	https://github.com/jverzani/SymPyPythonCall.jl	https://github.com/jverzani/SymPyPythonCall.jl
+SymEngine.jl	SymEngine.jl	the Julia package	https://github.com/symengine/SymEngine.jl	https://github.com/symengine/SymEngine.jl
+SymEngine.jl	SymEngine	the C++ library	https://symengine.org/	https://github.com/symengine/symengine
+Maxima	Maxima	the system	https://maxima.sourceforge.io/	https://sourceforge.net/p/maxima/code/
+FriCAS	FriCAS	the system	https://fricas.github.io/	https://github.com/fricas/fricas
+Sage/Giac	SageMath	the driver	https://www.sagemath.org/	https://github.com/sagemath/sage
+Sage/Giac	Giac	the engine (the nixpkgs build of the upstream sources)	https://www-fourier.univ-grenoble-alpes.fr/~parisse/giac.html	https://www-fourier.univ-grenoble-alpes.fr/~parisse/debian/dists/stable/main/source/
+Sage/Maxima	SageMath	the driver	https://www.sagemath.org/	https://github.com/sagemath/sage
+Sage/Maxima	Maxima	the engine	https://maxima.sourceforge.io/	https://sourceforge.net/p/maxima/code/
+Sage/FriCAS	SageMath	the driver	https://www.sagemath.org/	https://github.com/sagemath/sage
+Sage/FriCAS	FriCAS	the engine	https://fricas.github.io/	https://github.com/fricas/fricas
+Sage/SymPy	SageMath	the driver	https://www.sagemath.org/	https://github.com/sagemath/sage
+Sage/SymPy	SymPy	the engine	https://www.sympy.org/	https://github.com/sympy/sympy
+Sage/Singular	SageMath	the driver	https://www.sagemath.org/	https://github.com/sagemath/sage
+Sage/Singular	Singular	the engine	https://www.singular.uni-kl.de/	https://github.com/Singular/Singular
+Macaulay2	Macaulay2	the system	https://macaulay2.com/	https://github.com/Macaulay2/M2
+Groebner.jl	Groebner.jl	the Julia package	https://sumiya11.github.io/Groebner.jl/	https://github.com/sumiya11/Groebner.jl
+msolve (AlgebraicSolving.jl)	msolve	the library	https://msolve.lip6.fr/	https://github.com/algebraic-solving/msolve
+msolve (AlgebraicSolving.jl)	AlgebraicSolving.jl	the Julia interface	https://github.com/algebraic-solving/AlgebraicSolving.jl	https://github.com/algebraic-solving/AlgebraicSolving.jl
+GrobX	GrobX	the Python package	https://grobx.com/	https://github.com/code1-de/grobx
+Compute Engine	Compute Engine	the JavaScript library	https://mathlive.io/compute-engine/	https://github.com/cortex-js/compute-engine
+Primes.jl factor	Primes.jl	the Julia package	https://github.com/JuliaMath/Primes.jl	https://github.com/JuliaMath/Primes.jl
+LibPARI.jl factors	LibPARI.jl	the Julia package	https://github.com/s-celles/LibPARI.jl	https://github.com/s-celles/LibPARI.jl
+LibPARI.jl factors	PARI/GP	the library	https://pari.math.u-bordeaux.fr/	https://pari.math.u-bordeaux.fr/git/pari.git

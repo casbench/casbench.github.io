@@ -116,6 +116,21 @@ def package(label):
 
 
 
+def read_system_links(path):
+    """Rows of docs/systems.tsv: where each system of the results lives (system, project, role, homepage, source)."""
+    if not path.exists():
+        return []
+    with open(path, newline="", encoding="utf-8") as f:
+        lines = [l for l in f if not l.startswith("#")]
+    return [{k: (v or "").strip() for k, v in r.items()} for r in csv.DictReader(lines, delimiter="\t", quoting=csv.QUOTE_NONE)
+            if r.get("system") and r.get("project")]
+
+
+def url_text(u):
+    """A link's visible text: the address without its scheme and trailing slash."""
+    return re.sub(r"^https?://", "", u).rstrip("/")
+
+
 def read_disclosures(path):
     """Rows of docs/disclosures.tsv, the conflict of interest declarations of the contributors
     (contributor, orcid, project, kind, role, note); every contributor writes their own rows."""
@@ -597,6 +612,7 @@ class Site:
         self._task_cache = {}
         self.history = read_history(self.root / "results" / "history.tsv")
         self.disclosures = read_disclosures(self.root / "docs" / "disclosures.tsv")
+        self.system_links = read_system_links(self.root / "docs" / "systems.tsv")
         self.results_commit = self.git_results_commit()
 
     def git_results_commit(self):
@@ -1017,6 +1033,33 @@ class Site:
         """(column label, rows) of a system on a bench: its own column and those it is an alias of."""
         return [(s, rows) for s, rows in sorted(results.get(key, {}).items()) if self.SYSTEM_ALIASES.get(s, s) == system]
 
+    def system_sources(self, system):
+        """The benchmark's own files for a system: its adapter, its helpers and its bench E task file, where they exist."""
+        keys = [k for k, v in SYSTEM_LABELS.items() if v == system] or [system_slug(system).replace("-", "_")]
+        paths = []
+        for k in keys:
+            paths.append(f"lib/adapters/{k}.jl")
+            if k.startswith("sage_"):
+                paths += ["lib/adapters/sage.jl", "lib/adapters/sage_server.py"]
+            paths += {"computeengine": ["lib/adapters/ce_server.mjs"], "grobx": ["lib/adapters/grobx_runner.py"]}.get(k, [])
+            paths.append(f"E_suite/tasks_{k}.jl")
+        return [p for p in dict.fromkeys(paths) if (self.root / p).exists()]
+
+    def system_links_section(self, system):
+        rows = [r for r in self.system_links if r["system"] == system]
+        out = ""
+        if rows:
+            out += "## Links\n\n| project | role | homepage | source |\n|---|---|---|---|\n"
+            for r in rows:
+                cell = lambda u: f"[{esc(url_text(u))}]({u})" if u else "--"
+                out += f"| {esc(r['project'])} | {esc(r['role'])} | {cell(r['homepage'])} | {cell(r['source'])} |\n"
+            out += "\n"
+        sources = self.system_sources(system)
+        if sources:
+            out += ("How this benchmark drives it (the exact commands of every case are on the case pages): "
+                    + ", ".join(f"[`{esc(p)}`]({BLOB}/{p})" for p in sources) + ".\n\n")
+        return out
+
     def system_page(self, system, weight):
         out = front(system, weight, linkTitle=system)
         kind, name = package(system)
@@ -1026,6 +1069,7 @@ class Site:
                 f"the numbers of the reference host `{esc(self.reference)}`, then the counts of the other hosts and every case. "
                 "Versions are on the [Systems](../../../docs/systems/) page, the relation of the contributors to each system "
                 "on the [Disclosures](../../../disclosures/) page. An unsolved or wrong case may hide a benchmark error.\n\n")
+        out += self.system_links_section(system)
         keys = [k for k in BENCHES if self.system_columns(self.results, k, system)]
         if keys:
             out += f"## Answer statuses by bench\n\nOn the reference host `{esc(self.reference)}`.\n\n"
