@@ -32,6 +32,53 @@ AI assistance row exists. See `CONTRIBUTING.md`.
   time; `tools/site/sitegen.py` refuses a home page whose counters disagree
   with the data, and the tests recompute them independently.
 
+## Measuring and rerunning
+
+- Measure on a quiet machine, one supervised run at a time: no other
+  benchmark, build or test may run on the measuring machine during a
+  measurement (a shared host's builds raised the load to 15 and distorted
+  times on 2026-11-25). Queues wait for a quiet machine before each step.
+- A correction that changes a status is applied by rerunning, never by
+  editing or reclassifying a results file: rerun the affected systems from a
+  committed tree into a new results directory, with the same inputs and
+  budgets for every system compared, and keep the old files.
+- A rerun of a few cases starts one case earlier as a warm-up
+  (`BENCH_START_INDEX`) for systems with a compiled or persistent process
+  (the Julia packages, Sage, the Compute Engine): a cold worker charges its
+  start-up to the first case's budget. Only the target cases are results.
+- A fix comes with a test that fails before it and passes after it, run on
+  the measuring machine when it needs the systems (no Julia on the
+  workstation).
+
+## Publishing results
+
+- The reference host (`results/REFERENCE`) gives the numbers of the bench
+  pages; another machine's campaign is published as its own host directory,
+  `results/<host>/`, and compared on the Hosts page. Changing the reference
+  host is the owner's decision.
+- A campaign assembled from several runs (a main run, then targeted reruns)
+  copies each results file unchanged from the run that wrote it, the latest
+  run's file replacing an earlier one, with a `SOURCES.tsv` naming for each
+  file its run directory, commit, run id and SHA-256; `machine.txt`
+  concatenates the machine blocks of the contributing runs in time order, so
+  that the history dates each file by its last run.
+- A partial campaign says so: `docs/methodology.md` names what it includes,
+  what is held back and what pending reruns will change.
+- Files over GitHub's limits are not committed and not trimmed: they are
+  listed as held back in `SOURCES.tsv` and kept, with their checksums, in the
+  review archive (the hard tier of bench G stores full bases, up to 104 MB a
+  file).
+- After adding results, regenerate `results/history.tsv`,
+  `results/summary.md`, `tables/` and `figures/` with `make_tables.jl` (on
+  the measuring machine) and commit them with the results; CI rejects a
+  drift. Run the site tests (`tools/site/test_sitegen.py`) before pushing;
+  they write whole sites to temporary directories, so point `TMPDIR` to a
+  disk with room for them.
+- Publish by fast-forwarding `main`; the site workflow builds with the full
+  git history (its stamps name the last commit that changed `results/`).
+  Commit messages: a short imperative subject, a body that says why, no
+  trailers.
+
 ## Text
 
 - An unsolved or wrong case may be an error of the benchmark (an idiom that
