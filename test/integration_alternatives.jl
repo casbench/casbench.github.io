@@ -17,8 +17,8 @@ Base.string(a::FormsAnswer) = a.text
 EVAL(a::FormsAnswer, pt) = a.F(pt)
 
 # ∫ 1/(a+b cos x) dx; FPARAMS has a = 1.7 > b = 0.6, so the arctan form is the one for these values
-atanform = FormsAnswer("2/sqrt(a^2-b^2)*atan(sqrt((a-b)/(a+b))*tan(x/2))",
-                       pt -> (a, b, x = pt[:a], pt[:b], pt[:x]; 2 / sqrt(a^2 - b^2) * atan(sqrt((a - b) / (a + b)) * tan(x / 2))))
+atanF(pt) = (a = pt[:a]; b = pt[:b]; 2 / sqrt(a^2 - b^2) * atan(sqrt((a - b) / (a + b)) * tan(pt[:x] / 2)))
+atanform = FormsAnswer("2/sqrt(a^2-b^2)*atan(sqrt((a-b)/(a+b))*tan(x/2))", atanF)
 wrongform = FormsAnswer("x", pt -> pt[:x])
 @testset "list answers" begin
     st, note = check_integral(FormsAnswer("[x, atan]", pt -> nothing, [wrongform, atanform]), "1/(a+b*cos(x))", "")

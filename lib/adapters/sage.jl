@@ -134,9 +134,10 @@ function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     # ("Simplification assuming c near 0", "Warning, integration of abs or sign assumes ...") as the answer; the
     # integral is computed with the base Expect._eval_line into a Giac variable, read back afterwards, and only a
     # line with Giac's own error mark "Error:" raises (before 2026-11-26: errors and false answers). Giac runs on one
-    # thread, as in every Giac column (docs/benches.md), set before the timed call.
+    # thread, as in every Giac column (docs/benches.md), set before the timed call. The variable is passed by its
+    # Giac name (sageVARx), as Sage's own call does: int(f, sage1) would take sage1 for a new variable.
     integrate_giac = "    _casbench_gf = giac(_casbench_integrand)\n" *
-        "    _casbench_out = Expect._eval_line(giac, 'casbench_F:=int(' + _casbench_gf.name() + ',' + giac($var).name() + '):;', allow_use_file=False)\n" *
+        "    _casbench_out = Expect._eval_line(giac, 'casbench_F:=int(' + _casbench_gf.name() + ',' + str(giac($var)) + '):;', allow_use_file=False)\n" *
         "    t1 = walltime()\n" *
         "    _casbench_failed = [l for l in _casbench_out.splitlines() if 'Error:' in l]\n" *
         "    if _casbench_failed: raise RuntimeError('giac: ' + ' | '.join(_casbench_failed))\n" *
