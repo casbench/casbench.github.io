@@ -22,7 +22,9 @@ Every bench/system pair runs in its own Julia process with one thread, from
 its own environment under `envs/`, under `lib/supervise.jl`, which enforces a
 per-case time limit (`BENCH_TIMEOUT_<bench>`, read by `run_all.jl`; defaults B 120 s, C 600 s, D 120 s, E 60 s,
 F 30 s, G and J 300 s, H 30 s, I 300 s; J uses `BENCH_TIMEOUT_G`) and restarts the
-worker at the next case after a timeout or a crash. Choose a new `BENCH_HOST` for a new run: existing result files are never
+worker at the next case after a timeout or a crash. The subprocess adapters (FriCAS, Maxima, Macaulay2) also run
+their system under `timeout`, a safety net for a worker that dies; that limit is 10 s above the case budget, so the
+supervisor always stops a case first and records it as a timeout. Choose a new `BENCH_HOST` for a new run: existing result files are never
 replaced. `BENCH_RESUME=1` can resume a file only when its header matches the
 current format; a legacy file must remain untouched. Results are appended to
 `results/<host>/<bench>_<system>.tsv` (one line per case: status, first-call
@@ -235,6 +237,10 @@ What it does not yet include, and what the pending reruns change:
   over Q was seen to use them);
 - bench H case 479, whose symbol `t` had no value: an error in the Sage
   columns of these files.
+- FriCAS and Maxima cases stopped by their own safety limit, which equalled
+  the case budget: some of their "fricas gave no answer" and "maxima gave no
+  answer" errors in these files (19 F and 29 H for FriCAS, 6 F and 8 H for
+  Maxima) are timeouts.
 
 Part of these runs was measured while the host ran other builds (host load
 up to 15 before some GrobX and FriCAS cases): times are indicative, statuses

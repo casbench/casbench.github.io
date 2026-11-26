@@ -42,6 +42,13 @@ end
 
 const MEM_LIMIT = parse(Float64, get(ENV, "BENCH_MEM_LIMIT_GIB", "5")) * 2^30
 
+# The limit exported to the worker as BENCH_CASE_TIMEOUT: subprocess adapters (FriCAS, Maxima, Macaulay2) run their
+# system under `timeout` with it, a safety net for a worker that dies. It must exceed every case budget: when it
+# equalled the budget the two raced, and a subprocess stopped by its own `timeout` was recorded as an error
+# ("fricas gave no answer") instead of a timeout (test/subprocess_limit.jl).
+const SUBPROCESS_MARGIN_S = 10
+subprocess_limit(budget) = string(ceil(Int, budget) + SUBPROCESS_MARGIN_S)
+
 # resident memory of a process (Linux), 0 elsewhere
 rss(pid) = try
     m = match(r"VmRSS:\s+(\d+)", read("/proc/$pid/status", String))
@@ -67,7 +74,7 @@ function verify_phase(envdir, out)
     startup_limit = parse(Float64, get(ENV, "BENCH_VERIFY_STARTUP_TIMEOUT", "120"))
     script = get(ENV, "BENCH_VERIFY_WORKER", joinpath(@__DIR__, "verify_worker.jl"))
     cmd = addenv(`setsid $(Base.julia_cmd()) --startup-file=no --project=$envdir $script $request $resultfile $ready $commandfile`,
-                 "BENCH_CASE_TIMEOUT" => string(ceil(Int, budget)))
+                 "BENCH_CASE_TIMEOUT" => subprocess_limit(budget))
     logfile = out * ".verify.log"
     proc = try
         run(pipeline(cmd; stdout=logfile, stderr=logfile, append=true); wait=false)
@@ -167,7 +174,8 @@ function supervise(envdir, worker, bench, system, out, timeout, extra)
         # a fresh progress file for every worker: the memory check must not read the previous worker's case
         isfile(progress) && rm(progress)
         cmd = addenv(`setsid $(Base.julia_cmd()) --startup-file=no --project=$envdir $worker $bench $system $out $start $progress $extra`,
-                     "BENCH_CASE_TIMEOUT" => string(round(Int, timeout)), "BENCH_VERIFICATION_SUPERVISED" => "1")
+                     "BENCH_CASE_TIMEOUT" => subprocess_limit(maximum(values(budgets); init = timeout)),
+                     "BENCH_VERIFICATION_SUPERVISED" => "1")
         proc = run(pipeline(cmd; stdout = logfile, stderr = logfile, append = true); wait = false)
         # the group, and every descendant (Sage's interfaces start FriCAS and giac in sessions of their own,
         # which a group kill does not reach): descendants are listed before the first kill
