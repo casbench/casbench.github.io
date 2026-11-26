@@ -5,7 +5,9 @@ import os
 import sys
 import time
 
-if '--version' in sys.argv:
+# a version query is not an interface session: Maxima's `--version`, FriCAS's `-eval ")version"` (VERSIONS(), which
+# the first worker of a supervised run calls for its machine block, also when the run starts at BENCH_START_INDEX)
+if '--version' in sys.argv or ')version' in sys.argv:
     print('fake CAS 1')
     raise SystemExit(0)
 
