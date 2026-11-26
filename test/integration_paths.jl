@@ -18,6 +18,14 @@ include(joinpath(@__DIR__, "..", "lib", "integration_check.jl"))
         @test st == :verified_numeric
         @test occursin("forms returned verifies", note) || occursin("of the 2 returned verifies", note)
     end
+    if system == "fricas"
+        # the parameter f: the integrand was bound to `f`, so `f = 1.3` substituted the integrand (no value, unverified)
+        # and the symbolic check read the answer with f replaced (test/fricas_names.jl checks the names without FriCAS)
+        G = INTEGRATE_TEXT("sin(f*x)", "x", FPARAMS)
+        @test !isempty(G.values)
+        @test check_integral(G, "sin(f*x)", "")[1] == :verified_numeric
+        @test VERIFY_INTEGRAL("((-1)*cos(f*x))/f", "sin(f*x)", "x") == "0"
+    end
     if system == "sage_giac"
         # bench H case 479: Giac's warning "Simplification assuming c near 0", reprinted at each evaluation of the
         # result, was recorded as the answer; it is now an error of the interface that says so

@@ -59,20 +59,22 @@ function run_fricas(script::String)
     txt, answer_ns
 end
 
+# The script's own names carry a `casbench` prefix: a name that is also a parameter of the integrand (f, F, r, ...)
+# would replace that parameter in everything evaluated after it (test/fricas_names.jl).
 function INTEGRATE_TEXT(integrand::String, var::String, params = Main.FPARAMS)
     f = Mapleish.translate(integrand, :fricas)
     xs = check_points(integrand, params)
     lines = [")set message autoload off", ")set message type off", ")set output algebra off", ")set output length 245", ")set break resume",
-             "f := $f", "resf := integrate(f, $var)",
-             "output(concat(\"<<ANS>>\", unparse(resf::InputForm)))",
+             "casbenchf := $f", "casbenchres := integrate(casbenchf, $var)",
+             "output(concat(\"<<ANS>>\", unparse(casbenchres::InputForm)))",
              "output(concat(\"<<DO\", \"NE>>\"))", ")lisp (finish-output)"]
     for (i, xv) in enumerate(xs)
         # real values first (an Expression Integer evaluates cleanly), complex ones second (logarithms of negative values);
         # with )set break resume an error in one line does not stop the next
-        push!(lines, "v$i := complexNumeric(eval(resf, [$(param_list(xv, integrand, params, false))]))")
-        push!(lines, "output(concat(\"<<V$i>>\", unparse(v$i::InputForm)))")
-        push!(lines, "w$i := complexNumeric(eval(resf, [$(param_list(xv, integrand, params, true))]))")
-        push!(lines, "output(concat(\"<<W$i>>\", unparse(w$i::InputForm)))")
+        push!(lines, "casbenchv$i := complexNumeric(eval(casbenchres, [$(param_list(xv, integrand, params, false))]))")
+        push!(lines, "output(concat(\"<<V$i>>\", unparse(casbenchv$i::InputForm)))")
+        push!(lines, "casbenchw$i := complexNumeric(eval(casbenchres, [$(param_list(xv, integrand, params, true))]))")
+        push!(lines, "output(concat(\"<<W$i>>\", unparse(casbenchw$i::InputForm)))")
     end
     path = tempname() * ".input"
     write(path, join(lines, "\n") * "\n")
@@ -120,12 +122,12 @@ function list_forms(ans::AbstractString, integrand, params, xs)
     forms = list_elements(ans)
     length(forms) > 1 || return FricasAnswer[]
     lines = [")set message autoload off", ")set message type off", ")set output algebra off", ")set output length 245", ")set break resume",
-             "resl : List(Expression(Integer)) := $ans"]
+             "casbenchl : List(Expression(Integer)) := $ans"]
     for k in eachindex(forms), (i, xv) in enumerate(xs)
-        push!(lines, "v$(i)_$k := complexNumeric(eval(resl.$k, [$(param_list(xv, integrand, params, false))]))")
-        push!(lines, "output(concat(\"<<V$(i)_$(k)>>\", unparse(v$(i)_$k::InputForm)))")
-        push!(lines, "w$(i)_$k := complexNumeric(eval(resl.$k, [$(param_list(xv, integrand, params, true))]))")
-        push!(lines, "output(concat(\"<<W$(i)_$(k)>>\", unparse(w$(i)_$k::InputForm)))")
+        push!(lines, "casbenchv$(i)_$k := complexNumeric(eval(casbenchl.$k, [$(param_list(xv, integrand, params, false))]))")
+        push!(lines, "output(concat(\"<<V$(i)_$(k)>>\", unparse(casbenchv$(i)_$k::InputForm)))")
+        push!(lines, "casbenchw$(i)_$k := complexNumeric(eval(casbenchl.$k, [$(param_list(xv, integrand, params, true))]))")
+        push!(lines, "output(concat(\"<<W$(i)_$(k)>>\", unparse(casbenchw$(i)_$k::InputForm)))")
     end
     path = tempname() * ".input"
     write(path, join(lines, "\n") * "\n")
@@ -203,8 +205,8 @@ end
 function VERIFY_INTEGRAL_COMMAND(answer::String, integrand::String, var::String)
     f = Mapleish.translate(integrand, :fricas)
     join([")set message autoload off", ")set message type off", ")set output algebra off",
-          ")set output length 245", ")set break resume", "f := " * f, "F := " * answer,
-          "r := simplify(D(F," * var * ")-f)", "output(concat(\"<<RES>>\",unparse(r::InputForm)))"], "\n") * "\n"
+          ")set output length 245", ")set break resume", "casbenchf := " * f, "casbenchF := " * answer,
+          "casbenchr := simplify(D(casbenchF," * var * ")-casbenchf)", "output(concat(\"<<RES>>\",unparse(casbenchr::InputForm)))"], "\n") * "\n"
 end
 function VERIFY_INTEGRAL(answer::String, integrand::String, var::String)
     path = tempname() * ".input"

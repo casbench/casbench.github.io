@@ -241,6 +241,11 @@ What it does not yet include, and what the pending reruns change:
   the case budget: some of their "fricas gave no answer" and "maxima gave no
   answer" errors in these files (19 F and 29 H for FriCAS, 6 F and 8 H for
   Maxima) are timeouts.
+- FriCAS cases with the parameter `f`: the script bound the integrand to
+  `f`, so the check could not substitute the parameter's value (43 F and 22 H
+  cases unverified for that reason alone in these files) and the symbolic
+  check read the answer with `f` replaced by the integrand. The script's own
+  names now carry a `casbench` prefix.
 
 Part of these runs was measured while the host ran other builds (host load
 up to 15 before some GrobX and FriCAS cases): times are indicative, statuses
