@@ -11,17 +11,10 @@ date	host	bench	system	n	verified	wrong	unverified	unsolved	unavailable	error	ti
 2026-11-18 19:46:09	giac-bench	D_coverage	symj	23	14	0	0	0	9	0	0	0.00573831	8.8955e-05	SymJ 0.1.0; GruntzLimit 1.7.0; RischIntegrate 1.4.0	c726c4a13bdd
 2026-11-18 19:47:02	giac-bench	B_cas	giac	34	33	0	0	1	0	0	0	0.00562676	9.33613e-05	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	c726c4a13bdd
 2026-11-18 19:51:45	giac-bench	D_coverage	sympy	23	20	0	1	0	1	0	1	0.290136	0.00399651	SymPy 1.14.0; SymPyPythonCall 0.5.3	c726c4a13bdd
-2026-11-19 00:13:07	giac-bench	E_suite	giac	107	60	3	0	34	9	1	0	3.65176	0.000715781	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	4abbb9b6ee46
-2026-11-19 00:54:58	giac-bench	E_suite	sympy	107	68	0	0	23	3	7	6	6.80689	0.0179394	SymPy 1.14.0; SymPyPythonCall 0.5.3	4abbb9b6ee46
-2026-11-19 01:04:44	giac-bench	E_suite	symbolics	107	21	0	0	32	49	4	1	3.67361	0.00320955	Symbolics 7.49.0; SymbolicUtils 4.56.1; Nemo 0.56.2; Groebner 0.10.11; GruntzLimit 1.7.0; RischIntegrate 1.4.0; Primes 0.5.7	4abbb9b6ee46
-2026-11-19 01:10:25	giac-bench	E_suite	symj	107	48	0	0	19	37	3	0	0.358879	0.00259912	SymJ 0.1.0; GruntzLimit 1.7.0; RischIntegrate 1.4.0	4abbb9b6ee46
 2026-11-19 07:58:19	giac-bench	D_coverage	giac	23	23	0	0	0	0	0	0	1.8344	0.000126525	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	dadfded3b2c3
 2026-11-19 07:58:41	giac-bench	D_coverage	sympy	23	21	0	0	0	1	0	1	0.313256	0.00435352	SymPy 1.14.0; SymPyPythonCall 0.5.3	dadfded3b2c3
-2026-11-19 08:29:17	giac-bench	E_suite	giac	107	64	3	0	30	9	1	0	3.61393	0.000752015	Giac.jl 0.14.3; GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0	9bd0e3e49362
-2026-11-19 08:31:03	giac-bench	E_suite	sympy	107	71	0	0	20	3	7	6	10.3912	0.026026	SymPy 1.14.0; SymPyPythonCall 0.5.3	9bd0e3e49362
 2026-11-20 02:44:39	giac-bench	B_cas	symengine	34	6	0	0	0	28	0	0	0.000191788	2.35347e-05	SymEngine 0.13.2; symengine_jll 0.12.0+0	run
 2026-11-20 02:44:46	giac-bench	D_coverage	symengine	23	0	0	0	0	21	2	0	0	NaN	SymEngine 0.13.2; symengine_jll 0.12.0+0	run
-2026-11-20 00:17:52	giac-bench	E_suite	giac	107	64	3	0	30	9	1	0	3.61393	0.000752015	GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0; Giac.jl 0.14.3	run
 2026-11-20 07:26:25	giac-bench	F_integration	fricas	639	222	4	282	110	0	20	1	39.5164	0.144281	FriCAS Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg	run
 2026-11-19 18:00:13	giac-bench	F_integration	giac	639	303	13	39	238	0	23	23	32.0928	0.0152597	GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0; Giac.jl 0.14.3	run
 2026-11-20 00:18:01	giac-bench	F_integration	maxima	639	277	2	58	293	0	8	1	19.299	0.01	Maxima 5.49.0	run
@@ -58,10 +51,6 @@ date	host	bench	system	n	verified	wrong	unverified	unsolved	unavailable	error	ti
 2026-11-25 05:17:24	host-2	A_interfaces	symengine	16	8	0	0	0	8	0	0	2.78451e-05	NaN	symengine_jll 0.12.0+0; SymEngine 0.13.2	run
 2026-11-25 05:17:17	host-2	A_interfaces	symj	16	8	0	0	0	8	0	0	0.00558115	NaN	GruntzLimit 1.7.0; SymJ 0.1.0; RischIntegrate 1.4.0	run
 2026-11-25 05:16:48	host-2	A_interfaces	sympy	16	8	0	0	0	8	0	0	0.0038872	NaN	SymPyPythonCall 0.5.3; SymPy 1.14.0	run
-2026-11-23 17:50:23	host-2	E_suite	giac	114	71	3	0	30	9	1	0	3.09183	NaN	GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0; Giac.jl 0.14.3	run
-2026-11-23 17:51:58	host-2	E_suite	symbolics	114	24	0	8	28	49	4	1	3.25228	NaN	Nemo 0.56.2; Symbolics 7.49.0; GruntzLimit 1.7.0; Groebner 0.10.11; SymbolicUtils 4.56.1; RischIntegrate 1.4.0; Primes 0.5.7	run
-2026-11-23 18:06:57	host-2	E_suite	symj	114	57	0	1	16	37	3	0	0.276416	NaN	GruntzLimit 1.7.0; SymJ 0.1.0; RischIntegrate 1.4.0	run
-2026-11-23 17:57:10	host-2	E_suite	sympy	114	78	0	0	20	3	7	6	7.24687	NaN	SymPyPythonCall 0.5.3; SymPy 1.14.0	run
 2026-11-24 09:10:24	host-2	F_integration	computeengine	639	25	6	55	527	0	25	1	2.08504	NaN	compute-engine 0.194.3; node v24.22.2	run
 2026-11-24 05:18:54	host-2	F_integration	fricas	639	178	6	285	148	0	22	0	22.5338	NaN	FriCAS Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg	run
 2026-11-23 18:08:22	host-2	F_integration	giac	639	207	14	95	282	0	23	18	26.7017	NaN	GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0; Giac.jl 0.14.3	run
@@ -88,7 +77,6 @@ date	host	bench	system	n	verified	wrong	unverified	unsolved	unavailable	error	ti
 2026-11-23 17:49:04	host-2	J_rur	giac	4	2	0	2	0	0	0	0	0.0879832	0.0439916	GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0; Giac.jl 0.14.3	run
 2026-11-23 17:48:48	host-2	J_rur	msolve	4	3	0	1	0	0	0	0	0.0285375	0.00703407	AlgebraicSolving 0.13.0; msolve_jll 0.1100.0+0; Nemo 0.57.2	run
 2026-11-23 17:49:17	host-2	J_rur	sage_singular	4	2	0	0	2	0	0	0	0.616445	0.308223	sage_algorithm singular; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
-2026-11-26 07:04:47	host-2	E_suite	giac	114	71	3	0	30	9	1	0	3.5021	NaN	GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0; Giac.jl 0.14.3	run
 2026-11-26 19:06:50	host-2	F_integration	fricas	639	270	9	185	148	0	8	19	54.9961	NaN	FriCAS Checking for foreign routines FRICAS="/nix/store/nf6krkzamhas2gyr8nwhbq4d941yjxg	run
 2026-11-26 20:18:34	host-2	F_integration	maxima	639	192	3	99	332	0	6	7	12.909	NaN	Maxima 5.49.0	run
 2026-11-26 12:09:21	host-2	F_integration	sage_fricas	639	325	18	100	153	0	24	19	122.57	0.0186956	sage_algorithm fricas; SageMath SageMath version 10.9, Release Date: 2026-05-04	run

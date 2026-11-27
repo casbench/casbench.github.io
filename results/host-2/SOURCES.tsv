@@ -9,6 +9,8 @@
 # the full files would double (the Maxima range is superseded by its full rerun at 73f1ea4); the hard tier of bench G
 # for Giac.jl and Sage/Giac on one Giac thread (over GitHub's limits, as above); FriCAS F and H at 0c0d15a,
 # superseded by its rerun at 73f1ea4. machine.txt has the blocks of the published files only.
+# Bench E was replaced on 2026-11-28 by a suite written for this repository; the files of the earlier suite are
+# withdrawn from results/ (they stay in the git history and the review archive).
 # Published under a neutral host name (tools/anonymize_host.py): sha256 is the checksum of the published file, sha256_as_written that of the file the run wrote.
 file	run_directory	commit	run_id	sha256	sha256_as_written
 A_interfaces_fricas.tsv	host-2-interface-55d2ffe	55d2ffe	20261125-051556_host-2-interface-55d2ffe	6f6a25e41d023c25f83cc24d3279c7fc42d45de19dd3de6923a7716801fa1600	b6af44608c51663c04dfcc79432effb99f2c85a0a4017f0f5b8062103fd135b3
@@ -18,10 +20,6 @@ A_interfaces_symbolics.tsv	host-2-interface-55d2ffe	55d2ffe	20261125-051556_host
 A_interfaces_symengine.tsv	host-2-interface-55d2ffe	55d2ffe	20261125-051556_host-2-interface-55d2ffe	4eb481c8bc603a6a26df79ed45641ecc24f679ec55d4ff8029d12fd443902218	fe86d39fcadde43abea2f4acaf826e6df84d4d9e2f81351ebdd2eec1c3172dc7
 A_interfaces_symj.tsv	host-2-interface-55d2ffe	55d2ffe	20261125-051556_host-2-interface-55d2ffe	0fbc966977a2f7b85ae4e5b80541b1340f1ae01af9ca593106fa89ea8d1e23f0	40fb9e5b2c5eefb6e66fbf8874d0121d0afb2380901cb65947fe936672b5b9e1
 A_interfaces_sympy.tsv	host-2-interface-55d2ffe	55d2ffe	20261125-051556_host-2-interface-55d2ffe	0845be771b7e30ca2edf40a07c3f4023cb5e6d7551cab2a74e4cac20a39afc5b	374adb1e15bb0b8df8572ba546e0be14eb73140272c1d969bad69fa810ed913b
-E_suite_giac.tsv	host-2-review-reruns-20261126	0c0d15a	20261126_host-2_review_reruns_0c0d15a	84f62d5910a70713781ce99dd0de74ac5ea811bfd0b561b424e592306679e5fd	8130b4df0fdf35c47f95fb0844c682e4afb46d701c5c95ef156048d02dda1012
-E_suite_symbolics.tsv	host-2-20261123	5a8b062	20261123_host-2_reorientation	9f87261e7a54b33cd9659886640024473eb1190e0a6bce4610ef917ef5b5690a	ca22947cf64626d0bb61ebf7032981f59fd86f3d35d1e9b318bfe4b63fb93d0c
-E_suite_symj.tsv	host-2-20261123	5a8b062	20261123_host-2_reorientation	62db56c7fc285bb1513af730d9871df51013ad167552134fbbd0b24d2b62ee95	45939a8efda73c8a7b1346a376f89b4b35cd5866f07a0d255e634ecaee686db0
-E_suite_sympy.tsv	host-2-20261123	5a8b062	20261123_host-2_reorientation	9d989d5bf6ed486b69b2622ff60f19e78b442540e6963100c6ed8917a263666b	95e8f928c3033bf958f242a9dbd53479da7776d20dee276e8d5d9fc8089270f7
 F_integration_computeengine.tsv	host-2-20261123	5a8b062	20261123_host-2_reorientation	510db99d0d54543c71b215a4c77d33321ed07b832c6fd7984b8ecf44c59b795d	c97e409d3532a392dc0742afea73dfbf60e0a270a110ff060338f8df6e8aefa1
 F_integration_fricas.tsv	host-2-reruns3-20261126	73f1ea4	20261126_host2_reruns3_73f1ea4	004dff04645e0e66a760dd0536f585a7a87f745b89f0a7fe029ac492b27b5cdd	004dff04645e0e66a760dd0536f585a7a87f745b89f0a7fe029ac492b27b5cdd
 F_integration_giac.tsv	host-2-20261123	5a8b062	20261123_host-2_reorientation	29178e69d97ddacca49571f2e4a42f472bfddd9f65e6a0eefab0daa328e70bbd	a926944a32a460faf711a5fa21b8acc4c71b0a0106919e524132c33d356c16b2
