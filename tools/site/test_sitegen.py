@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Checks for the site generator. Run with python3 -I tools/site/test_sitegen.py."""
+import atexit
 import csv
 import math
 import os
 import pathlib
 import re
+import shutil
 import sys
 import tempfile
 import unittest
@@ -14,7 +16,20 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import sitegen  # noqa: E402
 import check_assets  # noqa: E402
 
-csv.field_size_limit(1 << 30)   # a Gröbner basis in the result column exceeds the default 128 KiB field
+csv.field_size_limit(1 << 30)
+
+# every directory a test writes (a site, or a fake repository) is removed when the tests end: they used to stay in
+# $TMPDIR, about 2,450 of them (8 GB) in a shared /tmp by 2026-11-27
+_TEMP_DIRS = []
+
+
+def _mkdtemp():
+    d = tempfile.mkdtemp(prefix="casbench-site-test-")
+    _TEMP_DIRS.append(d)
+    return d
+
+
+atexit.register(lambda: [shutil.rmtree(d, ignore_errors=True) for d in _TEMP_DIRS])   # a Gröbner basis in the result column exceeds the default 128 KiB field
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 
@@ -39,7 +54,7 @@ giac_version\t"giac 2.0.0"
 
 class SiteGenTests(unittest.TestCase):
     def make_root(self):
-        d = pathlib.Path(tempfile.mkdtemp())
+        d = pathlib.Path(_mkdtemp())
         (d / "results" / "testhost").mkdir(parents=True)
         (d / "results" / "REFERENCE").write_text("testhost\n", encoding="utf-8")
         (d / "results" / "testhost" / "D_coverage_giac.tsv").write_text(TSV, encoding="utf-8")
@@ -60,7 +75,7 @@ class SiteGenTests(unittest.TestCase):
         return d
 
     def test_stylesheets_use_the_site_base_and_exist(self):
-        root = pathlib.Path(tempfile.mkdtemp())
+        root = pathlib.Path(_mkdtemp())
         (root / "css").mkdir()
         (root / "css" / "site.css").write_text("body {}", encoding="utf-8")
         page = root / "index.html"
@@ -166,7 +181,7 @@ class SiteGenTests(unittest.TestCase):
         encoded = command.replace("\\", "\\\\").replace("\t", "\\t").replace("\n", "\\n")
         path.write_text("bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput\tverify_status\tverify_time_s\tverify_input\n"
                         "F_integration\tGiac.jl\t1\tintegral\tintegrate_text\tverified_numeric\t1.0\t0.5\tx^2/2\tnumeric check\tintegrate(x,x)\tverified_symbolic\t4.2\t" + encoded + "\n", encoding="utf-8")
-        out = pathlib.Path(tempfile.mkdtemp())
+        out = pathlib.Path(_mkdtemp())
         sitegen.generate(root, out)
         synthesis = (out / "content" / "results" / "synthesis" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("1/1; 1 checked; median 4.20 s", synthesis)
@@ -194,7 +209,7 @@ class SiteGenTests(unittest.TestCase):
             "Giac.jl\tGiac\tthe engine\thttps://example.org/giac\thttps://example.org/giac-src\n", encoding="utf-8")
         (root / "lib" / "adapters").mkdir(parents=True)
         (root / "lib" / "adapters" / "giac.jl").write_text("# adapter\n", encoding="utf-8")
-        out = pathlib.Path(tempfile.mkdtemp())
+        out = pathlib.Path(_mkdtemp())
         sitegen.generate(root, out)
         c = out / "content" / "results" / "systems"
         page = (c / "giac-jl" / "_index.md").read_text(encoding="utf-8")
@@ -225,7 +240,7 @@ class SiteGenTests(unittest.TestCase):
         (root / "results" / "other" / "machine.txt").write_text(MACHINE.replace("host\tvm", "host\tlaptop"), encoding="utf-8")
         (root / "results" / "other" / "F_integration_giac.tsv").write_text(
             header + "\tverify_status\tverify_time_s\tverify_input\n" + row + "\tverified_symbolic\t4.2\tdiff(x^2/2,x)-x\n", encoding="utf-8")
-        out = pathlib.Path(tempfile.mkdtemp())
+        out = pathlib.Path(_mkdtemp())
         sitegen.generate(root, out)
         c = out / "content"
         ref = (c / "results" / "f_integration" / "_index.md").read_text(encoding="utf-8")
@@ -258,7 +273,7 @@ class SiteGenTests(unittest.TestCase):
         path = root / "results" / "testhost" / "D_coverage_giac.tsv"
         with path.open("a", encoding="utf-8") as f:
             f.write("D_coverage\tGiac.jl\t5\tidentity test\tsimplify\tverified_numeric\t0.01\t0.001\t0\t80-digit evaluation=0.0\tsimplify(lhs-rhs)\n")
-        out = pathlib.Path(tempfile.mkdtemp())
+        out = pathlib.Path(_mkdtemp())
         sitegen.generate(root, out)
         page = (out / "content" / "results" / "d_coverage" / sitegen.slug(5, "identity test") / "_index.md").read_text(encoding="utf-8")
         self.assertIn("simplify(lhs-rhs)", page)
@@ -272,7 +287,7 @@ class SiteGenTests(unittest.TestCase):
         p.write_text("bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput\n"
                      "A_interfaces\tGiac.jl\t1\texpand object\tinterface_object\tverified_numeric\t1\t0.1\tx^2+2*x*y+y^2\tchecked\texpand((x+y)^2)\n"
                      "A_interfaces\tGiac.jl\t2\texpand text\tinterface_text\tverified_numeric\t2\t0.2\tx^2+2*x*y+y^2\tchecked\tparse and expand((x+y)^2)\n", encoding="utf-8")
-        out = pathlib.Path(tempfile.mkdtemp())
+        out = pathlib.Path(_mkdtemp())
         sitegen.generate(root, out)
         page = (out / "content" / "results" / "a_interfaces" / "_index.md").read_text(encoding="utf-8")
         self.assertIn("interface_object", page)
@@ -286,7 +301,7 @@ class SiteGenTests(unittest.TestCase):
         p = root / "results" / "testhost" / "G_groebner_grobx.tsv"
         p.write_text("bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput\n"
                      "G_groebner\tGrobX\t1\texample\tgroebner\tverified\t1\t0.5\t[x+y]\tk=1 terms=2; check_wall_s=0.2; process_peak_rss_kib=2048\tinstance: x+y\n", encoding="utf-8")
-        out = pathlib.Path(tempfile.mkdtemp())
+        out = pathlib.Path(_mkdtemp())
         sitegen.generate(root, out)
         case = (out / "content" / "results" / "g_groebner" / sitegen.slug(1, "example") / "_index.md").read_text(encoding="utf-8")
         self.assertIn("GrobX", case)
@@ -300,7 +315,7 @@ class SiteGenTests(unittest.TestCase):
 
     def test_pages(self):
         root = self.make_root()
-        out = pathlib.Path(tempfile.mkdtemp())
+        out = pathlib.Path(_mkdtemp())
         site = sitegen.generate(root, out)
         self.assertEqual(site.ncases(), 4)                      # _load rows are dropped; cases 3 and 4 share a name
         self.assertEqual(site.ncases_by_bench(), {"D_coverage": 4})
@@ -391,7 +406,7 @@ class SiteGenTests(unittest.TestCase):
 
     def test_case_pages(self):
         root = self.make_root()
-        out = pathlib.Path(tempfile.mkdtemp())
+        out = pathlib.Path(_mkdtemp())
         sitegen.generate(root, out)
         case = out / "content" / "results" / "d_coverage" / "001-factor-x-4-1" / "_index.md"
         self.assertTrue(case.exists(), "one page per case")
@@ -414,7 +429,7 @@ class SiteGenTests(unittest.TestCase):
             "2026-11-18 08:28:32\ttesthost\tD_coverage\tgiac\t23\t22\t0\t1\t0\t0\t0\t0\t1.8\t7.5e-05\t\tabc\n"
             "2026-11-19 10:00:00\ttesthost\tD_coverage\tgiac\t23\t23\t0\t0\t0\t0\t0\t0\t1.8\t7.0e-05\t\trun\n"
             "2026-11-25 05:16:00\totherhost\tD_coverage\tgiac\t23\t23\t0\t0\t0\t0\t0\t0\t1.8\t7.0e-05\t\trun\n", encoding="utf-8")
-        out = pathlib.Path(tempfile.mkdtemp())
+        out = pathlib.Path(_mkdtemp())
         site = sitegen.generate(root, out)
         self.assertEqual(len(site.history), 3)
         page = (out / "content" / "history" / "_index.md").read_text(encoding="utf-8")
@@ -441,7 +456,7 @@ class SiteGenTests(unittest.TestCase):
         (root / "results" / "other").mkdir()
         (root / "results" / "other" / "D_coverage_giac.tsv").write_text(TSV.replace("\t0.2\t0.1\t", "\t0.2\t0.2\t"), encoding="utf-8")
         (root / "results" / "other" / "machine.txt").write_text(MACHINE.replace("host\tvm", "host\tlaptop"), encoding="utf-8")
-        out = pathlib.Path(tempfile.mkdtemp())
+        out = pathlib.Path(_mkdtemp())
         site = sitegen.generate(root, out)
         self.assertEqual(sorted(site.hosts), ["other", "testhost"])
         self.assertEqual(site.reference, "testhost")
@@ -456,7 +471,7 @@ class SiteGenTests(unittest.TestCase):
     def test_workflow(self):
         """The pipeline diagrams are on the Methodology page, with no ; < or # in their labels (site-kit SK-MERMAID)."""
         root = self.make_root()
-        out = pathlib.Path(tempfile.mkdtemp())
+        out = pathlib.Path(_mkdtemp())
         sitegen.generate(root, out)
         wf = (out / "content" / "methodology" / "_index.md").read_text(encoding="utf-8")
         self.assertEqual(wf.count("```mermaid"), 4)
@@ -473,7 +488,7 @@ class SiteGenTests(unittest.TestCase):
     def test_brand(self):
         """The hero banner is on the home page, and the committed copies under site/static are the generated ones."""
         root = self.make_root()
-        out = pathlib.Path(tempfile.mkdtemp())
+        out = pathlib.Path(_mkdtemp())
         sitegen.generate(root, out)
         home = (out / "content" / "_index.md").read_text(encoding="utf-8")
         self.assertIn('<p class="site-banner"><img src="brand/casbench-banner.svg"', home)
@@ -517,7 +532,7 @@ class SiteGenTests(unittest.TestCase):
     def test_real_repository(self):
         if not (ROOT / "results").exists():
             self.skipTest("no results directory")
-        out = pathlib.Path(tempfile.mkdtemp())
+        out = pathlib.Path(_mkdtemp())
         site = sitegen.generate(ROOT, out)
         self.assertGreaterEqual(len(site.results), 1)
         listed = {r["system"] for r in site.system_links}
@@ -540,7 +555,7 @@ class SiteGenTests(unittest.TestCase):
                         continue
                     cases.setdefault(r["bench"], set()).add(int(r["idx"]))
                     systems.add(sitegen.SYSTEM_LABELS.get(r["system"], r["system"]))
-        out = pathlib.Path(tempfile.mkdtemp())
+        out = pathlib.Path(_mkdtemp())
         site = sitegen.generate(ROOT, out)
         home = (out / "content" / "_index.md").read_text(encoding="utf-8")
         tile = lambda label: int(re.search(rf"<strong>(\d+)</strong><span>{label}</span>", home).group(1))
@@ -576,7 +591,7 @@ class SiteGenTests(unittest.TestCase):
 
     def test_check_home_rejects_wrong_numbers(self):
         root = self.make_root()
-        out = pathlib.Path(tempfile.mkdtemp())
+        out = pathlib.Path(_mkdtemp())
         site = sitegen.generate(root, out)
         home = site.home()
         sitegen.check_home(site, home)                                                 # the generated page passes
