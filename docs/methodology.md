@@ -317,3 +317,11 @@ cases made each page 3 MB and the site 4 GB.
 - The per-integral grades of the 12000.org reports as a column of bench F.
 - Reduce, which is not in nixpkgs, and Rubi, which needs Mathematica, are the
   two systems of the 12000.org tests not run here.
+- giac-wasm, once it is published: the Giac engine compiled to WebAssembly,
+  driven through Node.js as the Compute Engine is (`lib/adapters/computeengine.jl`),
+  on every bench where Giac.jl runs, so that one engine is compared through
+  three paths (Giac.jl, Sage/Giac, giac-wasm). A WebAssembly build may lack
+  parts of the native one (threads, the libraries behind integer and
+  polynomial factorisation or Gröbner bases); the coverage of bench D and the
+  statuses of benches C, G and J will show what it has, rather than an
+  assumption.
