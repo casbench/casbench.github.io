@@ -2,8 +2,8 @@
 # over Q and over the prime field GF(1073741827), for Giac.jl (`gbasis`),
 # Groebner.jl, msolve through AlgebraicSolving.jl, and SymPy (`groebner`).
 #
-# Inputs are the strings of G_groebner/inputs.jl (generated once from
-# Groebner.jl's Examples). Each adapter maps :groebner to a function
+# Inputs are the strings of G_groebner/inputs.jl (written by
+# tools/groebner/systems.jl from the definitions of the systems). Each adapter maps :groebner to a function
 # (polys::Vector{String}, vars::Vector{String}, p::Int) -> Vector{String}
 # (the basis as printed by the system; p == 0 means Q).
 #

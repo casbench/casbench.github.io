@@ -1,66 +1,62 @@
-# Bench E tasks for SymJ.jl 0.1.0 (with GruntzLimit and RischIntegrate).
-# Operations are looked up by name in SymJ at load time (getop): a name that
-# does not exist is reported as unavailable, a call that raises as an error.
-using LinearAlgebra: det, rank
-C6 = [Sym(Symbol("c$i")) for i in 1:6]
-for i in 1:6
-    VAR[Symbol("c$i")] = C6[i]
-end
-const th, p, q, r, px, py = Sym(:th), Sym(:p), Sym(:q), Sym(:r), Sym(:px), Sym(:py)
-const x, y, z, t, s, a, b, c, k, n, u, v = (VAR[vv] for vv in (:x, :y, :z, :t, :s, :a, :b, :c, :k, :n, :u, :v))
+# Bench E tasks for SymJ.jl (with RischIntegrate.jl for integrals and
+# GruntzLimit.jl for limits, as in SymJ's own CAS comparison), written for this
+# repository. An operation SymJ does not define in the pinned version is
+# `missing` (unavailable), found by name at load time. A task returns the answer,
+# or (answer, post) with post() a residual computed outside the timed call.
+using LinearAlgebra: det, I
+const x, y, z, t, s, a, b, n, k, p, q = (VAR[vv] for vv in (:x, :y, :z, :t, :s, :a, :b, :n, :k, :p, :q))
 fl(e) = Float64(real(N(e)))
 cx(e) = ComplexF64(N(e))
-risch(f) = RischIntegrate.integrate(f, x)
-def(f, lo, hi) = RischIntegrate.integrate(f, (x, lo, hi))
-summation = getop(:summation)
-series_ = getop(:series)
-dsolve = getop(:dsolve)
-groebner = getop(:groebner)
-resultant = getop(:resultant)
-minpoly = getop(:minpoly)
-jac = getop(:jacobian)
 whenop(f, g) = f === missing ? missing : g
-@syms yy() ff()
-# dsolve(eq, y(x), ics...) returns y(x) ~ solution; the residuals with the constants set to 1
-function ode(eq, residuals::Vector; var = x, ics = ())
-    sol = dsolve(eq, yy(var), ics...)
+antiderivative(f) = RischIntegrate.integrate(f, x)
+definite(f, lo, hi) = RischIntegrate.integrate(f, (x, lo, hi))
+const summation = getop(:summation)
+const sproduct = getop(:product)
+const dsolve = getop(:dsolve)
+const series_ = getop(:series)
+const resultant_ = getop(:resultant)
+const minpoly_ = getop(:minpoly)
+const discriminant_ = getop(:discriminant)
+const apart_ = getop(:apart)
+const eigvals_ = getop(:eigvals)
+const rank_ = getop(:rank)
+const jacobian_ = getop(:jacobian)
+const laplace_ = getop(:laplace)
+const ilaplace_ = getop(:ilaplace)
+roots(eq) = [cx(r) for r in generic(solve(eq, x))]
+system_solutions(eqs, vars) = [Tuple(cx(d[v]) for v in vars) for d in generic(solve(eqs, vars))]
+
+# an ODE by dsolve, then the residuals with every constant set to 1
+@syms yy()
+function ode(eq, residuals::Vector; ics = ())
+    sol = dsolve(eq, yy(x), ics...)
     rhs = sol isa SymJ.Relation ? sol.rhs : sol
     post = () -> begin
-        cs = [c for c in free_symbols(rhs) if !(c in (x, t, a))]
-        y1 = isempty(cs) ? rhs : subs(rhs, (c => 1 for c in cs)...)
+        cs = [cc for cc in free_symbols(rhs) if !(cc in (x, a))]
+        y1 = isempty(cs) ? rhs : subs(rhs, (cc => 1 for cc in cs)...)
         [simplify(res(y1)) for res in residuals]
     end
     (rhs, post)
 end
-cyclic6() = begin
-    polys = Sym[]
-    for m in 1:5
-        push!(polys, sum(prod(C6[mod1(kk + j, 6)] for j in 0:m-1) for kk in 1:6))
-    end
-    push!(polys, prod(C6) - 1)
-    polys
-end
-function bruss(N)
+
+# the Brusselator on a ring of N cells (state order u1, v1, ..., uN, vN), its Jacobian by SymJ, compiled by lambdify
+function jacobian_fn(N)
     U = [Sym(Symbol("u$i")) for i in 1:N]; V = [Sym(Symbol("v$i")) for i in 1:N]
     eqs = Sym[]; vars = Sym[]
     for i in 1:N
         ip, im = mod1(i + 1, N), mod1(i - 1, N)
-        push!(eqs, 1 + U[i]^2 * V[i] - 4U[i] + (U[ip] - 2U[i] + U[im])); push!(eqs, 3U[i] - U[i]^2 * V[i] + (V[ip] - 2V[i] + V[im]))
+        push!(eqs, 1 + U[i]^2 * V[i] - 4U[i] + (U[ip] - 2U[i] + U[im]))
+        push!(eqs, 3U[i] - U[i]^2 * V[i] + (V[ip] - 2V[i] + V[im]))
         push!(vars, U[i]); push!(vars, V[i])
     end
-    eqs, vars
-end
-function jacobian_fn(N)
-    eqs, vars = bruss(N)
-    J = jac(eqs, vars)
-    f = lambdify(J, vars...)
+    f = lambdify(jacobian_(eqs, vars), vars...)
     w -> f(w...)
 end
 function jacobian_eval(N)
     f = jacobian_fn(N)
     acc = 0.0
-    for k in 1:1000
-        w = vec(permutedims(hcat([0.1i + 0.001k for i in 1:N], [0.2i + 0.002k for i in 1:N])))
+    for kk in 1:1000
+        w = vec(permutedims(hcat([0.1i + 0.001kk for i in 1:N], [0.2i + 0.002kk for i in 1:N])))
         M = f(w)
         for i in 1:2N
             acc += M[i, i]
@@ -70,153 +66,122 @@ function jacobian_eval(N)
 end
 
 const TASKS = Dict{String,Any}(
-    "sqrt(tan x)" => () -> risch(sqrt(tan(x))),
-    "Chebyshev's pseudo-elliptic integral" => () -> risch(x / sqrt(x^4 + 10x^2 - 96x - 71)),
-    "An arctangent of a radical" => () -> risch((x^2 - 1) / ((x^2 + 1) * sqrt(x^4 + 1))),
-    "A quintic denominator" => () -> risch(1 / (x^5 - x + 1)),
-    "A fourth root" => () -> risch(1 / (1 + x^4)^(Sym(1) / 4)),
-    "Parts, twice" => () -> risch(x^2 * asin(x)^2),
-    "Exponential and logarithm (Risch)" => () -> risch(exp(x) * (1 + x * log(x)) / x),
-    "A Bessel function, to Struve functions" => () -> risch(x^2 * SpecialFunctions.besselj0(x)),
-    "The error function squared" => () -> risch(SpecialFunctions.erf(x)^2),
-    "Bose-Einstein type" => () -> def(x / (exp(x) - 1), 0, Inf),
-    "Serret's integral" => () -> def(log(1 + x) / (1 + x^2), 0, 1),
-    "A symmetry trick" => () -> def(x * sin(x) / (1 + cos(x)^2), 0, Sym(π)),
-    "Log-sine" => () -> def(log(sin(x)), 0, Sym(π) / 2),
-    "Ahmed's integral" => () -> def(atan(sqrt(x^2 + 2)) / ((x^2 + 1) * sqrt(x^2 + 2)), 0, 1),
-    "Laplace's integral" => () -> def(cos(x) / (1 + x^2), 0, Inf),
-    "A dilogarithm value" => () -> def(log(x) * log(1 - x), 0, 1),
-    "Euler's constant" => () -> def(exp(-x) * log(x)^2, 0, Inf),
-    "A Gaussian with a cosine" => () -> def(exp(-x^2) * cos(2x), -Inf, Inf),
-    "Frullani's integral" => () -> def((exp(-x) - exp(-2x)) / x, 0, Inf),
-    "The error function" => () -> def(SpecialFunctions.erfc(x)^2, 0, Inf),
-    "A Bessel function on the half-line" => () -> def(SpecialFunctions.besselj0(x), 0, Inf),
-    "A damped Bessel function" => () -> def(exp(-x) * SpecialFunctions.besselj0(x), 0, Inf),
-    "A pendulum's period" => () -> def(1 / sqrt(cos(x) - cos(a)), 0, a),
-    "zeta(4)" => whenop(summation, () -> summation(1 / n^4, (n, 1, Inf))),
-    "Harmonic numbers" => whenop(summation, () -> summation(summation(1 / k, (k, 1, n)) / n^2, (n, 1, Inf))),
-    "Dirichlet beta(3)" => whenop(summation, () -> summation((-1)^n / (2n + 1)^3, (n, 0, Inf))),
-    "Arithmetic-geometric" => whenop(summation, () -> summation(n^2 / 2^n, (n, 1, Inf))),
-    "A central binomial series" => whenop(summation, () -> summation(1 / (n^2 * binomial(2n, n)), (n, 1, Inf))),
-    "Vandermonde's identity" => whenop(summation, () -> summation(binomial(n, k)^2, (k, 0, n))),
-    "A closed form in n" => whenop(summation, () -> summation(k * 2^k, (k, 1, n))),
-    "A polylogarithm value" => whenop(summation, () -> subs(summation(x^n / n^2, (n, 1, Inf)), x => Sym(1) / 2)),
-    "A telescoping product" => whenop(getop(:product), () -> getop(:product)(1 - 1 / n^2, (n, 2, Inf))),
-    "Wallis's product" => whenop(getop(:product), () -> getop(:product)(4n^2 / (4n^2 - 1), (n, 1, Inf))),
-    "tan sin - sin tan" => () -> limit((tan(sin(x)) - sin(tan(x))) / x^7, x => 0),
-    "Stirling" => () -> limit(factorial(n)^(1 / n) / n, n => Inf),
-    "A second-order term of e" => () -> limit(x * ((1 + 1 / x)^x - exp(Sym(1))), x => Inf),
-    "Nested exponentials (Gruntz)" => () -> limit(exp(x) * (exp(1 / x - exp(-x)) - exp(1 / x)), x => Inf),
-    "Cancelling poles" => () -> limit(1 / x^2 - 1 / sin(x)^2, x => 0),
-    "A ratio of Gamma functions" => () -> limit(SpecialFunctions.gamma(x + Sym(1) / 2) / (SpecialFunctions.gamma(x) * sqrt(x)), x => Inf),
-    "A power of sinc" => () -> limit((sin(x) / x)^(1 / x^2), x => 0),
-    "A bounded oscillation" => () -> limit((x + sin(x)) / x, x => Inf),
-    "A sextic system" => () -> [(cx(d[x]), cx(d[y])) for d in generic(solve([x^2 + y^2 ~ 1, x^3 ~ y], [x, y]))],
-    "A quintic solvable by radicals" => () -> solve(x^5 - 5x + 12 ~ 0, x),
-    "Every solution of cos x = 1/2" => () -> solve(cos(x) ~ Sym(1) / 2, x),
-    "Lambert's W" => () -> solve(x * exp(x) ~ 2, x),
-    "A symmetric system" => () -> [(cx(d[x]), cx(d[y]), cx(d[z])) for d in generic(solve([x + y + z ~ 6, x * y + y * z + z * x ~ 11, x * y * z ~ 6], [x, y, z]))],
-    "A quartic inequality" => () -> solve(x^4 - 5x^2 + 4 ≪ 0, x),
-    "Absolute values" => () -> solve(abs(x - 1) + abs(x + 2) ≪ 5, x),
-    "Quantifier elimination" => missing,
-    "Cyclotomic factors" => () -> FACTOR(x^105 - 1),
-    "A symmetric septic" => () -> FACTOR((x + y + z)^7 - x^7 - y^7 - z^7),
-    "Factoring over Q(sqrt 2)" => missing,
-    "The cyclic-6 system" => missing,
-    "Implicitization" => whenop(resultant, () -> resultant(x - t^2 + 1, y - t^3 + t, t)),
-    "Polynomial decomposition" => missing,
-    "Denesting" => () -> (log_input!("simplify(sqrt(5+2*sqrt(Sym(6)))-sqrt(Sym(2))-sqrt(Sym(3)))"); simplify(sqrt(5 + 2sqrt(Sym(6))) - sqrt(Sym(2)) - sqrt(Sym(3)))),
-    "Ramanujan's denesting" => () -> (log_input!("simplify((Sym(2)^(Sym(1)/3)-1)^(Sym(1)/3)-(Sym(1)/9)^(Sym(1)/3)+(Sym(2)/9)^(Sym(1)/3)-(Sym(4)/9)^(Sym(1)/3))"); simplify((Sym(2)^(Sym(1) / 3) - 1)^(Sym(1) / 3) - (Sym(1)/9)^(Sym(1)/3) + (Sym(2)/9)^(Sym(1)/3) - (Sym(4)/9)^(Sym(1)/3))),
-    "A heptagon sum" => () -> (log_input!("simplify(cos(2*Sym(pi)/7)+cos(4*Sym(pi)/7)+cos(6*Sym(pi)/7)+Sym(1)/2)"); simplify(cos(2Sym(π) / 7) + cos(4Sym(π) / 7) + cos(6Sym(π) / 7) + Sym(1)/2)),
-    "A minimal polynomial" => whenop(minpoly, () -> minpoly(sqrt(Sym(2)) + sqrt(Sym(3)) + sqrt(Sym(5)), x)),
-    "A trigonometric identity" => () -> (log_input!("simplify(sin(3*x)/sin(x)-cos(3*x)/cos(x)-2)"); simplify(sin(3x) / sin(x) - cos(3x) / cos(x) - 2)),
-    "Gauss's 17-gon" => missing, "An inverse cosine, with assumptions" => missing,
-    "Airy" => whenop(dsolve, () -> ode(diff(yy(x), x, x) ~ x * yy(x), [y1 -> diff(y1, x, x) - x * y1])),
-    "Bessel, order 1/2" => whenop(dsolve, () -> ode(x^2 * diff(yy(x), x, x) + x * diff(yy(x), x) + (x^2 - Sym(1) / 4) * yy(x) ~ 0, [y1 -> x^2 * diff(y1, x, x) + x * diff(y1, x) + (x^2 - Sym(1) / 4) * y1])),
-    "Riccati" => whenop(dsolve, () -> ode(diff(yy(x), x) ~ x^2 + yy(x)^2, [y1 -> diff(y1, x) - x^2 - y1^2])),
-    "A nonlinear autonomous equation" => whenop(dsolve, () -> ode(yy(x) * diff(yy(x), x, x) ~ diff(yy(x), x)^2, [y1 -> y1 * diff(y1, x, x) - diff(y1, x)^2])),
-    "A forced Euler-Cauchy equation" => whenop(dsolve, () -> ode(x^2 * diff(yy(x), x, x) - 3x * diff(yy(x), x) + 4yy(x) ~ x^2 * log(x), [y1 -> x^2 * diff(y1, x, x) - 3x * diff(y1, x) + 4y1 - x^2 * log(x)])),
-    "Bernoulli" => whenop(dsolve, () -> ode(diff(yy(x), x) + yy(x) ~ x * yy(x)^3, [y1 -> diff(y1, x) + y1 - x * y1^3])),
-    "An exponential solution (Kovacic)" => whenop(dsolve, () -> ode(diff(yy(x), x, x) ~ (x^2 + 1) * yy(x), [y1 -> diff(y1, x, x) - (x^2 + 1) * y1])),
-    "A forced initial-value problem" => whenop(dsolve, () -> ode(diff(yy(x), x, x) - (x^2 + 1) * yy(x) ~ x * exp(-x^2 / 2),
-        [y1 -> diff(y1, x, x) - (x^2 + 1) * y1 - x * exp(-x^2 / 2), y1 -> subs(y1, x => 0), y1 -> subs(diff(y1, x), x => 0) - 1];
-        ics = (yy(0) => 0, diff(yy(x), x)(0) => 1))),
-    "A Riccati equation with Airy solutions" => whenop(dsolve, () -> ode(diff(yy(x), x) ~ x + yy(x)^2, [y1 -> diff(y1, x) - x - y1^2])),
-    "A pendulum released from rest" => whenop(dsolve, () -> ode(diff(yy(x), x, x) + sin(yy(x)) ~ 0, [y1 -> diff(y1, x, x) + sin(y1), y1 -> subs(y1, x => 0) - a, y1 -> subs(diff(y1, x), x => 0)]; ics = (yy(0) => a, diff(yy(x), x)(0) => 0))),
-    "Duffing's oscillator from rest" => whenop(dsolve, () -> ode(diff(yy(x), x, x) + yy(x) + yy(x)^3 ~ 0, [y1 -> diff(y1, x, x) + y1 + y1^3, y1 -> subs(y1, x => 0) - a, y1 -> subs(diff(y1, x), x => 0)]; ics = (yy(0) => a, diff(yy(x), x)(0) => 0))),
-    "A Jordan block" => missing,                 # no matrix exponential
-    "The transport equation" => missing, "The heat equation" => missing,
-    "Symbolic eigenvalues" => whenop(getop(:eigvals), () -> [fl(subs(e, a => Sym(13) / 10)) for e in getop(:eigvals)(Sym[a 1 0; 1 a 1; 0 1 a])]),
-    "A Jordan form" => missing, "A matrix exponential" => missing,
-    "A Vandermonde determinant" => () -> FACTOR(det(Sym[v^j for v in (a, b, x, y, z), j in 0:4])),
-    "A Smith normal form" => missing,
-    "The Fermat number F7" => missing, "A Mersenne prime" => missing, "A discrete logarithm" => missing,
-    "Pell's equation" => missing, "A periodic continued fraction" => missing, "Partitions" => missing,
-    "A Laplace transform" => whenop(getop(:laplace), () -> getop(:laplace)(t^2 * exp(-t) * sin(t), t, s)),
-    "An inverse Laplace transform" => whenop(getop(:ilaplace), () -> getop(:ilaplace)(1 / (s^2 + 1)^2, s, t)),
-    "A delayed step" => whenop(getop(:ilaplace), () -> getop(:ilaplace)(exp(-s) / s, s, t)),
-    "The series of Lambert's W" => whenop(series_, () -> series_(getop(:lambertw)(x), x, 0, 6)),
-    "A hypergeometric function" => missing,
-    "Gamma's reflection formula" => () -> simplify(SpecialFunctions.gamma(Sym(1) / 4) * SpecialFunctions.gamma(Sym(3) / 4)),
-    "The sine integral's Laplace transform" => missing, "An inverse Laplace transform to a Bessel function" => missing,
-    "A polylogarithm value" => missing,
-    "A stability region" => () -> solve([3 * 3 - (1 + k) ≫ 0, 1 + k ≫ 0], [k]),
-    "A Lyapunov equation" => () -> (d = only(generic(solve([-4q + 1 ~ 0, p - 3q - 2r ~ 0, 2q - 6r + 1 ~ 0], [p, q, r]))); [fl(d[p]) fl(d[q]); fl(d[q]) fl(d[r])]),
-    "A Riccati equation (LQR)" => () -> begin
-        for d in generic(solve([-q^2 + 1 ~ 0, p - q * r ~ 0, 2q - r^2 + 1 ~ 0], [p, q, r]))
-            pp, qq, rr = cx(d[p]), cx(d[q]), cx(d[r])
-            (isreal(pp) && isreal(qq) && isreal(rr)) || continue
-            pp, qq, rr = real(pp), real(qq), real(rr)
-            pp > 0 && pp * rr - qq^2 > 0 && return [pp qq; qq rr]
-        end
-        nothing
-    end,
-    "The unicycle's Lie algebra rank" => whenop(jac, () -> begin
-        f1 = [cos(th), sin(th), Sym(0)]; f2 = [Sym(0), Sym(0), Sym(1)]; X = [px, py, th]
-        br = jac(f2, X) * f1 - jac(f1, X) * f2
-        M = subs.(hcat(f1, f2, br), Ref(th => Sym(3) / 10))
-        rank(Float64.(N.(M)))
-    end),
-    "A center manifold" => () -> begin
-        c2, c3, c4 = Sym(:c2), Sym(:c3), Sym(:c4)
-        h = c2 * x^2 + c3 * x^3 + c4 * x^4
-        rr = expand(diff(h, x) * x * h + h + x^2)
-        cf(kk) = subs(diff(rr, (x for _ in 1:kk)...), x => 0) / factorial(kk)      # the coefficient of x^kk
-        d = only(generic(solve([cf(2) ~ 0, cf(3) ~ 0, cf(4) ~ 0], [c2, c3, c4])))
-        subs(h, c2 => d[c2], c3 => d[c3], c4 => d[c4])
-    end,
-    "A sum-of-squares certificate" => missing, "Motzkin's polynomial" => missing,
-    "Jacobian: Brusselator N=10 (build)" => whenop(jac, () -> jacobian_fn(10)),
-    "Jacobian: Brusselator N=50 (build)" => whenop(jac, () -> jacobian_fn(50)),
-    "Jacobian: Brusselator N=10 (evaluate 1000 points)" => whenop(jac, () -> jacobian_eval(10)),
-    "Jacobian: Brusselator N=50 (evaluate 1000 points)" => whenop(jac, () -> jacobian_eval(50)),
+    # antiderivatives
+    "x^3 e^(2x)" => () -> antiderivative(x^3 * exp(2x)),
+    "1/(x^3+1)" => () -> antiderivative(1 / (x^3 + 1)),
+    "sec^3 x" => () -> antiderivative(sec(x)^3),
+    "x/(x^4+1)" => () -> antiderivative(x / (x^4 + 1)),
+    "ln(x)^2/x^2" => () -> antiderivative(log(x)^2 / x^2),
+    "e^x sin x" => () -> antiderivative(exp(x) * sin(x)),
+    "sqrt(1-x^2)" => () -> antiderivative(sqrt(1 - x^2)),
+    "1/(x sqrt(x^2-1))" => () -> antiderivative(1 / (x * sqrt(x^2 - 1))),
+    "x asin x" => () -> antiderivative(x * asin(x)),
+    "1/(2+cos x)" => () -> antiderivative(1 / (2 + cos(x))),
+    # definite integrals
+    "Dalzell's integral" => () -> definite(x^4 * (1 - x)^4 / (1 + x^2), 0, 1),
+    "Dirichlet's integral" => () -> definite(sin(x) / x, 0, Inf),
+    "The Gaussian integral" => () -> definite(exp(-x^2), 0, Inf),
+    "A logarithm over 1-x" => () -> definite(log(x) / (1 - x), 0, 1),
+    "A power of the sine" => () -> definite(sin(x)^4, 0, Sym(π)),
+    "Planck's integral" => () -> definite(x^3 / (exp(x) - 1), 0, Inf),
+    "x ln(1+x) on [0,1]" => () -> definite(x * log(1 + x), 0, 1),
+    "A quartic denominator on the line" => () -> definite(1 / (x^4 + 1), -Inf, Inf),
+    "A damped sine" => () -> definite(x * exp(-x) * sin(x), 0, Inf),
+    # series and products
+    "zeta(6)" => whenop(summation, () -> summation(1 / n^6, (n, 1, Inf))),
+    "n^3/3^n" => whenop(summation, () -> summation(n^3 / Sym(3)^n, (n, 1, Inf))),
+    "The alternating harmonic series" => whenop(summation, () -> summation((-1)^(n + 1) / n, (n, 1, Inf))),
+    "A telescoping sum" => whenop(summation, () -> summation(1 / (n * (n + 1) * (n + 2)), (n, 1, Inf))),
+    "Leibniz's series" => whenop(summation, () -> summation((-1)^n / (2n + 1), (n, 0, Inf))),
+    "The binomial theorem at 2" => whenop(summation, () -> summation(binomial(n, k) * Sym(2)^k, (k, 0, n))),
+    "Nicomachus's theorem" => whenop(summation, () -> summation(k^3, (k, 1, n))),
+    "1/(4n^2-1)" => whenop(summation, () -> summation(1 / (4n^2 - 1), (n, 1, Inf))),
+    "A product equal to 2" => whenop(sproduct, () -> sproduct((n + 1)^2 / (n * (n + 2)), (n, 1, Inf))),
+    # limits
+    "(e^x-1-x)/x^2" => () -> limit((exp(x) - 1 - x) / x^2, x => 0),
+    "(1-cos x)/x^2" => () -> limit((1 - cos(x)) / x^2, x => 0),
+    "(1+2/x)^x" => () -> limit((1 + 2 / x)^x, x => Inf),
+    "x^x at 0" => () -> limit(x^x, x => 0),
+    "(sin x - x)/x^3" => () -> limit((sin(x) - x) / x^3, x => 0),
+    "n(2^(1/n)-1)" => () -> limit(n * (Sym(2)^(1 / n) - 1), n => Inf),
+    "sqrt(x^2+x)-x" => () -> limit(sqrt(x^2 + x) - x, x => Inf),
+    "(tan x - x)/x^3" => () -> limit((tan(x) - x) / x^3, x => 0),
+    "1/x - 1/(e^x-1)" => () -> limit(1 / x - 1 / (exp(x) - 1), x => 0),
+    # equations and inequalities
+    "A cubic with integer roots" => () -> roots(x^3 - 6x^2 + 11x - 6 ~ 0),
+    "Sum and product" => () -> system_solutions([x + y ~ 5, x * y ~ 6], [x, y]),
+    "A biquadratic" => () -> roots(x^4 - 10x^2 + 1 ~ 0),
+    "An exponential equation" => () -> roots(Sym(2)^x ~ Sym(3)^(x - 1)),
+    "A circle and a line" => () -> system_solutions([x^2 + y^2 ~ 25, x - y ~ 1], [x, y]),
+    "A cubic with one real root" => () -> roots(x^3 + x - 1 ~ 0),
+    "A quadratic inequality" => () -> solve(x^2 - 3x + 2 ≪ 0, x),
+    "An absolute value inequality" => () -> solve(abs(2x - 3) ≪ 5, x),
+    # polynomials
+    "x^8-1 over Q" => () -> FACTOR(x^8 - 1),
+    "Sophie Germain's identity" => () -> FACTOR(x^4 + 4),
+    "x^3+y^3+z^3-3xyz" => () -> FACTOR(x^3 + y^3 + z^3 - 3x * y * z),
+    "A polynomial gcd" => () -> gcd(x^4 - 1, x^6 - 1),
+    "A resultant" => whenop(resultant_, () -> resultant_(x^2 + y^2 - 1, x - y, y)),
+    "A discriminant" => whenop(discriminant_, () -> discriminant_(x^3 + p * x + q, x)),
+    "A partial fraction decomposition" => whenop(apart_, () -> apart_(1 / ((x - 1) * (x + 2)^2), x)),
+    "Two conics" => () -> system_solutions([x^2 + y^2 ~ 1, x * y ~ Sym(1) / 4], [x, y]),
+    # simplification
+    "A nested radical" => () -> simplify(sqrt(7 + 4sqrt(Sym(3))) - 2 - sqrt(Sym(3))),
+    "The Pythagorean identity" => () -> simplify(sin(x)^2 + cos(x)^2 - 1),
+    "A removable singularity" => () -> simplify((x^3 - 1) / (x - 1) - x^2 - x - 1),
+    "The golden cosine" => () -> simplify(cos(Sym(π) / 5) - (1 + sqrt(Sym(5))) / 4),
+    "tan(pi/12)" => () -> simplify(tan(Sym(π) / 12) - 2 + sqrt(Sym(3))),
+    "A minimal polynomial of degree six" => whenop(minpoly_, () -> minpoly_(sqrt(Sym(2)) + Sym(3)^(Sym(1) / 3), x)),
+    "An exponential of a logarithm" => () -> simplify(exp(2log(x)) - x^2),
+    "Zero identity: nested square root" => () -> simplify(sqrt(3 + 2sqrt(Sym(2))) - 1 - sqrt(Sym(2))),
+    "Zero identity: nested cube root" => () -> simplify((7 + 5sqrt(Sym(2)))^(Sym(1) / 3) - 1 - sqrt(Sym(2))),
+    "Zero identity: logarithms on positive reals" => () -> simplify(log(Sym(2)) + log(Sym(3)) - log(Sym(6))),
+    "Zero identity: exponential of a logarithm" => () -> simplify(exp(log(Sym(2))) - 2),
+    "Zero identity: sine at pi over six" => () -> simplify(sin(Sym(π) / 6) - Sym(1) / 2),
+    "Nonzero control: rational residual" => () -> simplify(sqrt(Sym(2))^2 - 2 + Sym(1) / Sym(big(10)^30)),
+    "Nonzero control: near integer" => () -> simplify(exp(Sym(π) * sqrt(Sym(163))) - Sym(262537412640768744)),
+    # differential equations
+    "A harmonic oscillator" => whenop(dsolve, () -> ode(diff(yy(x), x, x) + 4yy(x) ~ 0, [y1 -> diff(y1, x, x) + 4y1])),
+    "A forced linear equation" => whenop(dsolve, () -> ode(diff(yy(x), x, x) - 3diff(yy(x), x) + 2yy(x) ~ exp(3x),
+                                                         [y1 -> diff(y1, x, x) - 3diff(y1, x) + 2y1 - exp(3x)])),
+    "A first-order linear equation" => whenop(dsolve, () -> ode(diff(yy(x), x) + 2x * yy(x) ~ x, [y1 -> diff(y1, x) + 2x * y1 - x])),
+    "A first-order Euler equation" => whenop(dsolve, () -> ode(x * diff(yy(x), x) - yy(x) ~ x^2, [y1 -> x * diff(y1, x) - y1 - x^2])),
+    "A polynomial forcing" => whenop(dsolve, () -> ode(diff(yy(x), x, x) + yy(x) ~ x, [y1 -> diff(y1, x, x) + y1 - x])),
+    "A separable equation" => whenop(dsolve, () -> ode(diff(yy(x), x) ~ yy(x)^2, [y1 -> diff(y1, x) - y1^2])),
+    "An initial-value problem" => whenop(dsolve, () -> ode(diff(yy(x), x, x) + diff(yy(x), x) - 2yy(x) ~ 0,
+        [y1 -> diff(y1, x, x) + diff(y1, x) - 2y1, y1 -> subs(y1, x => 0) - 1, y1 -> subs(diff(y1, x), x => 0)];
+        ics = (yy(0) => 1, diff(yy(x), x)(0) => 0))),
+    "A repeated characteristic root" => whenop(dsolve, () -> ode(diff(yy(x), x, x) - 2diff(yy(x), x) + yy(x) ~ 0, [y1 -> diff(y1, x, x) - 2diff(y1, x) + y1])),
+    # linear algebra
+    "A tridiagonal determinant" => () -> det(Sym[2 1 0; 1 2 1; 0 1 2]),
+    "A 2x2 inverse" => () -> fl.(inv(Sym[4 7; 2 6])),
+    "Eigenvalues of a symmetric matrix" => whenop(eigvals_, () -> [fl(e) for e in eigvals_(Sym[2 1; 1 2])]),
+    "The rank of a singular matrix" => whenop(rank_, () -> rank_(Sym[1 2 3; 4 5 6; 7 8 9])),
+    "A linear system" => () -> (d = only(generic(solve([2x + y - z ~ 8, -3x - y + 2z ~ -11, -2x + y + 2z ~ -3], [x, y, z]))); [fl(d[x]), fl(d[y]), fl(d[z])]),
+    "A characteristic polynomial" => () -> expand(det(x * I(2) - Sym[1 2; 3 4])),
+    "A Fibonacci matrix power" => () -> fl.(Sym[1 1; 1 0]^10),
+    "A symbolic determinant" => () -> det(Sym[a b; b a]),
+    # number theory, where SymJ defines the operation
+    "The Fermat number F6" => whenop(getop(:factorint), () -> sort([parse(BigInt, string(pp)) for pp in keys(getop(:factorint)(Sym(big(2)^64 + 1)))])),
+    "A Mersenne prime of 89 bits" => whenop(getop(:isprime), () -> getop(:isprime)(Sym(big(2)^89 - 1))),
+    "A gcd of Mersenne numbers" => () -> gcd(Sym(big(2)^60 - 1), Sym(big(2)^84 - 1)),
+    "A modular inverse" => missing,                     # invmod is Julia's own, with no method for Sym
+    "Euler's totient of a million" => whenop(getop(:totient), () -> getop(:totient)(Sym(10^6))),
+    "The next prime after 10^12" => whenop(getop(:nextprime), () -> getop(:nextprime)(Sym(10^12))),
+    "The Chinese remainder theorem" => whenop(getop(:crt), () -> first(getop(:crt)([3, 5, 7], [2, 3, 2]))),
+    "A sum of divisors" => whenop(getop(:divisor_sigma), () -> getop(:divisor_sigma)(Sym(360))),
+    # transforms and series expansions
+    "A Laplace transform" => whenop(laplace_, () -> laplace_(t * exp(-2t), t, s)),
+    "An inverse Laplace transform" => whenop(ilaplace_, () -> ilaplace_(1 / (s^2 + 4), s, t)),
+    "The Laplace transform of a cosine" => whenop(laplace_, () -> laplace_(cos(2t), t, s)),
+    "Gamma at one half" => () -> simplify(SpecialFunctions.gamma(Sym(1) / 2)),
+    "A Beta value" => () -> simplify(SpecialFunctions.beta(Sym(2), Sym(3))),
+    "Gamma at five halves" => () -> simplify(SpecialFunctions.gamma(Sym(5) / 2)),
+    "The series of tan" => whenop(series_, () -> series_(tan(x), x, 0, 8)),
+    "The series of e^x sin x" => whenop(series_, () -> series_(exp(x) * sin(x), x, 0, 6)),
+    # model to Jacobian
+    "Jacobian: Brusselator N=10 (build)" => whenop(jacobian_, () -> jacobian_fn(10)),
+    "Jacobian: Brusselator N=50 (build)" => whenop(jacobian_, () -> jacobian_fn(50)),
+    "Jacobian: Brusselator N=10 (evaluate 1000 points)" => whenop(jacobian_, () -> jacobian_eval(10)),
+    "Jacobian: Brusselator N=50 (evaluate 1000 points)" => whenop(jacobian_, () -> jacobian_eval(50)),
 )
-
-# Build each expression with symbolic rational constants, then log the actual
-# expression passed to simplify (and not a decimal approximation).
-const ZERO_CASE_INPUTS = Dict(
-    "Zero identity: nested square root" => "sqrt(3 + 2sqrt(Sym(2))) - 1 - sqrt(Sym(2))",
-    "Zero identity: nested cube root" => "(7 + 5sqrt(Sym(2)))^(Sym(1)/3) - 1 - sqrt(Sym(2))",
-    "Zero identity: logarithms on positive reals" => "log(Sym(2)) + log(Sym(3)) - log(Sym(6))",
-    "Zero identity: exponential of a logarithm" => "exp(log(Sym(2))) - 2",
-    "Zero identity: sine at pi over six" => "sin(Sym(π)/6) - Sym(1)/2",
-    "Nonzero control: rational residual" => "sqrt(Sym(2))^2 - 2 + Sym(1)/Sym(big(10)^30)",
-    "Nonzero control: near integer" => "exp(Sym(π)*sqrt(Sym(163))) - Sym(262537412640768744)",
-)
-
-for (name, build) in (
-    "Zero identity: nested square root" => (() -> sqrt(3 + 2sqrt(Sym(2))) - 1 - sqrt(Sym(2))),
-    "Zero identity: nested cube root" => (() -> (7 + 5sqrt(Sym(2)))^(Sym(1)/3) - 1 - sqrt(Sym(2))),
-    "Zero identity: logarithms on positive reals" => (() -> log(Sym(2)) + log(Sym(3)) - log(Sym(6))),
-    "Zero identity: exponential of a logarithm" => (() -> exp(log(Sym(2))) - 2),
-    "Zero identity: sine at pi over six" => (() -> sin(Sym(π)/6) - Sym(1)/2),
-    "Nonzero control: rational residual" => (() -> sqrt(Sym(2))^2 - 2 + Sym(1)/Sym(big(10)^30)),
-    "Nonzero control: near integer" => (() -> exp(Sym(π)*sqrt(Sym(163))) - Sym(262537412640768744)),
-)
-    TASKS[name] = () -> begin
-        log_input!(ZERO_CASE_INPUTS[name])
-        ex = build()
-        log_input!("simplify(" * string(ex) * ")")
-        simplify(ex)
-    end
-end

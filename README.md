@@ -88,14 +88,10 @@ to cite.
   4.0 International (CC BY 4.0), see `LICENSE-DATA`. Cite the repository (or
   `CITATION.cff`) and the run date of the numbers you reuse.
 - **GrobX**: the compared engine and its Python wheel are GPL-3.0-only; see its [source](https://github.com/code1-de/grobx).
-- **Third-party statements**: the problem statements of bench E are those of
-  the fork notebook cited in `docs/benches.md`; the entries of `F_integration/sample.tsv`
+- **Third-party statements**: the entries of `F_integration/sample.tsv`
   are quoted from the 12000.org test files (themselves from the Rubi test
   suite, MIT, and the collections they cite), with the file and line of each;
   `H_osr/rules.tsv` derives from OpenSymbolicRules (MIT); the polynomial
   systems of benches G and J are the classical ones of the literature (Katsura,
-  cyclic-n, eco, noon, Henrion, Chandrasekhar), whose strings were generated
-  once with the `Examples` module of Groebner.jl (GPL-2.0; the strings are
-  the systems themselves, not that code); the fork notebook of bench E is
-  under GPL-3.0 like Giac.jl. Their own terms apply to them.
+  cyclic-n, eco, noon, Henrion, Chandrasekhar). Their own terms apply to them.
 - The structure of the adapters follows SymJ.jl's comparison (MIT).

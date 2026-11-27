@@ -44,6 +44,7 @@ jobs:
           julia --startup-file=no test/adapter_syntax.jl
           julia --startup-file=no test/interface_bench.jl
           julia --startup-file=no test/groebner_hard.jl
+          julia --startup-file=no test/groebner_systems.jl
           julia --startup-file=no test/rur.jl
       - name: Numeric integration checks
         run: |

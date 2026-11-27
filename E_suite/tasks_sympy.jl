@@ -1,74 +1,57 @@
-# Bench E tasks for SymPy through SymPyPythonCall.jl, as a SymPy user would
-# write them.
-const th, px, py = S.symbols("th px py")  # p, q and r are already defined by the adapter
-const C6 = collect(S.symbols("c1:7"))
-for i in 1:6
-    VAR[Symbol("c$i")] = C6[i]
-end
-const Cc1, Cc2, Cc3 = S.symbols("C1 C2 C3")
-half = Sym(1) / 2
-fl(e) = Float64(real(N(e)))
-cx(e) = ComplexF64(N(e))
-tup(tt) = Tuple(cx(e) for e in collect(tt))
-# a SymPy Matrix from a Julia matrix (rows, cols, flat row-major list: PythonCall would
-# otherwise flatten a vector of vectors into a column)
-smat(M::AbstractMatrix) = S.Matrix(size(M, 1), size(M, 2), vec(permutedims(M)))
-scol(v::AbstractVector) = S.Matrix(length(v), 1, v)
-function jmat(M)
-    M isa AbstractMatrix && return [fl(e) for e in M]
-    rows, cols = Int(N(M.rows)), Int(N(M.cols))
-    [fl(M[i, j]) for i in 1:rows, j in 1:cols]
-end
-bigint(e) = parse(BigInt, replace(string(e), " " => ""))
+# Bench E tasks for SymPy through SymPyPythonCall.jl, written for this repository:
+# each task makes the SymPy call a SymPy user would make. A task returns the
+# answer, or (answer, post) with post() a residual computed outside the timed call.
 const PyC = SymPyPythonCall.PythonCall
 const PySympy = PyC.pyimport("sympy")
-raw(e) = e isa Sym ? getfield(e, :o) : e               # the Python object behind a Sym
-# SymPyPythonCall converts SymPy matrices to Julia matrices of Sym; a Python-side Matrix is
-# rebuilt when a Python function (lambdify, smith_normal_form) must receive one
-pymat(M::AbstractMatrix) = PySympy.Matrix(PyC.pylist([PyC.pylist([raw(e) for e in M[i, :]]) for i in 1:size(M, 1)]))
+raw(e) = e isa Sym ? getfield(e, :o) : e            # the Python object behind a Sym
+half = Sym(1) / 2
+cnum(e) = ComplexF64(N(e))
+fnum(e) = Float64(real(N(e)))
+pyint(nn) = Sym(PyC.pyint(nn))                      # an exact integer of any size, as SymPy's Integer
+# a SymPy Matrix from a Julia matrix, built on the Python side (rows of Python lists)
+smat(M::AbstractMatrix) = Sym(PySympy.Matrix(PyC.pylist([PyC.pylist([raw(Sym(e)) for e in M[i, :]]) for i in 1:size(M, 1)])))
+# SymPyPythonCall returns most SymPy matrices as Julia matrices of Sym; a power stays a SymPy matrix
+jmat(M::AbstractMatrix) = [fnum(e) for e in M]
+jmat(M::Sym) = reduce(vcat, [permutedims([fnum(Sym(e)) for e in row]) for row in raw(M).tolist()])
+# lambdify inspects its caller's Python frame, which a call made straight from Julia does not have: it is called from
+# a Python lambda
+const pylambdify = PyC.pyeval("lambda a, e, m: __import__('sympy').lambdify(a, e, m)", @__MODULE__)
+# the solutions of a system, a list of tuples from solve, as tuples of numbers
+solution_tuples(sols) = [Tuple(cnum(c) for c in collect(t)) for t in collect(sols)]
+
 const yf = S.Function("y")
-d_sym(f, v, n = 1) = S.diff(f, v, n)
-# an ODE: dsolve, then the residuals with the constants set to 1
-function ode(eq, residuals::Vector; var = x, ics = nothing)
-    sol = ics === nothing ? S.dsolve(eq, yf(var)) : S.dsolve(eq, yf(var); ics = ics)
-    startswith(string(sol), "[") && (sol = first(collect(sol)))   # several branches: the first one is checked
+# an ODE: dsolve, then the residuals with every constant C1, C2 set to 1
+function ode(eq, residuals::Vector; ics = nothing)
+    sol = ics === nothing ? S.dsolve(eq, yf(x)) : S.dsolve(eq, yf(x); ics = ics)
+    sol isa AbstractVector && (sol = first(sol))
     rhs = sol.rhs
     post = () -> begin
-        y1 = rhs.subs(Dict(Cc1 => 1, Cc2 => 1, Cc3 => 1))
-        [S.simplify(res(y1).doit()) for res in residuals]
+        cs = [c for c in collect(free_symbols(rhs)) if startswith(string(c), "C")]
+        y1 = isempty(cs) ? rhs : subs(rhs, (c => 1 for c in cs)...)
+        [S.simplify(res(y1)) for res in residuals]
     end
     (rhs, post)
 end
-cyclic6() = begin
-    v = C6
-    polys = Any[]
-    for m in 1:5
-        push!(polys, sum(prod(v[mod1(k + j, 6)] for j in 0:m-1) for k in 1:6))
-    end
-    push!(polys, prod(v) - 1)
-    polys
-end
-function bruss(N)
-    U = collect(S.symbols("u1:$(N+1)")); V = collect(S.symbols("v1:$(N+1)"))
-    eqs = Any[]; vars = Any[]
+
+# the Brusselator on a ring of N cells (state order u1, v1, ..., uN, vN), its Jacobian by SymPy, compiled by lambdify
+function jacobian_fn(N)
+    U = [Sym("u$i") for i in 1:N]; V = [Sym("v$i") for i in 1:N]
+    eqs = Sym[]; vars = Sym[]
     for i in 1:N
         ip, im = mod1(i + 1, N), mod1(i - 1, N)
-        push!(eqs, 1 + U[i]^2 * V[i] - 4U[i] + (U[ip] - 2U[i] + U[im])); push!(eqs, 3U[i] - U[i]^2 * V[i] + (V[ip] - 2V[i] + V[im]))
+        push!(eqs, 1 + U[i]^2 * V[i] - 4U[i] + (U[ip] - 2U[i] + U[im]))
+        push!(eqs, 3U[i] - U[i]^2 * V[i] + (V[ip] - 2V[i] + V[im]))
         push!(vars, U[i]); push!(vars, V[i])
     end
-    eqs, vars
-end
-function jacobian_fn(N)
-    eqs, vars = bruss(N)
-    J = scol(eqs).jacobian(vars)
-    f = PySympy.lambdify(PyC.pylist(raw.(vars)), pymat(J), "numpy")   # a Python function returning a numpy array
-    w -> PyC.pyconvert(Matrix{Float64}, f(w...))
+    J = Sym(PySympy.Matrix(PyC.pylist([raw(e) for e in eqs])).jacobian(PyC.pylist([raw(v) for v in vars])))
+    f = pylambdify(PyC.pylist([raw(v) for v in vars]), raw(J), "numpy")   # a function returning a numpy array
+    w -> Matrix{Float64}(PyC.PyArray(f(w...)))
 end
 function jacobian_eval(N)
     f = jacobian_fn(N)
     acc = 0.0
-    for k in 1:1000
-        w = vec(permutedims(hcat([0.1i + 0.001k for i in 1:N], [0.2i + 0.002k for i in 1:N])))
+    for kk in 1:1000
+        w = vec(permutedims(hcat([0.1i + 0.001kk for i in 1:N], [0.2i + 0.002kk for i in 1:N])))
         M = f(w)
         for i in 1:2N
             acc += M[i, i]
@@ -78,165 +61,122 @@ function jacobian_eval(N)
 end
 
 const TASKS = Dict{String,Any}(
-    "sqrt(tan x)" => () -> integrate(sqrt(tan(x)), x),
-    "Chebyshev's pseudo-elliptic integral" => () -> integrate(x / sqrt(x^4 + 10x^2 - 96x - 71), x),
-    "An arctangent of a radical" => () -> integrate((x^2 - 1) / ((x^2 + 1) * sqrt(x^4 + 1)), x),
-    "A quintic denominator" => () -> integrate(1 / (x^5 - x + 1), x),
-    "A fourth root" => () -> integrate(1 / (1 + x^4)^(Sym(1) / 4), x),
-    "Parts, twice" => () -> integrate(x^2 * asin(x)^2, x),
-    "Exponential and logarithm (Risch)" => () -> integrate(exp(x) * (1 + x * log(x)) / x, x),
-    "A Bessel function, to Struve functions" => () -> integrate(x^2 * S.besselj(0, x), x),
-    "The error function squared" => () -> integrate(S.erf(x)^2, x),
-    "Bose-Einstein type" => () -> integrate(x / (exp(x) - 1), (x, 0, oo)),
-    "Serret's integral" => () -> integrate(log(1 + x) / (1 + x^2), (x, 0, 1)),
-    "A symmetry trick" => () -> integrate(x * sin(x) / (1 + cos(x)^2), (x, 0, PI)),
-    "Log-sine" => () -> integrate(log(sin(x)), (x, 0, PI / 2)),
-    "Ahmed's integral" => () -> integrate(atan(sqrt(x^2 + 2)) / ((x^2 + 1) * sqrt(x^2 + 2)), (x, 0, 1)),
-    "Laplace's integral" => () -> integrate(cos(x) / (1 + x^2), (x, 0, oo)),
-    "A dilogarithm value" => () -> integrate(log(x) * log(1 - x), (x, 0, 1)),
-    "Euler's constant" => () -> integrate(exp(-x) * log(x)^2, (x, 0, oo)),
-    "A Gaussian with a cosine" => () -> integrate(exp(-x^2) * cos(2x), (x, -oo, oo)),
-    "Frullani's integral" => () -> integrate((exp(-x) - exp(-2x)) / x, (x, 0, oo)),
-    "The error function" => () -> integrate(S.erfc(x)^2, (x, 0, oo)),
-    "A Bessel function on the half-line" => () -> integrate(S.besselj(0, x), (x, 0, oo)),
-    "A damped Bessel function" => () -> integrate(exp(-x) * S.besselj(0, x), (x, 0, oo)),
-    "A pendulum's period" => () -> (ap = S.symbols("a"; positive = true); integrate(1 / sqrt(cos(x) - cos(ap)), (x, 0, ap)).subs(ap, a)),
-    "zeta(4)" => () -> S.summation(1 / n^4, (n, 1, oo)),
-    "Harmonic numbers" => () -> S.summation(S.harmonic(n) / n^2, (n, 1, oo)),
-    "Dirichlet beta(3)" => () -> S.summation((-1)^n / (2n + 1)^3, (n, 0, oo)),
-    "Arithmetic-geometric" => () -> S.summation(n^2 / 2^n, (n, 1, oo)),
-    "A central binomial series" => () -> S.summation(1 / (n^2 * S.binomial(2n, n)), (n, 1, oo)),
-    "Vandermonde's identity" => () -> (ni = S.symbols("n", integer = true, positive = true); S.summation(S.binomial(ni, k)^2, (k, 0, ni)).subs(ni, n)),   # a plain n gives a Piecewise on re(n)
-    "A closed form in n" => () -> S.summation(k * 2^k, (k, 1, n)),
-    "A polylogarithm value" => () -> S.summation(x^n / n^2, (n, 1, oo)).subs(x, half),
-    # SymPy leaves an infinite product unevaluated; as for Giac, the limit of the partial product is asked
-    "A telescoping product" => () -> (NN = S.symbols("N", integer = true, positive = true); S.limit(S.product(1 - 1 / n^2, (n, 2, NN)), NN, oo)),
-    "Wallis's product" => () -> (NN = S.symbols("N", integer = true, positive = true); S.limit(S.product(4n^2 / (4n^2 - 1), (n, 1, NN)), NN, oo)),
-    "tan sin - sin tan" => () -> limit((tan(sin(x)) - sin(tan(x))) / x^7, x => 0),
-    "Stirling" => () -> limit(S.factorial(n)^(1 / n) / n, n => oo),
-    "A second-order term of e" => () -> limit(x * ((1 + 1 / x)^x - E), x => oo),
-    "Nested exponentials (Gruntz)" => () -> limit(exp(x) * (exp(1 / x - exp(-x)) - exp(1 / x)), x => oo),
-    "Cancelling poles" => () -> limit(1 / x^2 - 1 / sin(x)^2, x => 0),
-    "A ratio of Gamma functions" => () -> limit(S.gamma(x + half) / (S.gamma(x) * sqrt(x)), x => oo),
-    "A power of sinc" => () -> limit((sin(x) / x)^(1 / x^2), x => 0),
-    "A bounded oscillation" => () -> limit((x + sin(x)) / x, x => oo),
-    "A sextic system" => () -> [tup(s) for s in collect(solve([x^2 + y^2 - 1, x^3 - y], [x, y]))],
-    "A quintic solvable by radicals" => () -> collect(solve(x^5 - 5x + 12, x)),
-    "Every solution of cos x = 1/2" => () -> S.solveset(S.Eq(cos(x), half), x, S.Reals),
-    "Lambert's W" => () -> collect(solve(x * exp(x) - 2, x)),
-    "A symmetric system" => () -> [tup(s) for s in collect(solve([x + y + z - 6, x * y + y * z + z * x - 11, x * y * z - 6], [x, y, z]))],
-    "A quartic inequality" => () -> S.solve_univariate_inequality(S.Lt(x^4 - 5x^2 + 4, 0), x),
-    "Absolute values" => () -> S.reduce_inequalities(S.Lt(S.Abs(x - 1) + S.Abs(x + 2), 5), x),
-    "Quantifier elimination" => () -> S.reduce_inequalities(S.Lt(S.discriminant(x^2 + b * x + 1, x), 0), b),   # no quantifier elimination in SymPy; the discriminant route
-    "Cyclotomic factors" => () -> FACTOR(x^105 - 1),
-    "A symmetric septic" => () -> FACTOR((x + y + z)^7 - x^7 - y^7 - z^7),
-    "Factoring over Q(sqrt 2)" => () -> ((uu, fs) = S.factor_list(x^4 + 1; extension = sqrt(Sym(2))); (uu, [(g, toint(m)) for (g, m) in fs])),
-    "The cyclic-6 system" => () -> length(collect(S.solve_poly_system(cyclic6(), C6...))),
-    "Implicitization" => () -> S.resultant(x - t^2 + 1, y - t^3 + t, t),
-    "Polynomial decomposition" => () -> (L = collect(S.decompose(x^6 + 6x^4 + x^3 + 9x^2 + 3x - 5)); (L[1], L[2])),
-    "Denesting" => () -> (log_input!("simplify(sqrt(5 + 2*sqrt(6)) - sqrt(2) - sqrt(3))"); S.simplify(sqrt(5 + 2sqrt(Sym(6))) - sqrt(Sym(2)) - sqrt(Sym(3)))),
-    "Ramanujan's denesting" => () -> (log_input!("simplify((2**Rational(1,3)-1)**Rational(1,3)-Rational(1,9)**Rational(1,3)+Rational(2,9)**Rational(1,3)-Rational(4,9)**Rational(1,3))"); S.simplify((Sym(2)^(Sym(1) / 3) - 1)^(Sym(1) / 3) - (Sym(1)/9)^(Sym(1)/3) + (Sym(2)/9)^(Sym(1)/3) - (Sym(4)/9)^(Sym(1)/3))),
-    "A heptagon sum" => () -> (log_input!("simplify(cos(2*pi/7)+cos(4*pi/7)+cos(6*pi/7)+Rational(1,2))"); S.simplify(cos(2PI / 7) + cos(4PI / 7) + cos(6PI / 7) + Sym(1)/2)),
-    "A minimal polynomial" => () -> S.minimal_polynomial(sqrt(Sym(2)) + sqrt(Sym(3)) + sqrt(Sym(5)), x),
-    "A trigonometric identity" => () -> (log_input!("simplify(sin(3*x)/sin(x)-cos(3*x)/cos(x)-2)"); S.simplify(sin(3x) / sin(x) - cos(3x) / cos(x) - 2)),
-    "Gauss's 17-gon" => () -> cos(2PI / 17).rewrite(sqrt),
-    "An inverse cosine, with assumptions" => () -> (xp = S.symbols("x"; positive = true); log_input!("refine(acos(cos(x))-(2*pi-x), pi<x<2*pi)"); S.refine(S.acos(cos(xp)) - (2PI - xp), S.Q.gt(xp, PI) & S.Q.lt(xp, 2PI)).subs(xp, x)),
-    "Airy" => () -> ode(S.Eq(d_sym(yf(x), x, 2), x * yf(x)), [y1 -> d_sym(y1, x, 2) - x * y1]),
-    "Bessel, order 1/2" => () -> ode(S.Eq(x^2 * d_sym(yf(x), x, 2) + x * d_sym(yf(x), x) + (x^2 - Sym(1) / 4) * yf(x), 0), [y1 -> x^2 * d_sym(y1, x, 2) + x * d_sym(y1, x) + (x^2 - Sym(1) / 4) * y1]),
-    "Riccati" => () -> ode(S.Eq(d_sym(yf(x), x), x^2 + yf(x)^2), [y1 -> d_sym(y1, x) - x^2 - y1^2]),
-    "A nonlinear autonomous equation" => () -> ode(S.Eq(yf(x) * d_sym(yf(x), x, 2), d_sym(yf(x), x)^2), [y1 -> y1 * d_sym(y1, x, 2) - d_sym(y1, x)^2]),
-    "A forced Euler-Cauchy equation" => () -> ode(S.Eq(x^2 * d_sym(yf(x), x, 2) - 3x * d_sym(yf(x), x) + 4yf(x), x^2 * log(x)), [y1 -> x^2 * d_sym(y1, x, 2) - 3x * d_sym(y1, x) + 4y1 - x^2 * log(x)]),
-    "Bernoulli" => () -> ode(S.Eq(d_sym(yf(x), x) + yf(x), x * yf(x)^3), [y1 -> d_sym(y1, x) + y1 - x * y1^3]),
-    "An exponential solution (Kovacic)" => () -> ode(S.Eq(d_sym(yf(x), x, 2), (x^2 + 1) * yf(x)), [y1 -> d_sym(y1, x, 2) - (x^2 + 1) * y1]),
-    "A forced initial-value problem" => () -> ode(S.Eq(d_sym(yf(x), x, 2) - (x^2 + 1) * yf(x), x * exp(-x^2 / 2)),
-        [y1 -> d_sym(y1, x, 2) - (x^2 + 1) * y1 - x * exp(-x^2 / 2), y1 -> y1.subs(x, 0), y1 -> d_sym(y1, x).subs(x, 0) - 1];
-        ics = Dict(yf(0) => 0, d_sym(yf(x), x).subs(x, 0) => 1)),
-    "A Riccati equation with Airy solutions" => () -> ode(S.Eq(d_sym(yf(x), x), x + yf(x)^2), [y1 -> d_sym(y1, x) - x - y1^2]),
-    "A pendulum released from rest" => () -> ode(S.Eq(d_sym(yf(x), x, 2) + sin(yf(x)), 0), [y1 -> d_sym(y1, x, 2) + sin(y1), y1 -> y1.subs(x, 0) - a, y1 -> d_sym(y1, x).subs(x, 0)]; ics = Dict(yf(0) => a, d_sym(yf(x), x).subs(x, 0) => 0)),
-    "Duffing's oscillator from rest" => () -> ode(S.Eq(d_sym(yf(x), x, 2) + yf(x) + yf(x)^3, 0), [y1 -> d_sym(y1, x, 2) + y1 + y1^3, y1 -> y1.subs(x, 0) - a, y1 -> d_sym(y1, x).subs(x, 0)]; ics = Dict(yf(0) => a, d_sym(yf(x), x).subs(x, 0) => 0)),
-    "A Jordan block" => () -> vec([fl(e) for e in collect(((t * smat(Sym[1 1 0; 0 1 1; 0 0 1])).exp() * scol(Sym[1, 1, 1])).subs(t, Sym(7) / 10))]),
-    "The transport equation" => () -> begin
-        uf = S.Function("u")
-        sol = S.pdsolve(S.Eq(d_sym(uf(x, y), x) + 2D(uf(x, y), y), 0), uf(x, y)).rhs
-        # the arbitrary function chosen as F(w) = w^2, to evaluate the residual
-        post = () -> begin
-            Fs = S.Function("F")                      # pdsolve names the arbitrary function F
-            w = S.symbols("w")
-            s1 = sol.replace(Fs, S.Lambda(w, w^2))
-            [S.simplify(d_sym(s1, x) + 2D(s1, y))]
-        end
-        (sol, post)
-    end,
-    "The heat equation" => missing,            # pdsolve takes no boundary conditions
-    "Symbolic eigenvalues" => () -> [fl(e.subs(a, Sym(13) / 10)) for e in collect(keys(smat(Sym[a 1 0; 1 a 1; 0 1 a]).eigenvals()))],
-    "A Jordan form" => () -> jmat(collect(smat(Sym[5 4 2 1; 0 1 -1 -1; -1 -1 3 0; 1 1 -1 2]).jordan_form())[2]),
-    "A matrix exponential" => () -> jmat((t * smat(Sym[0 1; -1 0])).exp().subs(t, Sym(7) / 10)),
-    "A Vandermonde determinant" => () -> FACTOR(smat(Sym[v^j for v in (a, b, x, y, z), j in 0:4]).det()),
-    "A Smith normal form" => () -> jmat(Sym(PyC.pyimport("sympy.matrices.normalforms").smith_normal_form(pymat([2 4 4; -6 6 12; 10 -4 -16]); domain = PySympy.ZZ))),
-    "The Fermat number F7" => () -> sort([bigint(kk) for kk in collect(keys(S.factorint(Sym(2)^128 + 1)))]),
-    "A Mersenne prime" => () -> S.isprime(Sym(2)^521 - 1),
-    "A discrete logarithm" => () -> bigint(S.discrete_log(1000000007, 123456789, 5)),
-    "Pell's equation" => () -> (sol = first(collect(SymPyPythonCall.PythonCall.pyimport("sympy.solvers.diophantine.diophantine").diop_DN(61, 1))); (bigint(collect(sol)[1]), bigint(collect(sol)[2]))),
-    "A periodic continued fraction" => () -> S.continued_fraction_periodic(0, 1, 61),
-    "Partitions" => () -> bigint(S.npartitions(200)),
-    "A Laplace transform" => () -> S.laplace_transform(t^2 * exp(-t) * sin(t), t, s; noconds = true),
-    "An inverse Laplace transform" => () -> S.inverse_laplace_transform(1 / (s^2 + 1)^2, s, t),
-    "A delayed step" => () -> S.inverse_laplace_transform(exp(-s) / s, s, t),
-    "The series of Lambert's W" => () -> S.series(S.LambertW(x), x, 0, 6).removeO(),
-    "A hypergeometric function" => () -> S.hyperexpand(S.hyper([1, 1], [2], x)),
-    "Gamma's reflection formula" => () -> S.gammasimp(S.gamma(Sym(1) / 4) * S.gamma(Sym(3) / 4)),
-    "The sine integral's Laplace transform" => () -> S.laplace_transform(S.Si(t), t, s; noconds = true),
-    "An inverse Laplace transform to a Bessel function" => () -> S.inverse_laplace_transform(1 / sqrt(s^2 + 1), s, t),
-    "A polylogarithm value" => () -> S.expand_func(S.polylog(3, half)),
-    "A stability region" => () -> S.reduce_inequalities([S.Gt(3 * 3 - (1 + k), 0), S.Gt(1 + k, 0)], k),   # the Routh-Hurwitz conditions written out
-    "A Lyapunov equation" => () -> (sol = first(collect(solve([-4q + 1, p - 3q - 2r, 2q - 6r + 1], [p, q, r]; dict = true))); jmat(smat(Sym[p q; q r]).subs(sol))),
-    "A Riccati equation (LQR)" => () -> begin
-        for sol in collect(solve([-q^2 + 1, p - q * r, 2q - r^2 + 1], [p, q, r]))
-            pp, qq, rr = tup(sol)
-            (isreal(pp) && isreal(qq) && isreal(rr)) || continue
-            pp, qq, rr = real(pp), real(qq), real(rr)
-            pp > 0 && pp * rr - qq^2 > 0 && return [pp qq; qq rr]
-        end
-        nothing
-    end,
-    "The unicycle's Lie algebra rank" => () -> begin
-        f1 = scol(Sym[cos(th), sin(th), 0]); f2 = scol(Sym[0, 0, 1]); X = [px, py, th]
-        br = f2.jacobian(X) * f1 - f1.jacobian(X) * f2
-        Int(N(f1.row_join(f2).row_join(br).rank()))
-    end,
-    "A center manifold" => () -> begin
-        c2, c3, c4 = S.symbols("c2 c3 c4")
-        h = c2 * x^2 + c3 * x^3 + c4 * x^4
-        rr = S.expand(d_sym(h, x) * x * h + h + x^2)
-        h.subs(first(collect(solve([rr.coeff(x, 2), rr.coeff(x, 3), rr.coeff(x, 4)], [c2, c3, c4]; dict = true))))
-    end,
-    "A sum-of-squares certificate" => missing,  # no positivity proof in SymPy
-    "Motzkin's polynomial" => missing,          # no positivity proof in SymPy
+    # antiderivatives
+    "x^3 e^(2x)" => () -> S.integrate(x^3 * exp(2x), x),
+    "1/(x^3+1)" => () -> S.integrate(1 / (x^3 + 1), x),
+    "sec^3 x" => () -> S.integrate(sec(x)^3, x),
+    "x/(x^4+1)" => () -> S.integrate(x / (x^4 + 1), x),
+    "ln(x)^2/x^2" => () -> S.integrate(log(x)^2 / x^2, x),
+    "e^x sin x" => () -> S.integrate(exp(x) * sin(x), x),
+    "sqrt(1-x^2)" => () -> S.integrate(sqrt(1 - x^2), x),
+    "1/(x sqrt(x^2-1))" => () -> S.integrate(1 / (x * sqrt(x^2 - 1)), x),
+    "x asin x" => () -> S.integrate(x * asin(x), x),
+    "1/(2+cos x)" => () -> S.integrate(1 / (2 + cos(x)), x),
+    # definite integrals
+    "Dalzell's integral" => () -> S.integrate(x^4 * (1 - x)^4 / (1 + x^2), (x, 0, 1)),
+    "Dirichlet's integral" => () -> S.integrate(sin(x) / x, (x, 0, oo)),
+    "The Gaussian integral" => () -> S.integrate(exp(-x^2), (x, 0, oo)),
+    "A logarithm over 1-x" => () -> S.integrate(log(x) / (1 - x), (x, 0, 1)),
+    "A power of the sine" => () -> S.integrate(sin(x)^4, (x, 0, PI)),
+    "Planck's integral" => () -> S.integrate(x^3 / (exp(x) - 1), (x, 0, oo)),
+    "x ln(1+x) on [0,1]" => () -> S.integrate(x * log(1 + x), (x, 0, 1)),
+    "A quartic denominator on the line" => () -> S.integrate(1 / (x^4 + 1), (x, -oo, oo)),
+    "A damped sine" => () -> S.integrate(x * exp(-x) * sin(x), (x, 0, oo)),
+    # series and products
+    "zeta(6)" => () -> S.summation(1 / n^6, (n, 1, oo)),
+    "n^3/3^n" => () -> S.summation(n^3 / Sym(3)^n, (n, 1, oo)),
+    "The alternating harmonic series" => () -> S.summation((-1)^(n + 1) / n, (n, 1, oo)),
+    "A telescoping sum" => () -> S.summation(1 / (n * (n + 1) * (n + 2)), (n, 1, oo)),
+    "Leibniz's series" => () -> S.summation((-1)^n / (2n + 1), (n, 0, oo)),
+    "The binomial theorem at 2" => () -> S.summation(S.binomial(n, k) * Sym(2)^k, (k, 0, n)),
+    "Nicomachus's theorem" => () -> S.summation(k^3, (k, 1, n)),
+    "1/(4n^2-1)" => () -> S.summation(1 / (4n^2 - 1), (n, 1, oo)),
+    "A product equal to 2" => () -> S.product((n + 1)^2 / (n * (n + 2)), (n, 1, oo)),
+    # limits
+    "(e^x-1-x)/x^2" => () -> S.limit((exp(x) - 1 - x) / x^2, x, 0),
+    "(1-cos x)/x^2" => () -> S.limit((1 - cos(x)) / x^2, x, 0),
+    "(1+2/x)^x" => () -> S.limit((1 + 2 / x)^x, x, oo),
+    "x^x at 0" => () -> S.limit(x^x, x, 0, "+"),
+    "(sin x - x)/x^3" => () -> S.limit((sin(x) - x) / x^3, x, 0),
+    "n(2^(1/n)-1)" => () -> S.limit(n * (Sym(2)^(1 / n) - 1), n, oo),
+    "sqrt(x^2+x)-x" => () -> S.limit(sqrt(x^2 + x) - x, x, oo),
+    "(tan x - x)/x^3" => () -> S.limit((tan(x) - x) / x^3, x, 0),
+    "1/x - 1/(e^x-1)" => () -> S.limit(1 / x - 1 / (exp(x) - 1), x, 0),
+    # equations and inequalities
+    "A cubic with integer roots" => () -> [cnum(r) for r in S.solve(x^3 - 6x^2 + 11x - 6, x)],
+    "Sum and product" => () -> solution_tuples(S.solve([x + y - 5, x * y - 6], [x, y])),
+    "A biquadratic" => () -> [cnum(r) for r in S.solve(x^4 - 10x^2 + 1, x)],
+    "An exponential equation" => () -> [cnum(r) for r in S.solve(Sym(2)^x - Sym(3)^(x - 1), x)],
+    "A circle and a line" => () -> solution_tuples(S.solve([x^2 + y^2 - 25, x - y - 1], [x, y])),
+    "A cubic with one real root" => () -> [cnum(r) for r in S.solve(x^3 + x - 1, x)],
+    "A quadratic inequality" => () -> S.solve(S.Lt(x^2 - 3x + 2, 0), x),
+    "An absolute value inequality" => () -> S.solve(S.Lt(abs(2x - 3), 5), x),
+    # polynomials
+    "x^8-1 over Q" => () -> FACTOR(x^8 - 1),
+    "Sophie Germain's identity" => () -> FACTOR(x^4 + 4),
+    "x^3+y^3+z^3-3xyz" => () -> FACTOR(x^3 + y^3 + z^3 - 3x * y * z),
+    "A polynomial gcd" => () -> S.gcd(x^4 - 1, x^6 - 1),
+    "A resultant" => () -> S.resultant(x^2 + y^2 - 1, x - y, y),
+    "A discriminant" => () -> S.discriminant(x^3 + p * x + q, x),
+    "A partial fraction decomposition" => () -> S.apart(1 / ((x - 1) * (x + 2)^2), x),
+    "Two conics" => () -> solution_tuples(S.solve([x^2 + y^2 - 1, x * y - Sym(1) / 4], [x, y])),
+    # simplification
+    "A nested radical" => () -> S.simplify(sqrt(7 + 4sqrt(Sym(3))) - 2 - sqrt(Sym(3))),
+    "The Pythagorean identity" => () -> S.simplify(sin(x)^2 + cos(x)^2 - 1),
+    "A removable singularity" => () -> S.simplify((x^3 - 1) / (x - 1) - x^2 - x - 1),
+    "The golden cosine" => () -> S.simplify(cos(PI / 5) - (1 + sqrt(Sym(5))) / 4),
+    "tan(pi/12)" => () -> S.simplify(tan(PI / 12) - 2 + sqrt(Sym(3))),
+    "A minimal polynomial of degree six" => () -> S.minimal_polynomial(sqrt(Sym(2)) + Sym(3)^(Sym(1) / 3), x),
+    "An exponential of a logarithm" => () -> (xp = S.Symbol("x"; positive = true); subs(S.simplify(exp(2log(xp)) - xp^2), xp => x)),
+    "Zero identity: nested square root" => () -> S.simplify(sqrt(3 + 2sqrt(Sym(2))) - 1 - sqrt(Sym(2))),
+    "Zero identity: nested cube root" => () -> S.simplify((7 + 5sqrt(Sym(2)))^(Sym(1) / 3) - 1 - sqrt(Sym(2))),
+    "Zero identity: logarithms on positive reals" => () -> S.simplify(log(Sym(2)) + log(Sym(3)) - log(Sym(6))),
+    "Zero identity: exponential of a logarithm" => () -> S.simplify(exp(log(Sym(2))) - 2),
+    "Zero identity: sine at pi over six" => () -> S.simplify(sin(PI / 6) - half),
+    "Nonzero control: rational residual" => () -> S.simplify(sqrt(Sym(2))^2 - 2 + 1 / pyint(big(10)^30)),
+    "Nonzero control: near integer" => () -> S.simplify(exp(PI * sqrt(Sym(163))) - pyint(262537412640768744)),
+    # differential equations
+    "A harmonic oscillator" => () -> ode(S.Eq(yf(x).diff(x, 2) + 4yf(x), 0), [y1 -> y1.diff(x, 2) + 4y1]),
+    "A forced linear equation" => () -> ode(S.Eq(yf(x).diff(x, 2) - 3yf(x).diff(x) + 2yf(x), exp(3x)),
+                                           [y1 -> y1.diff(x, 2) - 3y1.diff(x) + 2y1 - exp(3x)]),
+    "A first-order linear equation" => () -> ode(S.Eq(yf(x).diff(x) + 2x * yf(x), x), [y1 -> y1.diff(x) + 2x * y1 - x]),
+    "A first-order Euler equation" => () -> ode(S.Eq(x * yf(x).diff(x) - yf(x), x^2), [y1 -> x * y1.diff(x) - y1 - x^2]),
+    "A polynomial forcing" => () -> ode(S.Eq(yf(x).diff(x, 2) + yf(x), x), [y1 -> y1.diff(x, 2) + y1 - x]),
+    "A separable equation" => () -> ode(S.Eq(yf(x).diff(x), yf(x)^2), [y1 -> y1.diff(x) - y1^2]),
+    "An initial-value problem" => () -> ode(S.Eq(yf(x).diff(x, 2) + yf(x).diff(x) - 2yf(x), 0),
+        [y1 -> y1.diff(x, 2) + y1.diff(x) - 2y1, y1 -> subs(y1, x => 0) - 1, y1 -> subs(y1.diff(x), x => 0)];
+        ics = Dict(yf(0) => 1, yf(x).diff(x).subs(x, 0) => 0)),
+    "A repeated characteristic root" => () -> ode(S.Eq(yf(x).diff(x, 2) - 2yf(x).diff(x) + yf(x), 0), [y1 -> y1.diff(x, 2) - 2y1.diff(x) + y1]),
+    # linear algebra
+    "A tridiagonal determinant" => () -> smat([2 1 0; 1 2 1; 0 1 2]).det(),
+    "A 2x2 inverse" => () -> jmat(smat([4 7; 2 6]).inv()),
+    "Eigenvalues of a symmetric matrix" => () -> (ev = smat([2 1; 1 2]).eigenvals(); vcat([fill(fnum(kk), Int(N(m))) for (kk, m) in ev]...)),
+    "The rank of a singular matrix" => () -> smat([1 2 3; 4 5 6; 7 8 9]).rank(),
+    "A linear system" => () -> [fnum(e) for e in vec(smat([2 1 -1; -3 -1 2; -2 1 2]).LUsolve(smat(reshape([8, -11, -3], 3, 1))))],
+    "A characteristic polynomial" => () -> smat([1 2; 3 4]).charpoly(x).as_expr(),
+    "A Fibonacci matrix power" => () -> jmat(smat([1 1; 1 0])^10),
+    "A symbolic determinant" => () -> smat([a b; b a]).det(),
+    # number theory
+    "The Fermat number F6" => () -> sort([parse(BigInt, string(pp)) for pp in S.primefactors(pyint(big(2)^64 + 1))]),
+    "A Mersenne prime of 89 bits" => () -> S.isprime(pyint(big(2)^89 - 1)),
+    "A gcd of Mersenne numbers" => () -> S.gcd(pyint(big(2)^60 - 1), pyint(big(2)^84 - 1)),
+    "A modular inverse" => () -> S.mod_inverse(17, 3120),
+    "Euler's totient of a million" => () -> S.totient(10^6),
+    "The next prime after 10^12" => () -> S.nextprime(10^12),
+    "The Chinese remainder theorem" => () -> first(collect(PyC.pyimport("sympy.ntheory.modular").crt(PyC.pylist([3, 5, 7]), PyC.pylist([2, 3, 2])))),
+    "A sum of divisors" => () -> S.divisor_sigma(360),
+    # transforms and series expansions
+    "A Laplace transform" => () -> LAPLACE(t * exp(-2t), t, s),
+    "An inverse Laplace transform" => () -> ILAPLACE(1 / (s^2 + 4), s, t),
+    "The Laplace transform of a cosine" => () -> LAPLACE(cos(2t), t, s),
+    "Gamma at one half" => () -> S.gamma(half),
+    "A Beta value" => () -> S.simplify(S.beta(2, 3)),
+    "Gamma at five halves" => () -> S.gamma(Sym(5) / 2),
+    "The series of tan" => () -> S.series(tan(x), x, 0, 8).removeO(),
+    "The series of e^x sin x" => () -> S.series(exp(x) * sin(x), x, 0, 6).removeO(),
+    # model to Jacobian
     "Jacobian: Brusselator N=10 (build)" => () -> jacobian_fn(10),
     "Jacobian: Brusselator N=50 (build)" => () -> jacobian_fn(50),
     "Jacobian: Brusselator N=10 (evaluate 1000 points)" => () -> jacobian_eval(10),
     "Jacobian: Brusselator N=50 (evaluate 1000 points)" => () -> jacobian_eval(50),
 )
-
-# the family of solutions of cos x = 1/2 (a union of image sets with an integer parameter):
-# its elements in (-10, 10), the same list for every kk
-function EVALFAMILY(out, params, kk)
-    [fl(e) for e in collect(out.intersect(S.Interval(-10, 10)))]
-end
-
-for (name, expression) in (
-    "Zero identity: nested square root" => "sqrt(3+2*sqrt(2))-1-sqrt(2)",
-    "Zero identity: nested cube root" => "(7+5*sqrt(2))**(1/3)-1-sqrt(2)",
-    "Zero identity: logarithms on positive reals" => "log(2)+log(3)-log(6)",
-    "Zero identity: exponential of a logarithm" => "exp(log(2))-2",
-    "Zero identity: sine at pi over six" => "sin(pi/6)-1/2",
-    "Nonzero control: rational residual" => "sqrt(2)**2-2+1/10**30",
-    "Nonzero control: near integer" => "exp(pi*sqrt(163))-262537412640768744",
-)
-    TASKS[name] = () -> begin
-        log_input!("sympify(" * repr(expression) * ", evaluate=False)")
-        ex = S.sympify(expression; evaluate = false)
-        log_input!("simplify(" * string(ex) * ")")
-        S.simplify(ex)
-    end
-end

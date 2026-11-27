@@ -134,7 +134,7 @@ for i in START:STOP
         # These benches' generic checks rely on numeric samples or counts;
         # reserve :verified for exact or symbolic checks in new records.
         exact_boolean = BENCH == "E_suite" && prob.name in
-            ("A Mersenne prime", "A sum-of-squares certificate", "Motzkin's polynomial")
+            ("A Mersenne prime of 89 bits",)
         if status === :verified && !exact_boolean && BENCH in ("B_cas", "D_coverage", "E_suite", "I_scale")
             status = :verified_numeric
         end

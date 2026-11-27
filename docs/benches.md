@@ -68,33 +68,26 @@ basis, factorisation over the complex numbers (checked at complex points), a
 symbolic determinant and eigenvalues, a 60-digit factorisation, and
 simplification under an assumption.
 
-**E, a problem suite** (`E_suite/`; Giac.jl, Symbolics.jl, SymPy and SymJ.jl). The 103 problems of
-"Giac.jl against Mathematica", the notebook `notebooks/giac_vs_wolfram.jl` of
-the `ergonomics` branch of Kahli Burke's fork of Giac.jl
-(github.com/kahliburke/Giac.jl, commit da3d2f1a, 2026-11-12), with the problem
-statements taken from that notebook (twelve categories: indefinite and
-definite integrals, sums and products, limits, equations and inequalities,
-polynomial algebra, simplification and algebraic numbers, differential
-equations, linear algebra, number theory, transforms and special functions,
-control), plus seven identity-difference and nonzero control cases, and a "model to
-Jacobian" category in the style of its companion
-`notebooks/cas_comparison.jl` (the Brusselator ring, N = 10 and 50: the
-Jacobian compiled to a function, then evaluated at 1000 points). Mathematica
-is not run; the Giac.jl measured is the released package without the fork's
-Julia-side layers (where Giac has no command the tasks call PARI through
-Giac's `pari` command, as the notebook does; where nothing exists the task is
-`missing`). Each system implements the tasks idiomatically in
-`E_suite/tasks_<system>.jl`; two idioms are applied alike to Giac and SymPy:
-improper integrals use Giac's signed `+infinity` (the unsigned `infinity`
-leaves a definite integral unevaluated), and the two infinite products, which
-neither evaluates as such, are asked as the limit of the partial product.
-Returned answers are checked in plain Julia using criteria from the notebook (value
-to a tolerance with exactness required, antiderivative by its derivative at
+**E, a problem suite** (`E_suite/`; Giac.jl, Symbolics.jl, SymPy and SymJ.jl). 103 problems
+written for this repository, in twelve categories: antiderivatives, definite
+integrals, series and products, limits, equations and inequalities,
+polynomials, simplification (with seven identity-difference and nonzero
+control cases), differential equations, linear algebra, number theory,
+transforms and series expansions, and a model-to-Jacobian pipeline (the
+Brusselator ring, N = 10 and 50: the Jacobian compiled to a function, then
+evaluated at 1000 points). The problems are classical results whose reference
+values are computed or proved in `E_suite/problems.jl`; their statements are
+in `E_suite/statements.tsv`. Each system implements the tasks idiomatically in
+`E_suite/tasks_<system>.jl` (an operation a system does not document is
+`missing`). Returned answers are checked in plain Julia (value to a tolerance
+with exactness required where asked, antiderivative by its derivative at
 points, solutions substituted and counted, ODE residuals with the constants
-set, and regions tested at points). Identity differences require an explicit
-zero and a high-precision numeric check; controls use certified intervals.
-The per-case limit is 60 s. `make_tables_E.jl` produces coverage tables and
-a dot plot of individual case times (`figures/E_times.tex`, pgfplots).
+set, regions tested at points, factorisations by value and number of
+factors). Identity differences require an explicit zero and a high-precision
+numeric check; controls use certified intervals. The per-case limit is 60 s.
+`make_tables_E.jl` produces coverage tables and a dot plot of individual case
+times (`figures/E_times.tex`, pgfplots). Until 2026-11-28 bench E was a
+different suite; its results are no longer published.
 
 **F, integration sample** (`F_integration/`; Giac.jl, Symbolics.jl and
 SymJ.jl through RischIntegrate.jl, SymPy; Maxima and FriCAS as subprocesses;
@@ -145,9 +138,9 @@ through AlgebraicSolving.jl, SymPy `groebner`; Singular and Giac through
 SageMath, Macaulay2 and GrobX 0.73.3, as subprocesses). GrobX is GPL-3.0-only;
 its pinned Python wheel is supplied by the Nix environment. Reduced degrevlex Gröbner
 bases of sixteen classical systems of the literature (katsura 5 to 9,
-cyclic 4 to 7, eco 7 and 10, noon 4 to 6, henrion 5, chandran 5), whose
-strings were generated once with the `Examples` module of Groebner.jl
-(GPL-2.0) and stored in `G_groebner/inputs.jl`, each over Q and
+cyclic 4 to 7, eco 7 and 10, noon 4 to 6, henrion 5, chandran 5), written
+from their definitions by `tools/groebner/systems.jl` and stored as strings in
+`G_groebner/inputs.jl` (`test/groebner_systems.jl` checks the file), each over Q and
 over GF(1073741827). The printed basis is parsed and put in canonical form by
 `lib/poly.jl` (monic, sorted by leading monomial; a reduced Gröbner basis is
 unique, so correct answers have the same canonical form, whose digest is in
@@ -162,8 +155,8 @@ in the Sage script before the timed call): by default its `gbasis` over Q
 reconstructs in parallel (15 threads on the 16-thread `host-2`), while every
 other system runs on one thread. Runs before 2026-11-26 used Giac's default. A separate `G-hard` pass adds cyclic8,
 cyclic9, katsura10, eco11 and eco12 over Q. The individual budgets are
-600 s, except cyclic9 (3600 s, long-run). Its fixed inputs are generated by
-`tools/groebner/generate_hard.jl` from the pinned Groebner.jl Examples module;
+600 s, except cyclic9 (3600 s, long-run). Its fixed inputs are written by
+the same script, in `G_groebner/hard_inputs.jl`;
 the base records and their case indices stay unchanged. Hard-tier records use
 the operation label `groebner_hard` so their timing statistics stay separate
 from the base tier. A timeout is an observation at that case's budget.

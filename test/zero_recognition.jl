@@ -22,7 +22,8 @@ mktempdir() do dir
     include(joinpath(dir, "problems.jl"))
 end
 @testset "identity zero cases" begin
-    for name in ("Denesting", "Ramanujan's denesting", "A heptagon sum", "A trigonometric identity", "An inverse cosine, with assumptions")
+    for name in ("A nested radical", "The Pythagorean identity", "A removable singularity", "The golden cosine", "tan(pi/12)",
+                 "An exponential of a logarithm")
         p = only(filter(p -> p.name == name, PROBLEMS))
         @test p.check(0)[1] == :verified_numeric
         @test occursin("numeric evaluation", p.check(0)[2])

@@ -1,7 +1,6 @@
-# Classical polynomial systems of the literature (Katsura, cyclic-n, eco, noon, Henrion, Chandrasekhar), whose strings
-# were generated once with Groebner.jl's Examples module (Groebner.Examples.<name>, over QQ; Groebner.jl is GPL-2.0)
-# and stored as plain strings so that every system parses the same input. Variables and polynomials in
-# the order Groebner.jl gives them. Do not regenerate: the strings are the fixed inputs of bench G.
+# The classical polynomial systems of benches G and J (Katsura, cyclic-n, eco, noon, Henrion, Chandrasekhar),
+# written by tools/groebner/systems.jl from their definitions and stored as plain strings, so that every system
+# parses the same input. Do not edit: regenerate with that script (test/groebner_systems.jl checks the file).
 const SYSTEMS = [
     (name = "katsura5", vars = ["x0", "x1", "x2", "x3", "x4", "x5"],
      polys = [
