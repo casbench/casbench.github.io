@@ -51,8 +51,10 @@ const OPS = Dict{Symbol,Any}(
     :partfrac => missing, :limit => missing, :sum => missing, :ifactor => missing, :assume_simplify => missing,
     :trigsimp => missing, :cfactor => missing, :gcd => missing, :resultant => missing, :discriminant => missing,
     :groebner => missing, :ztrans => missing, :eigenvals => missing,
-    :series => (f, x, x0, nn) -> series(f, x, x0, nn),
-    :det => M -> det(Basic[M[i, j] for i in 1:length(M), j in 1:length(M[1])]),
+    # bench D passes (f, x, order) and the rows of a matrix, as to every adapter (test/symengine_ops.jl; before
+    # 2026-11-28 both raised a MethodError of the adapter)
+    :series => (f, x, nn) -> series(f, x, 0, nn + 1),
+    :det => M -> det(Basic[M[i][j] for i in eachindex(M), j in eachindex(M[1])]),
 )
 
 function EVAL(ex, vals)
