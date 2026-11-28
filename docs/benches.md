@@ -94,9 +94,10 @@ SymJ.jl through RischIntegrate.jl, SymPy; Maxima and FriCAS as subprocesses;
 SageMath driving Giac, Maxima, FriCAS and SymPy, the configuration of the
 12000.org tests for the first three). A fixed sample of Nasser M.
 Abbasi's independent integration tests (12000.org, Summer 2024 edition,
-106 812 integrals from the Rubi test suite and other collections): three
-entries from each of the 215 test files of the 2023 SymPy-format archive,
-639 integrals, drawn once by `F_integration/sample.jl` with a fixed generator
+whose report counts 106 812 problems from the Rubi test suite and other
+collections): three entries from each of the 215 test files of the
+SymPy-format input archive of that edition (`CAS_integration_tests_2023_Sympy_format.zip`,
+86 429 integrals, counted on 2026-11-28), 639 integrals, drawn once by `F_integration/sample.jl` with a fixed generator
 and committed as `F_integration/sample.tsv` (file, line, integrand, variable,
 Rubi's step count and the optimal antiderivative the file gives). The
 Maple-like text of the files is translated to each system's syntax by
