@@ -89,3 +89,7 @@ date	host	bench	system	n	verified	wrong	unverified	unsolved	unavailable	error	ti
 2026-11-26 21:44:05	host-2	H_osr	sage_giac	641	51	1	33	521	0	21	14	1.04036	NaN	sage_algorithm giac; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
 2026-11-26 15:21:31	host-2	H_osr	sage_maxima	641	71	0	12	519	0	25	14	2.51177	NaN	sage_algorithm maxima; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
 2026-11-26 16:13:06	host-2	H_osr	sage_sympy	641	48	0	0	385	0	2	206	32.5583	NaN	sage_algorithm sympy; SageMath SageMath version 10.9, Release Date: 2026-05-04	run
+2026-11-28 06:14:34	giac-bench	E_suite	giac	103	101	0	0	2	0	0	0	4.04733	NaN	GIAC_jll 2.0.3+0; libgiac_julia_jll 0.5.2+0; Giac.jl 0.14.3	run
+2026-11-28 06:16:13	giac-bench	E_suite	symbolics	103	51	0	9	16	24	2	1	0.456016	NaN	Nemo 0.56.2; Symbolics 7.49.0; GruntzLimit 1.7.0; Groebner 0.10.11; SymbolicUtils 4.56.1; RischIntegrate 1.4.0; Primes 0.5.7	run
+2026-11-28 06:23:08	giac-bench	E_suite	symj	103	82	0	1	0	18	2	0	0.119025	NaN	GruntzLimit 1.7.0; SymJ 0.1.0; RischIntegrate 1.4.0	run
+2026-11-28 06:21:18	giac-bench	E_suite	sympy	103	100	0	0	3	0	0	0	6.74461	NaN	SymPyPythonCall 0.5.3; SymPy 1.14.0	run

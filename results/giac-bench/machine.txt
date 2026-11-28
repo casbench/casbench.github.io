@@ -2223,3 +2223,91 @@ GruntzLimit	1.7.0
 RischIntegrate	1.4.0
 Primes	0.5.7
 
+# 2026-11-28 06:14:34
+run_id	20261128-061421_giac-bench
+harness_commit	81daa7f6869bcc2cf892fecb1dc152523375350b
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	81daa7f6869bcc2cf892fecb1dc152523375350b
+host	giac-bench
+host_slug	giac-bench
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+load_avg	0.39
+calibration_s	0.3368
+bench	E_suite
+system	Giac.jl
+Giac.jl	0.14.3
+GIAC_jll	2.0.3+0
+libgiac_julia_jll	0.5.2+0
+giac_version	"giac 2.0.0, (c) B. Parisse and R. De Graeve, Institut Fourier, Universite Grenoble Alpes. Optimization, signalprocessing, graph theory (c) Luka Marohnić"
+
+# 2026-11-28 06:16:13
+run_id	20261128-061421_giac-bench
+harness_commit	81daa7f6869bcc2cf892fecb1dc152523375350b
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	81daa7f6869bcc2cf892fecb1dc152523375350b
+host	giac-bench
+host_slug	giac-bench
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+load_avg	0.88
+calibration_s	0.2976
+bench	E_suite
+system	Symbolics.jl
+Symbolics	7.49.0
+SymbolicUtils	4.56.1
+Nemo	0.56.2
+Groebner	0.10.11
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+Primes	0.5.7
+
+# 2026-11-28 06:21:18
+run_id	20261128-061421_giac-bench
+harness_commit	81daa7f6869bcc2cf892fecb1dc152523375350b
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	81daa7f6869bcc2cf892fecb1dc152523375350b
+host	giac-bench
+host_slug	giac-bench
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+load_avg	1.0
+calibration_s	0.3739
+bench	E_suite
+system	SymPy
+SymPy	1.14.0
+SymPyPythonCall	0.5.3
+
+# 2026-11-28 06:23:08
+run_id	20261128-061421_giac-bench
+harness_commit	81daa7f6869bcc2cf892fecb1dc152523375350b
+harness_dirty	false
+giac_jl_commit	6c52365c8c161c551e1a91f08128d339b136fd2a
+osr_commit	81daa7f6869bcc2cf892fecb1dc152523375350b
+host	giac-bench
+host_slug	giac-bench
+kernel	Linux x86_64-linux-gnu
+cpu	13th Gen Intel(R) Core(TM) i5-13500T x6
+memory_GiB	7.7
+julia	1.13.3
+julia_threads	1
+load_avg	1.0
+calibration_s	0.3361
+bench	E_suite
+system	SymJ.jl
+SymJ	0.1.0
+GruntzLimit	1.7.0
+RischIntegrate	1.4.0
+

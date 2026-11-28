@@ -221,8 +221,8 @@ checksum:
 
 - the main campaign (5a8b062: benches E, F, H, J for every system), the
   interface paths (55d2ffe) and GrobX with per-case memory (23523cf);
-- the reruns of 2026-11-26 at 0c0d15a: bench E for Giac.jl on one Giac
-  thread, and benches F and H for Sage/FriCAS, Sage/Maxima and Sage/SymPy
+- the reruns of 2026-11-26 at 0c0d15a: benches F and H for Sage/FriCAS,
+  Sage/Maxima and Sage/SymPy
   (the full type and text of Sage's exceptions, FriCAS's list answers checked
   form by form, Maple's `Zeta(0,s,a)` and `Ei(n,z)` translated by arity, a
   value for the symbol `t` of bench H);
@@ -236,6 +236,9 @@ checksum:
 
 What it does not include yet:
 
+- bench E: the suite was replaced on 2026-11-28 by one written for this
+  repository, measured so far on the reference host; the files of the earlier
+  suite are withdrawn;
 - benches A, B, C, D, G (except GrobX) and I, run on the reference host only;
 - the hard tier of bench G, whose files hold the full bases (up to 104 MB a
   file) and are kept in the review archive;
