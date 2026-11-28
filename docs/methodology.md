@@ -209,67 +209,40 @@ Nemo extension (`factor_use_nemo`); an operation an adapter maps to `missing`
 is reported as `unavailable`. SymJ.jl is not in the General registry at the
 time of writing and is pinned by URL and tree hash in `envs/symj`.
 
-## host-2 campaign (partial)
+## host-2 campaign
 
 `results/host-2/` is the campaign run on a second machine (AMD Ryzen 9
-8945HS, 16 threads, 30.6 GiB, a host shared with three virtual machines) from
-2026-11-23 to 2026-11-26, published while it is incomplete; the reference
-host stays `giac-bench`, and the Hosts page compares the two. Each file is
-copied unchanged from the run that wrote it, the latest run's file replacing
-an earlier one, and named in `results/host-2/SOURCES.tsv` with its commit and
-checksum:
+8945HS, 16 threads, 30.6 GiB, a host shared with three virtual machines);
+the reference host stays `giac-bench`, and the Hosts page compares the two.
+Every file is copied unchanged from the run that wrote it and named in
+`results/host-2/SOURCES.tsv` with its commit and checksum:
 
-- the main campaign (5a8b062: benches E, F, H, J for every system), the
-  interface paths (55d2ffe) and GrobX with per-case memory (23523cf);
-- the reruns of 2026-11-26 at 0c0d15a: benches F and H for Sage/FriCAS,
-  Sage/Maxima and Sage/SymPy
-  (the full type and text of Sage's exceptions, FriCAS's list answers checked
-  form by form, Maple's `Zeta(0,s,a)` and `Ei(n,z)` translated by arity, a
-  value for the symbol `t` of bench H);
-- the reruns of 2026-11-26 at 73f1ea4: benches F and H for FriCAS (the
-  script's own names no longer hide the parameters `f`, `F` and `r`; the
-  subprocess limit above the case budget, so that a case stopped there is a
-  timeout, no longer "fricas gave no answer"), Maxima (the same limit) and
-  Sage/Giac (Giac on one thread; an unevaluated integral is held before any
-  conversion; an answer Giac reprints with its warnings is an error of the
-  interface, no longer the warning recorded as the answer).
+- the full campaign at 11b5954, from 2026-11-26 to 2026-11-28: benches A,
+  A-interfaces, B, C, D, F, G (base tier), H, I and J for every system, one
+  bench per step after ten quiet minutes, with Giac on one thread, the
+  numeric check off branch cuts of the integrand and every correction of the
+  review of 2026-11-25/26;
+- bench E at 6503ecd on 2026-11-28, the suite written for this repository
+  (the bench E files of the full campaign measured the earlier suite and are
+  not published).
 
-What it does not include yet:
-
-- bench E: the suite was replaced on 2026-11-28 by one written for this
-  repository, measured so far on the reference host; the files of the earlier
-  suite are withdrawn;
-- benches A, B, C, D, G (except GrobX) and I, run on the reference host only;
-- the hard tier of bench G, whose files hold the full bases (up to 104 MB a
-  file) and are kept in the review archive;
-- bench F cases 616, 617 and 628 to 630 rerun with the arity translation for
-  Giac.jl, Symbolics.jl, SymPy, SymJ.jl and the Compute Engine: the rerun of
-  that case range is kept in the review archive, since a range file would
-  double those cases in the full files; these files still have the errors of
-  the earlier translation there;
-- Giac.jl on one thread for benches F, H and J (these files used Giac's
-  default, 16 threads; only `gbasis` over Q was seen to use them).
+Not included: the hard tier of bench G, whose files hold the full bases (up
+to 104 MB a file) and were measured in earlier runs; they are kept with their
+checksums in the review archive.
 
 Known limits of these files: Symbolics.jl and SymJ.jl have no evaluation of
 `expint`, `expinti`, `sinint`, `cosint`, `sinhint`, `coshint`, `gamma` with two
-arguments or `zeta` in their adapters (20 and 24 F cases are errors for that
-reason); bench F case 444 for Sage/Giac changes status from run to run.
+arguments or `zeta` in their adapters (bench F errors for that reason); bench
+F case 444 for Sage/Giac has changed status from run to run. A NixOS build on
+the host ran from 21:38:55 to 21:42:15 on 2026-11-27, during bench H for
+SymPy: cases 638 to 641 of that file were measured at a load of 6.4 to 6.8
+(their `load_avg` column), so their times are indicative; their statuses are
+not near a limit.
 
-Part of these runs was measured while the host ran other builds (host load
-up to 15 before some GrobX and FriCAS cases, on 2026-11-25): times are
-indicative, statuses are not affected. The runs of 2026-11-26 waited for a
-quiet machine before each step.
-
-The campaign is published under the neutral name `host-2`:
-`tools/anonymize_host.py` replaced the machine's own name in the run ids,
-run directories and `machine.txt`, and removed from the `environment.txt` of
-both hosts the user's environment variables and the session counters (uptime,
-load, per-CPU times); the files of the rerun at 0c0d15a, written under the
-machine's own name, had the same renaming. The machine's characteristics are
-unchanged: processor, memory, threads, kernel, Julia and the `lscpu` report.
-No status, time or answer changed; `SOURCES.tsv` gives the checksum of each
-published file and, in `sha256_as_written`, that of the file the run wrote,
-which the review archive keeps.
+Both runs were written under the neutral host name (`BENCH_HOST`), so the
+files need no renaming: `sha256_as_written` equals `sha256` in `SOURCES.tsv`.
+Earlier host-2 files, from the partial campaign of 2026-11-23 to 26, are in
+the git history.
 
 ## Reproducing on another machine
 
