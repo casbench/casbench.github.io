@@ -36,12 +36,23 @@ function DESOLVE_IVP(eq_lhs, eq_rhs, yname, t, y0)
 end
 
 isdefined(Main, :Mapleish) || include(joinpath(@__DIR__, "..", "mapleish.jl"))
+# The names the translated integrand may call besides Base (lib/mapleish.jl, JULIA): the special functions of
+# SpecialFunctions, which take symbolic arguments, and RischIntegrate's Shi and Chi. Until 2026-11-28 the integrand
+# was evaluated in Main, where they are undefined: an UndefVarError of the adapter, and the system never received the
+# case (test/integrand_scope.jl).
+module IntegrandScope
+    using SpecialFunctions
+    for name in (:sinhint, :coshint)
+        isdefined(Main.RischIntegrate, name) && @eval const $name = getfield(Main.RischIntegrate, $(QuoteNode(name)))
+    end
+    isdefined(Main, :PolyLog) && (polylog(s, z) = Main.PolyLog.polylog(s, z))
+end
 # bench F: the translated text evaluated as Julia with the symbols bound to the Sym variables, then RischIntegrate
 function INTEGRATE_TEXT(integrand::String, var::String, params = nothing)
     ex = Mapleish.julia_expr(integrand)
     log_input!("integrate(" * string(ex) * ", " * var * ")   # RischIntegrate")
     bindings = Expr(:block, (Expr(:(=), vv, obj) for (vv, obj) in VAR if vv != :pi)...)
-    f = Core.eval(Main, Expr(:let, bindings, ex))
+    f = Core.eval(IntegrandScope, Expr(:let, bindings, ex))
     RischIntegrate.integrate(sym(f), VAR[Symbol(var)])
 end
 
