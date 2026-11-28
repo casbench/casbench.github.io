@@ -22,8 +22,8 @@ univariate representations; no run for it is committed yet.
 
 > [!IMPORTANT]
 > An individual, non-commercial project. The numbers are dated: they were
-> measured on a shared virtual machine with the package versions recorded in
-> `results/machine.txt`, and the systems compared are moving quickly. A
+> measured on a shared machine with the package versions recorded in the
+> results files (`results/<host>/machine.txt`), and the systems compared are moving quickly. A
 > status is a claim to check against the results files, not a verdict on a
 > system. An unsolved or wrong case may hide an error of the benchmark
 > itself, a command generated wrongly for that system; every case page of the

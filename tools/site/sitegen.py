@@ -142,7 +142,7 @@ def read_disclosures(path):
 DISCLAIMER = ("These benchmarks are an individual, non-commercial project. They are not produced, endorsed or certified by "
               "the authors of the systems they compare or of the problem collections they use. Their aim is dated, reproducible "
               "and checkable numbers, and better systems through the failures they show. The numbers were measured on a shared "
-              "virtual machine with the versions recorded in the results files, and the systems move quickly: a status is a "
+              "machine with the versions recorded in the results files, and the systems move quickly: a status is a "
               "claim to check against the results files, not a verdict on a system, and an unsolved or wrong case may hide an "
               "error of the benchmark itself, a command generated wrongly for that system, which is why every case page shows "
               "the exact input sent next to the output. Corrections are welcome.")

@@ -212,8 +212,11 @@ time of writing and is pinned by URL and tree hash in `envs/symj`.
 ## host-2 campaign
 
 `results/host-2/` is the campaign run on a second machine (AMD Ryzen 9
-8945HS, 16 threads, 30.6 GiB, a host shared with three virtual machines);
-the reference host stays `giac-bench`, and the Hosts page compares the two.
+8945HS, 16 threads, 30.6 GiB, a host shared with three virtual machines). It
+is the reference host since 2026-11-28 (`results/REFERENCE`): the bench pages,
+the tables and the summary give its numbers. `giac-bench`, the Converix virtual
+machine of the earlier runs, measured with the checks of their time, stays
+published and is compared on the Hosts page.
 Every file is copied unchanged from the run that wrote it and named in
 `results/host-2/SOURCES.tsv` with its commit and checksum:
 
@@ -260,10 +263,12 @@ the machine, which the calibration workload makes comparable.
 - Inputs are never drawn at run time. The semiprimes of bench C were produced
   once by `C_ifactor/generate_inputs.jl` (next prime after fixed starting
   points) and pasted into `inputs.jl`.
-- The reported numbers were obtained on a Converix virtual machine
-  (6 vCPU of an Intel Core i5-13500T, 7 GiB, NixOS), a hybrid-core CPU shared
-  with other guests; frequency scaling is not controllable from the guest.
-  Treat sub-millisecond differences as indicative.
+- The reported numbers are those of `host-2`, a physical machine (AMD
+  Ryzen 9 8945HS, 16 threads, 30.6 GiB, NixOS) that also runs three virtual
+  machines; the measured runs waited for ten quiet minutes before each bench.
+  Frequency scaling is not controlled. Treat sub-millisecond differences as
+  indicative. The earlier reference, `giac-bench`, was a Converix virtual
+  machine (6 vCPU of an Intel Core i5-13500T, 7 GiB, NixOS).
 - To re-run the exact closure: `nix run .#bench` with the committed
   `flake.lock` and manifests. `nix flake metadata . --json` prints the pinned
   nixpkgs revision.
