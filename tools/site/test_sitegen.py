@@ -628,6 +628,20 @@ class SiteGenTests(unittest.TestCase):
         cases = dict(site.case_pages("G_groebner"))
         self.assertTrue(any("per-case budget 600 s" in text and "hard input" in text for text in cases.values()))
 
+    def test_hard_tier_summary_points_to_the_release(self):
+        """A hard-tier summary (the records without the bases) counts like the full file and says where the bases are."""
+        root = self.make_root()
+        host = root / "results" / "testhost"
+        header = "bench\tsystem\tidx\tcase\top\tstatus\tt_first_s\tt_warm_s\tresult\tnote\tinput\n"
+        (host / "G_groebner_hard_giac_summary.tsv").write_text(header +
+            "G_groebner\tGiac.jl\t33\tcyclic8 over Q (hard tier)\tgroebner_hard\tverified\t2\t1\t\tk=1372 sha=abc\t\n", encoding="utf-8")
+        site = sitegen.Site(root)
+        self.assertEqual([r["idx"] for r in site.results["G_groebner"]["Giac.jl"]], [33])
+        page = site.bench_page("G_groebner", 3)
+        self.assertIn("G_groebner_hard_giac_summary.tsv", page)
+        self.assertIn("summaries without the bases", page)
+        self.assertIn("/releases)", page)
+
     def test_bench_e_statements_follow_problems(self):
         """E_suite/statements.tsv has one row per problem of E_suite/problems.jl, in the same order and with the same
         name, since the pages look a statement up by position (two problems share a name)."""

@@ -6,7 +6,10 @@
 # digest written in the note by the check (a reduced Gröbner basis is unique).
 
 const G_SYSTEMS = ["giac", "groebner", "msolve", "sympy", "sage_singular", "sage_giac", "macaulay2"]
-if isfile(joinpath(RESULTS, "G_groebner_grobx.tsv")) || isfile(joinpath(RESULTS, "G_groebner_hard_grobx.tsv"))
+# the hard tier: the full results file where the repository has it, else its summary (tools/g_hard_summary.py: the same
+# records without the bases, which are in a release asset named in the host's SOURCES.tsv)
+hard_file(s) = (f = joinpath(RESULTS, "G_groebner_hard_$(s).tsv"); isfile(f) ? f : joinpath(RESULTS, "G_groebner_hard_$(s)_summary.tsv"))
+if isfile(joinpath(RESULTS, "G_groebner_grobx.tsv")) || isfile(hard_file("grobx"))
     push!(G_SYSTEMS, "grobx")
 end
 const G_LABEL = Dict("giac" => "Giac.jl", "groebner" => "Groebner.jl", "msolve" => "msolve", "sympy" => "SymPy",
@@ -14,7 +17,7 @@ const G_LABEL = Dict("giac" => "Giac.jl", "groebner" => "Groebner.jl", "msolve" 
 
 function make_G()
     data = Dict(s => vcat(read_records(joinpath(RESULTS, "G_groebner_$(s).tsv")),
-                          read_records(joinpath(RESULTS, "G_groebner_hard_$(s).tsv"))) for s in G_SYSTEMS)
+                          read_records(hard_file(s))) for s in G_SYSTEMS)
     any(!isempty, values(data)) || return
     cases = String[]
     for s in G_SYSTEMS, r in data[s]

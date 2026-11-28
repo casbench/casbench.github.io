@@ -1158,6 +1158,9 @@ class Site:
             hard = sorted(hostdir.glob("G_groebner_hard_*.tsv"))
             if hard:
                 raw += "; hard tier: " + ", ".join(f"[{esc(p.name)}]({self.up}data/{self.reference}/{p.name})" for p in hard)
+                if any(p.name.endswith("_summary.tsv") for p in hard):
+                    raw += (f" (summaries without the bases: the full files are assets of a [release]({REPO}/releases) of the "
+                            f"repository, named with their checksums in [`SOURCES.tsv`]({self.up}data/{self.reference}/SOURCES.tsv))")
         out += f"Raw data (TSV, one file per system): {raw}; [all benches]({self.up}data/results.zip); [every file]({self.up}data/).\n\n"
         out += self.host_note(key)
         out += ("## Answer statuses by system\n\nEach bar shows the distribution of recorded case statuses for a system; "

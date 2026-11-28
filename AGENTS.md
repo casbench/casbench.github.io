@@ -71,10 +71,12 @@ AI assistance row exists. See `CONTRIBUTING.md`.
   that the history dates each file by its last run.
 - A partial campaign says so: `docs/methodology.md` names what it includes,
   what is held back and what pending reruns will change.
-- Files over GitHub's limits are not committed and not trimmed: they are
-  listed as held back in `SOURCES.tsv` and kept, with their checksums, in the
-  review archive (the hard tier of bench G stores full bases, up to 104 MB a
-  file).
+- Files over GitHub's limits are not committed and not trimmed in place:
+  the full file is an asset of a GitHub release of the repository, with its
+  checksum, and the host directory holds its summary written by
+  `tools/g_hard_summary.py` (the same records without the bases and the
+  input); `SOURCES.tsv` names the full file, its checksum and the release
+  (the hard tier of bench G stores full bases, up to 104 MB a file).
 - After adding results, regenerate `results/history.tsv`,
   `results/summary.md`, `tables/` and `figures/` with `make_tables.jl` (on
   the measuring machine) and commit them with the results; CI rejects a
